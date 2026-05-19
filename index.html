@@ -48,7 +48,11 @@
     --ok:       #3D5B3E;
   }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    /* CSS snap removed in favour of a directional JS snap (see below) —
+       so scrolling UP from the wizard doesn't get trapped at the hero end. */
+  }
   body {
     background: var(--paper);
     color: var(--ink);
@@ -933,6 +937,50 @@
   .clerk-note-body p + p { margin-top: 14px; }
   .clerk-note-body strong { font-weight: 600; color: var(--ink); }
   .clerk-note-body mark.ink { background: transparent; color: var(--accent); font-weight: 600; }
+  .ac-inline-decision {
+    display: inline-flex;
+    gap: 6px;
+    align-items: baseline;
+    vertical-align: baseline;
+  }
+  .ac-inline-btn {
+    background: rgba(122,30,30,0.06);
+    border: 1px dashed var(--accent);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.95em;
+    font-weight: 500;
+    padding: 2px 10px;
+    cursor: pointer;
+    transition: all 200ms ease;
+    line-height: 1.2;
+  }
+  .ac-inline-btn:hover {
+    background: var(--accent);
+    color: var(--paper);
+    border-style: solid;
+  }
+  .ac-inline-sep {
+    color: var(--ink-mute);
+    user-select: none;
+  }
+  .ac-inline-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--ink-mute);
+    color: var(--ink-mute);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 6px;
+    vertical-align: 1px;
+    transition: all 200ms ease;
+  }
+  .ac-inline-reset:hover { border-color: var(--ink); color: var(--ink); }
 
   @media (max-width: 768px) {
     .crcl-bar { gap: 20px; padding: 20px; }
@@ -974,7 +1022,7 @@
 
 
 <!-- ════════════════════════ HERO ════════════════════════ -->
-<header class="relative min-h-screen flex flex-col overflow-hidden">
+<header class="hero relative min-h-screen flex flex-col overflow-hidden">
 
   <!-- Decorative heart — translucent maroon, gently pulsing. -->
   <svg class="hero-heart" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
@@ -1004,7 +1052,8 @@
         In an effort to reduce the cardiology referral burden — so that more acutely unwell patients can be reviewed sooner — we are referring you to this guide. You have been sent this link because your question most likely relates to <mark class="ink">rate control</mark> or <mark class="ink">anticoagulation</mark>.
       </p>
       <p class="body-md mt-5 max-w-2xl text-ink-mid italic" data-reveal data-delay="4">
-        Pick the chapter that matches your question. Each path will walk you through it and produce a plan you can paste into the notes.
+        Pick the chapter that matches your question.<br/>
+        Each path will walk you through it and produce a plan you can paste into the notes.
       </p>
     </div>
   </div>
@@ -1023,7 +1072,7 @@
             Rate control
           </h2>
           <p class="body-lg text-ink-mid max-w-xl">
-            How do I treat the heart rate in this patient with AF? Step through the trust AEC protocol — exclusions, agent choice, follow-up — and end with a discharge plan ready to copy.
+            How do I treat the heart rate in this patient with AF? Step through the trust AEC protocol — exclusions, agent choice, follow-up — and end with a management plan ready to copy.
           </p>
         </div>
         <div class="md:col-span-3 flex md:justify-end">
@@ -1048,9 +1097,8 @@
       </div>
     </a>
 
-    <div class="hairline mt-10 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute">
-      <span>Following the April 2026 audit · 92 AF referrals · 52.2% rated inappropriate</span>
-      <span>Source: West Suffolk AF/AEC protocol · Nov 2020</span>
+    <div class="hairline mt-10 pt-6 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute whitespace-nowrap overflow-hidden text-ellipsis">
+      Following the April 2026 audit · 92 AF referrals · 52.2% rated inappropriate
     </div>
   </div>
 </header>
@@ -1145,17 +1193,17 @@
               <div class="body-md text-ink-mid mt-1">Low magnesium often coexists with low K. Replace if below target.</div>
             </div>
           </div>
-          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
+          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5">
             <span class="display-number text-3xl italic text-accent font-light">d</span>
             <div>
-              <div class="font-serif text-xl text-ink font-medium">Sepsis or dehydration <span class="text-ink-mute font-normal italic">— treat the driver</span></div>
-              <div class="body-md text-ink-mid mt-1">Both are common precipitants. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without escalating rate control. <strong>In sepsis, Digoxin is preferred</strong> for rate control as β-blockers and CCBs further drop BP.</div>
+              <div class="font-serif text-xl text-ink font-medium">Sepsis or hypovolemia <span class="text-ink-mute font-normal italic">— treat the driver</span></div>
+              <div class="body-md text-ink-mid mt-1">Both are common precipitants. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without escalating rate control. <strong>In sepsis or hypovolemia, Digoxin is preferred</strong> for rate control as β-blockers and CCBs further drop BP.</div>
 
               <button class="check-row mt-4" role="checkbox" aria-checked="false" data-action="septic">
                 <span class="box"></span>
                 <span>
-                  <span class="ttl">Is this AF septic-driven?</span>
-                  <span class="sub">Tick if sepsis is the precipitant — we'll prefer Digoxin in escalation suggestions and the plan.</span>
+                  <span class="ttl">Is this AF septic/hypovolemia driven?</span>
+                  <span class="sub">Tick if this is the case — we'll prefer Digoxin in escalation suggestions and the plan.</span>
                 </span>
               </button>
             </div>
@@ -1206,16 +1254,17 @@
           </button>
         </div>
 
-        <div class="mt-12 pt-6 hairline">
-          <div class="eyebrow mb-4">Reassess</div>
-          <button class="check-row" role="checkbox" aria-checked="false" data-action="refractory">
-            <span class="box"></span>
-            <span>
-              <span class="ttl">Is the patient's HR still &gt; 110 despite this?</span>
-              <span class="sub">Tick if uncontrolled — we'll suggest how to escalate. Leave unticked if the rate is already controlled.</span>
-            </span>
-          </button>
-        </div>
+        <p class="body-md text-ink-mute italic mt-4">
+          If the patient is not on any rate-control medication, leave all of these unticked. Click a selected agent again to deselect it.
+        </p>
+
+        <button class="check-row mt-6" role="checkbox" aria-checked="false" data-action="refractory">
+          <span class="box"></span>
+          <span>
+            <span class="ttl">Is the patient's HR still &gt; 110 despite this?</span>
+            <span class="sub">Tick if uncontrolled — we'll suggest how to escalate. Leave unticked if the rate is already controlled.</span>
+          </span>
+        </button>
 
         <div class="flex items-center justify-between mt-10 pt-6 hairline">
           <button class="nav-btn" data-action="back">← Back</button>
@@ -1282,7 +1331,10 @@
         </h2>
         <div class="hairline-ink mt-8 max-w-xl" data-reveal data-delay="2"></div>
         <p class="body-lg mt-6 max-w-2xl" data-reveal data-delay="3">
-          Toggle the criteria that apply. CHA<sub>2</sub>DS<sub>2</sub>-VASc gives the annual stroke risk if untreated. ORBIT gives the annual major-bleed risk if anticoagulated. <mark class="ink">The clinician at the bedside is best placed to weigh one against the other.</mark>
+          Toggle the criteria that apply. CHA<sub>2</sub>DS<sub>2</sub>-VASc gives the annual stroke risk if untreated. ORBIT gives the annual major-bleed risk if anticoagulated.
+        </p>
+        <p class="body-lg mt-4 max-w-2xl" data-reveal data-delay="4">
+          <mark class="ink">The clinician at the bedside is best placed to weigh one against the other.</mark>
         </p>
       </div>
     </div>
@@ -1319,7 +1371,7 @@
 
         <div class="ac-row-rec">
           <div class="body-md border-l-2 border-ink pl-5" id="cha-recommendation">
-            Score 0 (male) or 1 (female, sex-only) · <mark class="ink">no antithrombotic.</mark>
+            Score 0 (male) or 1 (female, sex-only) · <mark class="ink">no anticoagulant indicated.</mark>
           </div>
         </div>
       </section>
@@ -1665,20 +1717,21 @@ function renderClerkNote() {
   const showAC = shouldShowAnticoag();
 
   let html = '';
-  html += `<p>Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated.</p>`;
 
   if (!showAC) {
-    // No-AC branch — short and clear.
+    // No-AC branch — one combined paragraph.
+    let mid;
     if (acState.cha === 0) {
-      html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 0</strong>, translating to an <strong>annual stroke risk of ${acState.chaRisk.toFixed(1)}%</strong> — a low annual risk.</p>`;
+      mid = `This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 0</strong>, translating to just the baseline annual stroke risk.`;
     } else {
-      html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 1</strong>, attributable to <em>female sex</em> alone. By guideline this is not an indication for anticoagulation.</p>`;
+      mid = `This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 1</strong>, attributable to <em>female sex</em> alone — by guideline not an indication for anticoagulation.`;
     }
-    html += `<p><mark class="ink">Anticoagulation is not indicated</mark> at this time. Reassess as risk factors accrue.</p>`;
+    html += `<p>Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated. ${mid} <mark class="ink">Anticoagulation is not indicated</mark> at this time. Reassess as risk factors accrue.</p>`;
     body.innerHTML = html;
     return;
   }
 
+  html += `<p>Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated.</p>`;
   const ob = orbitBand(acState.orbit);
   html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of ${acState.cha}</strong>, which translates to an <strong>annual stroke risk of ${acState.chaRisk.toFixed(1)}%</strong> — an ${cb} annual risk.</p>`;
   html += `<p>If anticoagulated, given the <strong>ORBIT score of ${acState.orbit}</strong>, this translates to an <strong>annual major-bleeding risk of ${acState.orbitRisk.toFixed(1)}%</strong> — a ${ob} risk category.</p>`;
@@ -1695,10 +1748,16 @@ function renderClerkNote() {
     } else {
       html += `<mark class="ink">anticoagulate</mark> this patient with <strong>Apixaban 5 mg BD</strong> <em class="text-ink-mute">(enter age, weight &amp; creatinine above to confirm dose).</em>`;
     }
+    html += ` <button type="button" class="ac-inline-reset" data-ac-decision="reset" title="Clear decision">↺</button>`;
   } else if (acState.decision === 'no') {
     html += `<mark class="ink">NOT anticoagulate</mark> this patient at this time.`;
+    html += ` <button type="button" class="ac-inline-reset" data-ac-decision="reset" title="Clear decision">↺</button>`;
   } else {
-    html += `<em class="text-ink-mute">[select anticoagulate / do not anticoagulate above]</em>.`;
+    html += `<span class="ac-inline-decision">`;
+    html += `<button type="button" class="ac-inline-btn" data-ac-decision="yes">anticoagulate</button>`;
+    html += `<span class="ac-inline-sep">/</span>`;
+    html += `<button type="button" class="ac-inline-btn" data-ac-decision="no">not anticoagulate</button>`;
+    html += `</span> this patient.`;
   }
   html += `</p>`;
   body.innerHTML = html;
@@ -1711,13 +1770,10 @@ function clerkNoteAsText() {
   t += `Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated.\n\n`;
 
   if (!showAC) {
-    if (acState.cha === 0) {
-      t += `This patient has a CHA2DS2-VASc score of 0, translating to an annual stroke risk of ${acState.chaRisk.toFixed(1)}% — a low annual risk.\n\n`;
-    } else {
-      t += `This patient has a CHA2DS2-VASc score of 1, attributable to female sex alone. By guideline this is not an indication for anticoagulation.\n\n`;
-    }
-    t += `Anticoagulation is not indicated at this time. Reassess as risk factors accrue.`;
-    return t;
+    const mid = acState.cha === 0
+      ? 'This patient has a CHA2DS2-VASc score of 0, translating to just the baseline annual stroke risk.'
+      : 'This patient has a CHA2DS2-VASc score of 1, attributable to female sex alone — by guideline not an indication for anticoagulation.';
+    return 'Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated. ' + mid + ' Anticoagulation is not indicated at this time. Reassess as risk factors accrue.';
   }
 
   const ob = orbitBand(acState.orbit);
@@ -1761,6 +1817,15 @@ document.querySelectorAll('.sex-btn').forEach(btn => {
   });
 });
 
+// Inline anticoagulate / not anticoagulate decision buttons inside the clerk note.
+document.getElementById('clerk-note-body').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-ac-decision]');
+  if (!btn) return;
+  const v = btn.dataset.acDecision;
+  acState.decision = (v === 'reset') ? null : v;
+  renderClerkNote();
+});
+
 // Copy clerk note
 document.getElementById('copy-anticoag-btn').addEventListener('click', () => {
   navigator.clipboard.writeText(clerkNoteAsText()).then(() => {
@@ -1791,8 +1856,8 @@ calculator({
   },
   recFn: (s, r, state) => {
     const sexOnly = state && state.sc && !['c','h','a2','d','s2','v','a'].some(k => state[k]);
-    if (s === 0) return `Score <span class="font-mono">0</span> · <mark class="ink">No antithrombotic indicated.</mark> Reassess as risk factors accrue.`;
-    if (s === 1 && sexOnly) return `Score <span class="font-mono">1</span> <span class="text-ink-mute italic">(sex-only)</span> · <mark class="ink">No antithrombotic indicated.</mark> Reassess as risk factors accrue.`;
+    if (s === 0) return `Score <span class="font-mono">0</span> · <mark class="ink">No anticoagulant indicated.</mark> Reassess as risk factors accrue.`;
+    if (s === 1 && sexOnly) return `Score <span class="font-mono">1</span> <span class="text-ink-mute italic">(sex-only)</span> · <mark class="ink">No anticoagulant indicated.</mark> Reassess as risk factors accrue.`;
     if (s === 1) return `Score <span class="font-mono">1</span> · <mark class="ink">Consider anticoagulation</mark> — males with one non-sex risk factor.`;
     return `Score <span class="font-mono">${s}</span> · <mark class="ink">Anticoagulation indicated</mark> — DOAC unless mechanical valve or moderate-severe mitral stenosis (then warfarin).`;
   },
@@ -1898,7 +1963,7 @@ function renderSuggestion() {
     <ol class="esc-recipe">
       <li><strong>Digoxin 500 mcg PO stat</strong></li>
       <li><strong>Digoxin 500 mcg PO 6 hours later</strong> if HR &gt; 110</li>
-      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>
+      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>, <em>uptitratable up to 250 mcg OD</em> as needed
         <ul class="esc-subrecipe">
           <li>Normal renal function — start directly</li>
           <li>Impaired renal function — check digoxin pre-dose level <strong>&lt; 2 ng/mL</strong> before maintenance</li>
@@ -1907,7 +1972,58 @@ function renderSuggestion() {
     </ol>
   `;
 
-  if (agent === 'bisoprolol' || agent === 'verapamil') {
+  if (!agent) {
+    titleEl.textContent = `Patient is not yet on rate-control.`;
+    if (septic) {
+      introEl.innerHTML = `<strong>Sepsis/hypovolemia flagged.</strong> Start with Digoxin — it doesn't drop BP.`;
+      html = `
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">Start Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolemia</span></div>
+              <div class="esc-branch-sub">— β-blockers and CCBs further drop BP in already-hypotensive patients</div>
+            </div>
+          </div>
+          ${digoxinRecipe}
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">Only once driver is controlled and SBP &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
+              <div class="esc-branch-sub">— consider adding Bisoprolol</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD as BP tolerates.</p>
+        </div>
+      `;
+    } else {
+      introEl.innerHTML = `Per the trust AEC protocol, here's how to start.`;
+      html = `
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">First-line — Bisoprolol 2.5 mg OD</div>
+              <div class="esc-branch-sub">— if no β-blocker contraindication and SBP &gt; 100 <span class="font-normal italic">and patient remains stable</span></div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD if needed and BP tolerates. <em>If β-blocker contraindicated, start <strong>Verapamil 40 mg TDS</strong> instead — do not combine with bisoprolol.</em></p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">If first-line cannot control HR</div>
+              <div class="esc-branch-sub">— add Digoxin loading</div>
+            </div>
+          </div>
+          ${digoxinRecipe}
+        </div>
+      `;
+    }
+  } else if (agent === 'bisoprolol' || agent === 'verapamil') {
     const cap = agent === 'bisoprolol' ? 'Bisoprolol' : 'Verapamil';
     const upDose = agent === 'bisoprolol' ? '5 mg OD, then 10 mg OD if tolerated' : '80 mg TDS (or MR 240 mg OD)';
     const combineWarn = agent === 'verapamil'
@@ -2028,6 +2144,25 @@ function agentMedicationItems() {
   const septic = wizardState.septic;
   const items = [];
 
+  // No agent on board.
+  if (!a) {
+    if (!wizardState.refractory) {
+      // HR controlled spontaneously — no rate-control medication needed.
+      items.push({ em: 'No rate-control medication required at this time', body: 'Heart rate is well controlled; the patient is not on (and does not need) any rate-control agent.' });
+      return items;
+    }
+    // HR > 110 + no agent — recommend a first-line agent (Digoxin first if septic).
+    if (septic) {
+      items.push({ em: 'Sepsis/hypovolemia flagged — Digoxin preferred as first agent', body: 'β-blockers and CCBs further drop BP in already-hypotensive patients. Treat the driver first.' });
+      items.push({ em: 'Start Digoxin loading: 0.5 mg PO stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Maintenance: <strong>62.5 mcg OD initially, uptitratable up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
+      items.push({ em: 'Only once sepsis/hypovolemia is controlled and SBP comfortably &gt; 100 mmHg — consider adding Bisoprolol 2.5 mg OD', body: 'Uptitrate up to 10 mg OD as tolerated.' });
+    } else {
+      items.push({ em: 'Start Bisoprolol 2.5 mg OD — first-line per AEC protocol', body: 'If no β-blocker contraindication and SBP &gt; 100 mmHg. Uptitrate to 5 mg, then 10 mg OD as tolerated. <em>If β-blocker contraindicated, start Verapamil 40 mg TDS (or MR 120 mg OD) instead — do not combine with bisoprolol.</em>' });
+      items.push({ em: 'If first-line cannot control HR — load Digoxin 0.5 mg PO stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Maintenance: <strong>62.5 mcg OD initially, uptitratable up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
+    }
+    return items;
+  }
+
   // Rate already controlled — just continue current agent, no uptitration.
   if (!wizardState.refractory) {
     if (a === 'bisoprolol') items.push({ em: 'Continue Bisoprolol at the current dose', body: 'HR controlled — no uptitration required.' });
@@ -2051,7 +2186,7 @@ function agentMedicationItems() {
     // Non-septic path: standard escalation.
     if (a === 'bisoprolol') {
       items.push({ em: 'Increase Bisoprolol up to 10 mg OD if the patient is able to tolerate', body: 'Step up to 5 mg OD, then 10 mg OD as SBP permits (&gt; 100 mmHg).' });
-      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
+      items.push({ em: 'If Bisoprolol does not control HR — load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
     } else if (a === 'verapamil') {
       items.push({ em: 'Increase Verapamil up to 80 mg TDS (or MR 240 mg OD) if the patient is able to tolerate', body: 'Provided SBP &gt; 100 mmHg.' });
       items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment). <em>Do not</em> combine Verapamil with Bisoprolol.' });
@@ -2086,7 +2221,7 @@ function buildPlan() {
   acute.push({ em: 'Add on TFTs',                    body: 'Thyroid function — rule out thyrotoxicosis as a precipitant.' });
   acute.push({ em: 'Aim K<sup>+</sup> 4.0 – 4.5 mmol/L', body: 'Replace if below target.' });
   acute.push({ em: 'Aim Mg<sup>2+</sup> &gt; 1.0 mmol/L', body: 'Replace if below target — often coexists with hypokalaemia.' });
-  acute.push({ em: 'Treat sepsis or dehydration if present', body: 'Common precipitants for new AF. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without further rate-control escalation.' });
+  acute.push({ em: 'Treat sepsis or hypovolemia if present', body: 'Common precipitants for new AF. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without further rate-control escalation.' });
   agentMedicationItems().forEach(it => acute.push(it));
   acute.push({ em: 'Consider anticoagulation', body: 'Score CHA<sub>2</sub>DS<sub>2</sub>-VASc and ORBIT (see § II — Anticoagulation below).' });
   acute.push({ em: 'If the patient deteriorates · Call <strong>2222</strong>', body: 'Drop in BP, drop in conscious level, or signs of end-organ compromise — this is a medical emergency. Put out a <strong>Medical Emergency Call</strong>. Urgent cardiology input required.' });
@@ -2202,12 +2337,15 @@ wizard.addEventListener('click', (e) => {
     case 'back':
       if (wizardState.step > 1) setStep(wizardState.step - 1);
       break;
-    case 'agent':
-      wizardState.agent = t.dataset.agent;
+    case 'agent': {
+      const picked = t.dataset.agent;
+      // Re-clicking the selected agent deselects it.
+      wizardState.agent = (wizardState.agent === picked) ? null : picked;
       document.querySelectorAll('[data-action="agent"]').forEach(b => {
-        b.setAttribute('aria-pressed', b === t ? 'true' : 'false');
+        b.setAttribute('aria-pressed', b.dataset.agent === wizardState.agent ? 'true' : 'false');
       });
       break;
+    }
     case 'refractory':
       wizardState.refractory = !wizardState.refractory;
       t.setAttribute('aria-checked', wizardState.refractory ? 'true' : 'false');
@@ -2217,7 +2355,8 @@ wizard.addEventListener('click', (e) => {
       t.setAttribute('aria-checked', wizardState.septic ? 'true' : 'false');
       break;
     case 'step3-continue':
-      if (!wizardState.agent) return;  // must pick an agent first
+      // Refractory (HR > 110) always needs the suggestion screen — even if no
+      // agent yet (we'll recommend first-line). Otherwise jump to the plan.
       if (wizardState.refractory) {
         renderSuggestion();
         setStep(4);
@@ -2272,6 +2411,73 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
+/* =============================================================
+   Directional soft-snap at each section boundary.
+   Only triggers on downward scrolls. At each boundary:
+   - If less than half of the next section is visible → bounce BACK
+     to the current section's end (you haven't committed yet).
+   - If more than half of the next section is visible → bounce FORWARD
+     to the next section's start (you've committed; finish the move).
+   Scrolling UP is never interrupted.
+   ============================================================= */
+(() => {
+  const sectionA = document.querySelector('.hero');
+  const sectionB = document.getElementById('rate');
+  const sectionC = document.getElementById('anticoag');
+  if (!sectionA || !sectionB || !sectionC) return;
+  const boundaries = [
+    { from: sectionA, to: sectionB, forwardOffset: 80 },  // land past rate's top padding so "Let's walk through it" sits below the top edge
+    { from: sectionB, to: sectionC, forwardOffset: 80 },  // same treatment for the anticoag eyebrow
+  ];
+
+  let lastY = window.scrollY;
+  let snapTimer = null;
+  let snapping = false;
+
+  function commitSnap(targetY, anchorY) {
+    snapTimer = setTimeout(() => {
+      if (Math.abs(window.scrollY - anchorY) < 4 && !snapping) {
+        snapping = true;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+        setTimeout(() => { snapping = false; lastY = window.scrollY; }, 700);
+      }
+    }, 130);
+  }
+
+  function maybeSnap() {
+    if (snapping) return;
+    const y = window.scrollY;
+    const going = y - lastY;
+    lastY = y;
+    if (going === 0) return;  // ignore non-scroll events (programmatic etc.)
+
+    const V = window.innerHeight;
+    for (const { to, forwardOffset } of boundaries) {
+      const toTop = to.offsetTop;
+      const fromEnd = toTop - V;
+      const half    = toTop - V / 2;
+      const forwardTarget = toTop + (forwardOffset || 0);
+      // Shrunk snap-back zone (50% of half-viewport) so back-snap is less
+      // aggressive — leaves a neutral zone in the middle.
+      const backUpper = fromEnd + (half - fromEnd) * 0.5;
+
+      if (y > fromEnd + 8 && y < backUpper) {
+        // Very close to fromEnd — bounce back to current section's end
+        clearTimeout(snapTimer);
+        commitSnap(fromEnd, y);
+        return;
+      }
+      if (y >= half && y < forwardTarget - 8) {
+        // > 50% of next section visible — bounce forward into next section
+        clearTimeout(snapTimer);
+        commitSnap(forwardTarget, y);
+        return;
+      }
+    }
+  }
+  window.addEventListener('scroll', maybeSnap, { passive: true });
+})();
+
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -2296,7 +2502,25 @@ const sectionIO = new IntersectionObserver((entries) => {
 }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
 sections.forEach(s => s && sectionIO.observe(s));
 
-// Reset wizard on entering rate section directly via URL fresh load? Keep state; user friendly.
+/* =============================================================
+   Anchor link handlers — override native anchor scroll so each
+   target lands at the same offset the bounce-forward snap uses.
+   Without this, clicking "Anticoagulation" jumps to the section's
+   raw offsetTop (above the padding), then the snap kicks in to
+   correct it — visible flicker.
+   ============================================================= */
+const SCROLL_OFFSETS = { rate: 80, anticoag: 80 };
+document.querySelectorAll('a[data-target]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const id = a.dataset.target;
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    const targetY = el.offsetTop + (SCROLL_OFFSETS[id] || 0);
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
+    history.replaceState(null, '', '#' + id);
+  });
+});
 </script>
 </body>
 </html>
