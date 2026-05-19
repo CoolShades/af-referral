@@ -1,249 +1,2302 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AF Referral Decision Guide</title>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AF Referral Guide · West Suffolk Cardiology</title>
+<meta name="description" content="A clinician-facing guide for atrial fibrillation referrals. Step-by-step rate control following the West Suffolk AF/AEC protocol, and CHA2DS2-VASc + ORBIT scoring for anticoagulation decisions." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          paper:     '#F3EDE1',
+          'paper-2': '#EBE3D2',
+          'paper-3': '#E0D6BE',
+          ink:       '#1A1612',
+          'ink-mid': '#3D342B',
+          'ink-mute':'#7A6F60',
+          rule:      '#C9BFAC',
+          accent:    '#7A1E1E',
+          'accent-2':'#9C2A28',
+          ok:        '#3D5B3E',
+        },
+        fontFamily: {
+          serif: ['"Newsreader"', 'ui-serif', 'Georgia', 'serif'],
+          mono:  ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --amber: #d29922;
-    --red: #f85149;
+    --paper:    #F3EDE1;
+    --paper-2:  #EBE3D2;
+    --ink:      #1A1612;
+    --ink-mid:  #3D342B;
+    --ink-mute: #7A6F60;
+    --rule:     #C9BFAC;
+    --accent:   #7A1E1E;
+    --ok:       #3D5B3E;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    padding: 20px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Newsreader', ui-serif, Georgia, serif;
+    font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-size: 17px;
+    line-height: 1.55;
   }
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 32px 20px;
-    text-align: center;
+
+  /* Subtle paper grain — adds analog warmth without distraction. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.08, 0 0 0 0 0.06, 0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
-  .header h1 {
-    font-size: 1.6rem;
+
+  /* Hero heart — translucent maroon, gently pulsing. */
+  .hero-heart {
+    position: absolute;
+    top: 18vh;
+    right: -4vw;
+    width: 42vw;
+    max-width: 600px;
+    height: auto;
+    pointer-events: none;
+    z-index: 0;
+    color: var(--accent);
+    transform-origin: 50% 50%;
+    animation: heart-beat 2.4s ease-in-out infinite;
+  }
+  .hero-heart path {
+    fill: currentColor;
+    opacity: 0.085;
+  }
+  @keyframes heart-beat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.035); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.02); }
+    70% { transform: scale(1); }
+  }
+  @media (max-width: 768px) {
+    .hero-heart { top: 30vh; right: -16vw; width: 80vw; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-heart { animation: none; }
+  }
+
+  /* Top scroll-progress bar. */
+  .progress {
+    position: fixed; top: 0; left: 0;
+    height: 2px; width: 0%;
+    background: var(--accent);
+    z-index: 80;
+    transition: width 80ms linear;
+  }
+
+  /* Mini side nav. */
+  .minimap {
+    position: fixed;
+    top: 50%; right: 28px;
+    transform: translateY(-50%);
+    z-index: 70;
+    opacity: 0;
+    transition: opacity 500ms ease;
+    pointer-events: none;
+  }
+  .minimap.show { opacity: 1; pointer-events: auto; }
+  .minimap a {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 8px 0;
+    transition: color 220ms ease;
+  }
+  .minimap a .label { opacity: 0; transform: translateX(6px); transition: all 240ms ease; }
+  .minimap a:hover { color: var(--ink); }
+  .minimap a:hover .label { opacity: 1; transform: translateX(0); }
+  .minimap a .dot {
+    width: 9px; height: 9px;
+    border: 1px solid var(--ink-mute);
+    border-radius: 50%;
+    transition: all 220ms ease;
+  }
+  .minimap a.is-active { color: var(--accent); }
+  .minimap a.is-active .dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.2);
+  }
+
+  /* Reveal on scroll. */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 800ms cubic-bezier(0.2, 0.7, 0.2, 1),
+                transform 800ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+  [data-reveal][data-delay="1"] { transition-delay: 80ms; }
+  [data-reveal][data-delay="2"] { transition-delay: 160ms; }
+  [data-reveal][data-delay="3"] { transition-delay: 240ms; }
+  [data-reveal][data-delay="4"] { transition-delay: 320ms; }
+  [data-reveal][data-delay="5"] { transition-delay: 400ms; }
+
+  /* Hairlines. */
+  .hairline      { border-top: 1px solid var(--rule); }
+  .hairline-ink  { border-top: 1px solid var(--ink); }
+
+  /* Eyebrow label. */
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* Display number / numeral. */
+  .display-number {
+    font-family: 'Newsreader', serif;
+    font-feature-settings: "onum" 1, "kern" 1;
+    font-weight: 400;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+
+  /* Body sizing — bumped for clinical readability. */
+  .body-lg { font-size: 19px; line-height: 1.6; color: var(--ink); }
+  .body-md { font-size: 17px; line-height: 1.6; color: var(--ink); }
+
+  /* PRIMARY landing card (Rate Control = big). */
+  .primary-card {
+    display: block;
+    border: 1px solid var(--rule);
+    padding: 44px 44px 36px;
+    background: var(--paper);
+    transition: transform 360ms cubic-bezier(0.2,0.7,0.2,1),
+                border-color 360ms ease,
+                background-color 360ms ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .primary-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 65%, rgba(122,30,30,0.05) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 360ms ease;
+  }
+  .primary-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--ink);
+  }
+  .primary-card:hover::after { opacity: 1; }
+  .primary-card:hover .pc-arrow { transform: translate(6px, -6px); }
+  .pc-arrow { transition: transform 360ms cubic-bezier(0.2,0.7,0.2,1); }
+
+  .secondary-card {
+    border: 1px solid var(--rule);
+    padding: 26px 32px;
+    background: var(--paper);
+    transition: transform 360ms cubic-bezier(0.2,0.7,0.2,1),
+                border-color 360ms ease;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+  }
+  .secondary-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--ink);
+  }
+  .secondary-card:hover .pc-arrow { transform: translate(4px, -4px); }
+
+  /* Wizard. */
+  .wizard {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .wizard-step { display: none; }
+  .wizard-step.is-active {
+    display: block;
+    animation: stepIn 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Progress dots. */
+  .step-dots {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .step-dots .seg {
+    flex: 1;
+    height: 2px;
+    background: var(--rule);
+    transition: background-color 420ms ease;
+  }
+  .step-dots .seg.done   { background: var(--accent); }
+  .step-dots .seg.active { background: var(--ink); }
+
+  /* Big choice buttons (Yes/No, agent select). */
+  .choice {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 28px 32px;
+    cursor: pointer;
+    transition: transform 280ms ease, border-color 280ms ease, background-color 280ms ease;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+    color: var(--ink);
+  }
+  .choice:hover {
+    transform: translateY(-2px);
+    border-color: var(--ink);
+    background: rgba(26,22,18,0.025);
+  }
+  .choice.danger:hover { border-color: var(--accent); background: rgba(122,30,30,0.05); }
+  .choice .lbl { font-family: 'Newsreader', serif; font-size: 1.55rem; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
+  .choice .sub { display: block; font-family: 'Newsreader', serif; font-style: italic; font-weight: 400; font-size: 1rem; color: var(--ink-mute); margin-top: 6px; }
+  .choice .arr { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--ink-mute); transition: transform 280ms ease, color 280ms ease; }
+  .choice:hover .arr { transform: translateX(4px); color: var(--ink); }
+  .choice.danger:hover .arr { color: var(--accent); }
+
+  /* Agent step cards — numbered like the AEC PDF. */
+  .agent {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 26px 32px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 60px 1fr 28px;
+    gap: 22px;
+    align-items: center;
+    transition: transform 280ms ease, border-color 280ms ease, background-color 280ms ease;
+  }
+  .agent:hover {
+    transform: translateY(-2px);
+    border-color: var(--ink);
+    background: rgba(26,22,18,0.025);
+  }
+  .agent .num {
+    font-family: 'Newsreader', serif;
+    font-size: 2.6rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .agent .drug { display: block; font-family: 'Newsreader', serif; font-size: 1.55rem; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); line-height: 1.2; margin-top: 4px; }
+  .agent .meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-mute); text-transform: uppercase; }
+  .agent .note { display: block; color: var(--ink-mid); margin-top: 10px; font-size: 16px; line-height: 1.5; }
+  .agent .arr { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--ink-mute); transition: transform 280ms ease, color 280ms ease; }
+  .agent:hover .arr { transform: translateY(2px); color: var(--ink); }
+  .agent[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .agent[aria-pressed="true"] .drug,
+  .agent[aria-pressed="true"] .note { color: var(--paper); }
+  .agent[aria-pressed="true"] .meta,
+  .agent[aria-pressed="true"] .arr { color: rgba(243,237,225,0.65); }
+  .agent[aria-pressed="true"] .num { color: var(--paper); }
+  .agent[aria-pressed="true"] .note mark.ink,
+  .agent[aria-pressed="true"] .note strong { color: var(--paper); }
+  .agent[aria-pressed="true"] .drug span { color: rgba(243,237,225,0.65) !important; }
+
+  /* Follow-up checkboxes — large, clickable area. */
+  .check-row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 18px 20px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: background-color 220ms ease, border-color 220ms ease;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+  }
+  .check-row:hover { background: rgba(26,22,18,0.025); border-color: var(--ink-mid); }
+  .check-row .box {
+    width: 26px; height: 26px;
+    border: 1.5px solid var(--ink-mute);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 220ms ease;
+    margin-top: 2px;
+  }
+  .check-row[aria-checked="true"] .box {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .check-row[aria-checked="true"] .box::after {
+    content: "✓";
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
     font-weight: 600;
+  }
+  .check-row .ttl { display: block; font-family: 'Newsreader', serif; font-size: 1.15rem; color: var(--ink); line-height: 1.3; }
+  .check-row .sub { display: block; color: var(--ink-mute); font-size: 15px; margin-top: 6px; font-style: italic; line-height: 1.4; }
+
+  /* Nav buttons. */
+  .nav-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 220ms ease;
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--paper); }
+  .nav-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
+  .nav-btn[disabled]:hover { background: transparent; color: var(--ink); }
+  .nav-btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .nav-btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+  .nav-btn.danger {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .nav-btn.danger:hover { background: var(--accent); color: var(--paper); }
+
+  /* Plan summary. */
+  .plan-card {
+    border: 1.5px solid var(--ink);
+    padding: 48px 48px 40px;
+    background: var(--paper);
+    position: relative;
+  }
+  .plan-card::before {
+    content: "";
+    position: absolute;
+    top: -1.5px; left: -1.5px; right: -1.5px;
+    height: 6px;
+    background: var(--accent);
+  }
+  .plan-list { list-style: none; padding: 0; margin: 0; }
+  .plan-list li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .plan-list li:last-child { border-bottom: none; }
+  .plan-list li .pn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+  }
+  .plan-list li .pt { font-family: 'Newsreader', serif; font-size: 1.15rem; color: var(--ink); line-height: 1.45; }
+  .plan-list li .pt .em { color: var(--accent); font-weight: 500; }
+  .plan-list li .pt .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+  .plan-list li.plan-section-head {
+    display: block;
+    grid-template-columns: none;
+    border-bottom: 1px solid var(--ink);
+    padding: 28px 0 10px;
+    margin-top: 8px;
+  }
+  .plan-list li.plan-section-head:first-child {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 4px;
+  }
+  .plan-list li.plan-section-head .plan-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    display: block;
+  }
+  .plan-list li.plan-section-head.is-urgent {
+    border-bottom-color: var(--accent);
+  }
+  .plan-list li.plan-section-head.is-urgent .plan-section-label {
+    color: var(--accent);
+  }
+  .plan-footnote {
+    margin-top: 22px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--ink-mute);
+    background: rgba(26,22,18,0.03);
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink-mid);
+    font-style: italic;
+  }
+  .plan-footnote .fn-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* Instability warning at the bottom of escalate. */
+  .instability-warning {
+    border: 1.5px solid var(--accent);
+    background: rgba(122,30,30,0.06);
+    padding: 22px 26px;
+    position: relative;
+  }
+  .instability-warning::before {
+    content: "";
+    position: absolute;
+    top: -1.5px; left: -1.5px; right: -1.5px;
+    height: 4px;
+    background: var(--accent);
+  }
+  .iw-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .iw-body {
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .iw-body strong { color: var(--accent); font-weight: 600; }
+  .iw-action {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(122,30,30,0.25);
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 18px;
+    align-items: center;
+  }
+  .iw-action-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.8rem;
+    color: var(--accent);
+    background: var(--paper);
+    border: 1.5px solid var(--accent);
+    padding: 6px 0;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .iw-action-txt {
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+
+  /* Escalation branch cards. */
+  .esc-grid { display: grid; gap: 16px; }
+  .esc-intro {
+    font-family: 'Newsreader', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-style: italic;
+  }
+  .esc-warn {
+    padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    background: rgba(122,30,30,0.05);
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.45;
     margin-bottom: 8px;
   }
-  .header p {
-    color: var(--muted);
-    max-width: 640px;
-    margin: 0 auto;
-    font-size: 0.95rem;
+  .esc-branch {
+    border: 1px solid var(--rule);
+    padding: 24px 26px;
+    background: transparent;
+    transition: border-color 280ms ease;
   }
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px 20px 60px;
-  }
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    font-size: 0.85rem;
-  }
-  .legend-item {
-    display: flex;
+  .esc-branch:hover { border-color: var(--ink-mid); }
+  .esc-branch-head {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
     align-items: center;
-    gap: 8px;
+    margin-bottom: 14px;
   }
-  .legend-dot {
-    width: 10px;
-    height: 10px;
+  .esc-branch-letter {
+    font-family: 'Newsreader', serif;
+    font-size: 2.6rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .esc-branch-title {
+    font-family: 'Newsreader', serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .esc-branch-sub {
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-mute);
+    margin-top: 4px;
+  }
+  .esc-branch-body {
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1.55;
+    padding-left: 74px;
+  }
+  .esc-recipe {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 74px;
+    counter-reset: rcp;
+  }
+  .esc-recipe > li {
+    counter-increment: rcp;
+    position: relative;
+    padding: 10px 0 10px 36px;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .esc-recipe > li:last-child { border-bottom: none; }
+  .esc-recipe > li::before {
+    content: counter(rcp, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+  }
+  .esc-subrecipe {
+    list-style: none;
+    padding: 8px 0 0 0;
+    margin: 0;
+  }
+  .esc-subrecipe li {
+    padding: 5px 0 5px 18px;
+    position: relative;
+    font-size: 15px;
+    color: var(--ink-mid);
+    line-height: 1.4;
+  }
+  .esc-subrecipe li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-mute);
+  }
+  @media (max-width: 768px) {
+    .esc-branch-body, .esc-recipe { padding-left: 0; margin-left: 0; }
+  }
+
+  /* Exclusion list. */
+  .exc-list {
+    margin: 32px 0;
+    padding: 24px 28px;
+    border-left: 3px solid var(--accent);
+    background: rgba(122,30,30,0.04);
+  }
+  .exc-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--rule);
+    font-family: 'Newsreader', serif;
+    font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .exc-list li:last-child { border-bottom: none; }
+
+  /* Anticoagulation calculator parts. */
+  .crit {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 220ms ease, border-color 220ms ease, transform 180ms ease;
+    text-align: left; width: 100%;
+    color: var(--ink-mid);
+    font-family: 'Newsreader', serif;
+    font-size: 17px;
+    line-height: 1.35;
+  }
+  .crit:hover { border-color: var(--ink-mid); background: rgba(26,22,18,0.02); }
+  .crit:active { transform: translateY(1px); }
+  .crit .pts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em;
+    color: var(--ink-mute); white-space: nowrap;
+  }
+  .crit[aria-pressed="true"] {
+    background: var(--ink); border-color: var(--ink); color: var(--paper);
+  }
+  .crit[aria-pressed="true"] .pts { color: var(--paper); opacity: 0.7; }
+  .crit[aria-pressed="true"]::before {
+    content: "✓";
+    color: var(--paper);
+    margin-right: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--accent);
+    width: 20px; height: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%;
     flex-shrink: 0;
   }
-  .legend-dot.green { background: var(--green); }
-  .legend-dot.amber { background: var(--amber); }
-  .legend-dot.red { background: var(--red); }
-  .legend-dot.accent { background: var(--accent); }
-  .legend-dot.gray { background: var(--muted); }
-  .diagram-wrapper {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 24px;
-    overflow-x: auto;
-    margin-bottom: 24px;
-  }
-  .diagram-wrapper svg { max-width: 100%; height: auto; }
-  .cards {
+  .crit-label { display: flex; flex-direction: column; }
+  .crit-sub { font-size: 13px; color: var(--ink-mute); margin-top: 3px; font-style: italic; }
+  .crit[aria-pressed="true"] .crit-sub { color: rgba(243,237,225,0.7); }
+
+  /* Anticoagulation panels — subgrid for row-aligned scores. */
+  .ac-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-    margin-top: 32px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 64px;
+    row-gap: 32px;
+    transition: grid-template-columns 480ms cubic-bezier(0.2,0.7,0.2,1);
   }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
+  .ac-grid.cha-only {
+    grid-template-columns: 1fr;
   }
-  .card h3 {
-    font-size: 1rem;
-    margin-bottom: 8px;
+  .ac-grid.cha-only .ac-panel-orbit {
+    display: none;
+  }
+  .ac-panel {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    row-gap: 32px;
+  }
+  .ac-panel-orbit .ac-row-crits {
+    align-self: end;
+  }
+  /* When CHA is the only panel, spread its criteria across more columns. */
+  .ac-grid.cha-only #cha-criteria {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 768px) {
+    .ac-grid.cha-only #cha-criteria {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  @media (max-width: 900px) {
+    .ac-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+    }
+    .ac-panel {
+      grid-template-rows: none;
+      grid-row: auto;
+      row-gap: 24px;
+    }
+    .ac-panel-orbit .ac-row-crits { align-self: stretch; }
+  }
+
+  /* Hide-when-not-indicated. */
+  [data-ac-section].is-hidden { display: none; }
+  /* Smooth fade when re-appearing on AC indicated. */
+  [data-ac-section] { transition: opacity 420ms ease; }
+
+  .score-pop { animation: scorePop 360ms cubic-bezier(0.2,0.7,0.2,1); }
+  @keyframes scorePop {
+    0%   { opacity: 0.2; transform: translateY(8px); }
+    100% { opacity: 1;   transform: translateY(0); }
+  }
+
+  mark.ink { background: transparent; color: var(--accent); font-weight: 500; }
+
+  /* Section numeral wash. */
+  .section-numeral {
+    position: absolute;
+    top: 6vh; right: -4vw;
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(14rem, 28vw, 32rem);
+    color: var(--ink);
+    opacity: 0.04;
+    pointer-events: none;
+    line-height: 0.8;
+    user-select: none;
+  }
+
+  .footer-dark { background: var(--ink); color: var(--paper); }
+  .footer-dark .eyebrow { color: rgba(243,237,225,0.5); }
+
+  /* Cockcroft-Gault calculator — single horizontal bar. */
+  .crcl-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 32px;
+    padding: 24px 32px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    flex-wrap: wrap;
+  }
+  .crcl-field {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
+  }
+  .crcl-field > label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .crcl-inputwrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+  }
+  .crcl-inputwrap input {
+    width: 64px;
+    font-family: 'Newsreader', serif;
+    font-size: 1.55rem;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    padding: 0;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .crcl-inputwrap input::-webkit-outer-spin-button,
+  .crcl-inputwrap input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .crcl-inputwrap input::placeholder { color: var(--rule); font-style: italic; }
+  .crcl-inputwrap .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .sex-toggle {
+    display: flex;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+  }
+  .sex-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    color: var(--ink-mute);
+    cursor: pointer;
+    transition: color 220ms ease;
+  }
+  .sex-btn:hover { color: var(--ink); }
+  .sex-btn.is-active { color: var(--accent); font-weight: 600; }
+  .crcl-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    color: var(--ink-mute);
+    align-self: center;
+  }
+  .crcl-output {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 220px;
+    border-left: 1px solid var(--rule);
+    padding-left: 24px;
+  }
+  .crcl-value {
+    font-family: 'Newsreader', serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .crcl-value .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .crcl-dose {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--accent);
+    line-height: 1.5;
   }
-  .card .stat {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--amber);
+  .crcl-dose .detail {
+    color: var(--ink-mute);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+    display: block;
+    margin-top: 2px;
   }
-  .card .stat.green { color: var(--green); }
-  .card .stat.red { color: var(--red); }
-  .card p {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-top: 4px;
+  .crcl-dose.is-empty { color: var(--ink-mute); }
+
+  /* Decision toggle — uses .choice, but adds selected state. */
+  .choice.is-selected {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
   }
-  .footer {
-    text-align: center;
-    padding: 24px 20px;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.8rem;
+  .choice.is-selected .lbl { color: var(--paper); }
+  .choice.is-selected .sub { color: rgba(243,237,225,0.7); }
+  .choice.is-selected .arr { color: var(--paper); }
+  .choice.is-selected.danger { background: var(--accent); border-color: var(--accent); }
+  .choice[data-decision="yes"].is-selected { background: var(--accent); border-color: var(--accent); }
+
+  /* Clerk note body. */
+  .clerk-note-body {
+    font-family: 'Newsreader', serif;
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink);
   }
-  .footer a {
-    color: var(--accent);
-    text-decoration: none;
+  .clerk-note-body p { margin: 0; }
+  .clerk-note-body p + p { margin-top: 14px; }
+  .clerk-note-body strong { font-weight: 600; color: var(--ink); }
+  .clerk-note-body mark.ink { background: transparent; color: var(--accent); font-weight: 600; }
+
+  @media (max-width: 768px) {
+    .crcl-bar { gap: 20px; padding: 20px; }
+    .crcl-output { border-left: none; padding-left: 0; padding-top: 16px; border-top: 1px solid var(--rule); width: 100%; }
   }
-  @media (max-width: 600px) {
-    .header h1 { font-size: 1.3rem; }
-    .diagram-wrapper { padding: 12px; }
+
+  /* Reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+
+  /* Small screens. */
+  @media (max-width: 768px) {
+    body { font-size: 16px; }
+    .section-numeral { font-size: 14rem; top: 2vh; right: -10vw; opacity: 0.035; }
+    .minimap { display: none; }
+    .primary-card { padding: 32px 28px; }
+    .plan-card { padding: 32px 24px; }
+    .agent { grid-template-columns: 44px 1fr 20px; gap: 14px; padding: 22px; }
+    .agent .num { font-size: 2rem; }
+    .agent .drug { font-size: 1.3rem; }
+    .choice { padding: 22px 24px; }
+    .choice .lbl { font-size: 1.3rem; }
   }
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>AF Referral Decision Guide</h1>
-  <p>Based on the April 2026 Cardiology Referrals Audit &mdash; West Suffolk NHS Foundation Trust</p>
-</div>
 
-<div class="container">
-  <div class="legend">
-    <span class="legend-item"><span class="legend-dot green"></span> Template (auto-reply)</span>
-    <span class="legend-item"><span class="legend-dot amber"></span> Borderline &mdash; brief addendum</span>
-    <span class="legend-item"><span class="legend-dot red"></span> Cardiology review required</span>
-    <span class="legend-item"><span class="legend-dot accent"></span> Decision node</span>
-    <span class="legend-item"><span class="legend-dot gray"></span> Outcome</span>
-  </div>
+<div class="progress" id="progress" aria-hidden="true"></div>
 
-  <div class="diagram-wrapper">
-    <pre class="mermaid">
-%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1f6feb', 'primaryTextColor': '#fff', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff', 'secondaryColor': '#161b22', 'tertiaryColor': '#0d1117', 'fontSize': '14px' }}}%%
-graph TD
-    START([AF referral received])
-    WORKUP{"Basic workup done?<br/>ECG, FBC, U&E, TFTs"}
-    ACUTE{"Patient acutely unwell?<br/>Haemodynamically unstable<br/>FAST AF / ACS"}
-    TRIAGE{"Referral question"}
+<nav class="minimap" id="minimap" aria-label="Section navigation">
+  <a href="#rate" data-target="rate"><span class="label">Rate control</span><span class="dot"></span></a>
+  <a href="#anticoag" data-target="anticoag"><span class="label">Anticoagulation</span><span class="dot"></span></a>
+</nav>
 
-    START --> WORKUP
-    WORKUP -->|Not yet| DO_WORKUP[Complete basic workup]
-    WORKUP -->|Yes| ACUTE
-    ACUTE -->|Yes| URGENT[Urgent cardiology review]
-    ACUTE -->|No| TRIAGE
 
-    TRIAGE -->|Rate control| RATE_DEC{Appropriate for template?}
-    TRIAGE -->|Rhythm strategy| RHYTHM_DEC{Appropriate for template?}
-    TRIAGE -->|Anticoagulation| AC_DEC{Appropriate for template?}
-    TRIAGE -->|Other / complex| REVIEW_COMPLEX[Cardiology review]
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<header class="relative min-h-screen flex flex-col overflow-hidden">
 
-    RATE_DEC -->|Paroxysmal AF<br/>targets & agent choice<br/>no-action cases| T01[Template 01 - Rate control]
-    RATE_DEC -->|Symptomatic<br/>tachy-induced CM| RATE_REVIEW[Cardiology review]
+  <!-- Decorative heart — translucent maroon, gently pulsing. -->
+  <svg class="hero-heart" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+    <path d="M50 86 C 22 70, 4 50, 4 30 C 4 16, 14 6, 26 6 C 36 6, 44 14, 50 24 C 56 14, 64 6, 74 6 C 86 6, 96 16, 96 30 C 96 50, 78 70, 50 86 Z"/>
+  </svg>
 
-    RHYTHM_DEC -->|New AF strategy<br/>DCCV timing<br/>outpatient workup| T02[Template 02 - Rate vs rhythm]
-    RHYTHM_DEC -->|Structural disease<br/>recurrent despite drugs| RHYTHM_REVIEW[Cardiology review]
-
-    AC_DEC -->|CHA2DS2-VASc query<br/>DOAC initiation| T03[Template 03 - Anticoagulation]
-    AC_DEC -->|Bleed / renal failure<br/>mechanical valve| AC_REVIEW[Cardiology review]
-
-    T01 --> AUTO[Auto-reply sent]
-    T02 --> AUTO
-    T03 --> AUTO
-    DO_WORKUP --> AUTO
-
-    AUTO -.->|47 of 92 deflectable| STATS[51% of AF referrals<br/>answered by 3 templates]
-    URGENT --> REVIEW
-    RATE_REVIEW --> REVIEW
-    RHYTHM_REVIEW --> REVIEW
-    AC_REVIEW --> REVIEW
-    REVIEW_COMPLEX -.->|45 of 92 need input| STATS2[49% warrant cardiology review]
-
-    style START fill:#1f6feb,color:#fff,stroke:#58a6ff
-    style URGENT fill:#f85149,color:#fff,stroke:#f85149
-    style T01 fill:#0d5320,color:#fff,stroke:#3fb950
-    style T02 fill:#0d5320,color:#fff,stroke:#3fb950
-    style T03 fill:#0d5320,color:#fff,stroke:#3fb950
-    style AUTO fill:#0d5320,color:#fff,stroke:#3fb950
-    style RATE_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
-    style RHYTHM_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
-    style AC_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
-    style REVIEW_COMPLEX fill:#7a1f1f,color:#fff,stroke:#f85149
-    style REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
-    style DO_WORKUP fill:#21262d,color:#8b949e,stroke:#30363d
-    </pre>
-  </div>
-
-  <div class="cards">
-    <div class="card">
-      <h3>AF referral volume</h3>
-      <div class="stat">27.3%</div>
-      <p>of all April referrals were AF-related &mdash; 92 of 337 audited.</p>
+  <div class="relative z-10 px-8 md:px-16 pt-10 flex justify-between items-start text-[11px] tracking-[0.18em] font-mono uppercase text-ink-mute">
+    <div class="flex flex-col gap-1">
+      <span>West Suffolk · NHS Foundation Trust</span>
+      <span class="text-ink/40">Cardiology · AF Referral Guide</span>
     </div>
-    <div class="card">
-      <h3>Inappropriate rate</h3>
-      <div class="stat red">52.2%</div>
-      <p>of AF referrals rated inappropriate &mdash; 48 of 92.</p>
-    </div>
-    <div class="card">
-      <h3>Template-deflectable</h3>
-      <div class="stat green">51%</div>
-      <p>47 AF referrals answerable by one of three templated replies.</p>
+    <div class="text-right flex flex-col gap-1">
+      <span>Edition · May 2026</span>
+      <span class="text-ink/40">For clinician use</span>
     </div>
   </div>
 
-  <div class="cards">
-    <div class="card">
-      <h3>Template 01 &mdash; Rate control</h3>
-      <div class="stat">26%</div>
-      <p>of AF referrals. Targets, agent choice, paroxysmal-AF-no-action. Treat the precipitant &mdash; AF self-reverts.</p>
-    </div>
-    <div class="card">
-      <h3>Template 02 &mdash; Rate vs rhythm / DCCV</h3>
-      <div class="stat">18%</div>
-      <p>Strategy choice, DCCV timing &amp; booking, new-AF outpatient workup. Refer to DCCV nurse where appropriate.</p>
-    </div>
-    <div class="card">
-      <h3>Template 03 &mdash; Anticoagulation</h3>
-      <div class="stat">7%</div>
-      <p>CHA<sub>2</sub>DS<sub>2</sub>-VASc scoring &amp; DOAC initiation. Referrer acts on result &mdash; cardiology sign-off not required.</p>
+  <div class="relative z-10 flex-1 grid md:grid-cols-12 gap-8 px-8 md:px-16 pt-16 md:pt-20 pb-12">
+    <div class="md:col-span-11">
+      <div class="eyebrow mb-6" data-reveal>Atrial Fibrillation · Clinician Decision Guide</div>
+      <h1 class="display-number leading-[0.92] text-[clamp(2.8rem,7vw,6.5rem)] tracking-[-0.03em] text-ink" data-reveal data-delay="1">
+        Thank you for<br/>
+        <span class="italic font-light">your referral<span class="text-accent">.</span></span>
+      </h1>
+      <div class="hairline-ink mt-10 max-w-2xl" data-reveal data-delay="2"></div>
+      <p class="body-lg mt-8 max-w-2xl" data-reveal data-delay="3">
+        In an effort to reduce the cardiology referral burden — so that more acutely unwell patients can be reviewed sooner — we are referring you to this guide. You have been sent this link because your question most likely relates to <mark class="ink">rate control</mark> or <mark class="ink">anticoagulation</mark>.
+      </p>
+      <p class="body-md mt-5 max-w-2xl text-ink-mid italic" data-reveal data-delay="4">
+        Pick the chapter that matches your question. Each path will walk you through it and produce a plan you can paste into the notes.
+      </p>
     </div>
   </div>
-</div>
 
-<div class="footer">
-  <p>Based on <strong>The Cardiology Audit &mdash; May 2026</strong> (West Suffolk NHS Foundation Trust)<br>
-  337 referrals audited April 2026 &middot; 132 rated inappropriate &middot; 47 answerable by three templates</p>
-</div>
+  <div class="relative z-10 px-8 md:px-16 pb-20">
+    <div class="hairline mb-10"></div>
 
+    <a href="#rate" data-target="rate" class="primary-card block group" data-reveal>
+      <div class="grid md:grid-cols-12 gap-8 items-end">
+        <div class="md:col-span-9">
+          <div class="flex items-baseline gap-6 mb-4">
+            <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute">01 · Most common question</span>
+            <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent">Step-by-step</span>
+          </div>
+          <h2 class="font-serif text-[clamp(2.2rem,5vw,4.2rem)] font-medium text-ink leading-[1] tracking-[-0.02em] mb-3">
+            Rate control
+          </h2>
+          <p class="body-lg text-ink-mid max-w-xl">
+            How do I treat the heart rate in this patient with AF? Step through the trust AEC protocol — exclusions, agent choice, follow-up — and end with a discharge plan ready to copy.
+          </p>
+        </div>
+        <div class="md:col-span-3 flex md:justify-end">
+          <div class="flex items-center gap-4">
+            <span class="display-number text-[6rem] italic font-light text-accent leading-none">I</span>
+            <span class="pc-arrow font-mono text-3xl text-ink">↘</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#anticoag" data-target="anticoag" class="secondary-card group mt-px" data-reveal data-delay="1">
+      <div>
+        <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute mb-2">02 · Should this patient be anticoagulated?</div>
+        <h3 class="font-serif text-2xl md:text-3xl font-medium text-ink tracking-[-0.01em]">
+          Anticoagulation <span class="text-ink-mute font-normal italic">— CHA<sub>2</sub>DS<sub>2</sub>-VASc &amp; ORBIT</span>
+        </h3>
+      </div>
+      <div class="flex items-center gap-4 flex-shrink-0">
+        <span class="display-number text-4xl italic font-light text-accent leading-none">II</span>
+        <span class="pc-arrow font-mono text-2xl text-ink">↘</span>
+      </div>
+    </a>
+
+    <div class="hairline mt-10 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute">
+      <span>Following the April 2026 audit · 92 AF referrals · 52.2% rated inappropriate</span>
+      <span>Source: West Suffolk AF/AEC protocol · Nov 2020</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- ════════════════════════ § I  RATE CONTROL — WIZARD ════════════════════════ -->
+<section id="rate" class="relative bg-paper-2 overflow-hidden">
+  <div class="section-numeral">I</div>
+
+  <div class="relative px-6 md:px-16 pt-24 md:pt-32 pb-28">
+    <div class="grid md:grid-cols-12 gap-8 mb-16 max-w-5xl mx-auto">
+      <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ I</div></div>
+      <div class="md:col-span-10">
+        <div class="eyebrow mb-4" data-reveal>Rate control · The trust AEC protocol</div>
+        <h2 class="font-serif text-[clamp(2.2rem,5vw,4rem)] leading-[1] tracking-[-0.02em] text-ink" data-reveal data-delay="1">
+          Let's walk through it<span class="text-accent">.</span>
+        </h2>
+        <p class="body-lg mt-6 max-w-2xl text-ink-mid" data-reveal data-delay="2">
+          One decision at a time. We'll build the discharge plan as you go.
+        </p>
+      </div>
+    </div>
+
+    <!-- WIZARD -->
+    <div class="wizard" id="wizard">
+
+      <!-- progress bar -->
+      <div class="step-dots mb-10" id="step-dots" data-reveal>
+        <span class="seg" data-i="1"></span>
+        <span class="seg" data-i="2"></span>
+        <span class="seg" data-i="3"></span>
+        <span class="seg" data-i="4"></span>
+      </div>
+
+      <!-- STEP 1 — Exclusions -->
+      <div class="wizard-step is-active" data-step="1">
+        <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
+        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
+        <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
+
+        <ul class="exc-list">
+          <li>Systolic BP &lt; 100/60 mmHg</li>
+          <li>Heart rate &lt; 60 bpm</li>
+          <li>Loss of consciousness</li>
+          <li>ECG suggestive of acute ischaemia</li>
+          <li>Evidence of decompensated heart failure</li>
+        </ul>
+
+        <div class="grid md:grid-cols-2 gap-4 mt-8">
+          <button class="choice danger" data-action="exclusion-yes">
+            <span>
+              <span class="lbl text-accent">Yes — at least one</span>
+              <span class="sub">Stop. This patient needs urgent intervention.</span>
+            </span>
+            <span class="arr">→</span>
+          </button>
+          <button class="choice" data-action="exclusion-no">
+            <span>
+              <span class="lbl">No — none present</span>
+              <span class="sub">Patient is stable. Continue to workup.</span>
+            </span>
+            <span class="arr">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2 — Pre-treatment workup -->
+      <div class="wizard-step" data-step="2">
+        <div class="eyebrow mb-4">Step 02 of 04 · Before you treat</div>
+        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">Send the baseline workup.</h3>
+        <p class="body-md text-ink-mid mb-8">Send these — and identify the driver. Reversible precipitants are behind a lot of new AF, and fixing the driver alone often lets the patient self-revert without further rate control.</p>
+
+        <div class="grid gap-3 mb-2">
+          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
+            <span class="display-number text-3xl italic text-accent font-light">a</span>
+            <div>
+              <div class="font-serif text-xl text-ink font-medium">Thyroid function tests (TFTs)</div>
+              <div class="body-md text-ink-mid mt-1">Thyrotoxicosis is a classic precipitant — easy to miss, easy to send.</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
+            <span class="display-number text-3xl italic text-accent font-light">b</span>
+            <div>
+              <div class="font-serif text-xl text-ink font-medium">Potassium <span class="text-ink-mute font-normal italic">— aim 4.0 – 4.5 mmol/L</span></div>
+              <div class="body-md text-ink-mid mt-1">Replace if below target. Hypokalaemia worsens arrhythmia and rate control alike.</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
+            <span class="display-number text-3xl italic text-accent font-light">c</span>
+            <div>
+              <div class="font-serif text-xl text-ink font-medium">Magnesium <span class="text-ink-mute font-normal italic">— aim &gt; 1.0 mmol/L</span></div>
+              <div class="body-md text-ink-mid mt-1">Low magnesium often coexists with low K. Replace if below target.</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
+            <span class="display-number text-3xl italic text-accent font-light">d</span>
+            <div>
+              <div class="font-serif text-xl text-ink font-medium">Sepsis or dehydration <span class="text-ink-mute font-normal italic">— treat the driver</span></div>
+              <div class="body-md text-ink-mid mt-1">Both are common precipitants. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without escalating rate control. <strong>In sepsis, Digoxin is preferred</strong> for rate control as β-blockers and CCBs further drop BP.</div>
+
+              <button class="check-row mt-4" role="checkbox" aria-checked="false" data-action="septic">
+                <span class="box"></span>
+                <span>
+                  <span class="ttl">Is this AF septic-driven?</span>
+                  <span class="sub">Tick if sepsis is the precipitant — we'll prefer Digoxin in escalation suggestions and the plan.</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+          <button class="nav-btn" data-action="back">← Back</button>
+          <button class="nav-btn primary" data-action="next">Workup in hand · Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 — What is the patient on? + reassess checkbox -->
+      <div class="wizard-step" data-step="3">
+        <div class="eyebrow mb-4">Step 03 of 04 · Current rate-control agent</div>
+        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">What is the patient on?</h3>
+        <p class="body-md text-ink-mid mb-8">Pick whichever agent the patient is currently taking (or has just been started on).</p>
+
+        <div class="grid gap-3">
+          <button class="agent" data-action="agent" data-agent="bisoprolol" aria-pressed="false">
+            <span class="num">01</span>
+            <span>
+              <span class="meta">β-blocker · first-choice agent</span>
+              <span class="drug">Bisoprolol <span class="text-ink-mute font-normal italic">— at any current dose</span></span>
+              <span class="note">Patient is taking Bisoprolol (2.5 mg, 5 mg or 10 mg OD).</span>
+            </span>
+            <span class="arr">↓</span>
+          </button>
+
+          <button class="agent" data-action="agent" data-agent="verapamil" aria-pressed="false">
+            <span class="num">02</span>
+            <span>
+              <span class="meta">Calcium-channel blocker</span>
+              <span class="drug">Verapamil <span class="text-ink-mute font-normal italic">— TDS or MR OD</span></span>
+              <span class="note">Patient is taking Verapamil (typically used when a β-blocker is contraindicated).</span>
+            </span>
+            <span class="arr">↓</span>
+          </button>
+
+          <button class="agent" data-action="agent" data-agent="digoxin" aria-pressed="false">
+            <span class="num">03</span>
+            <span>
+              <span class="meta">Cardiac glycoside</span>
+              <span class="drug">Digoxin <span class="text-ink-mute font-normal italic">— loaded over 24 h</span></span>
+              <span class="note">Patient has been loaded with Digoxin (500 mcg stat, 500 mcg in 6 h, then 62.5 mcg OD).</span>
+            </span>
+            <span class="arr">↓</span>
+          </button>
+        </div>
+
+        <div class="mt-12 pt-6 hairline">
+          <div class="eyebrow mb-4">Reassess</div>
+          <button class="check-row" role="checkbox" aria-checked="false" data-action="refractory">
+            <span class="box"></span>
+            <span>
+              <span class="ttl">Is the patient's HR still &gt; 110 despite this?</span>
+              <span class="sub">Tick if uncontrolled — we'll suggest how to escalate. Leave unticked if the rate is already controlled.</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+          <button class="nav-btn" data-action="back">← Back</button>
+          <button class="nav-btn primary" data-action="step3-continue">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 — Suggested medication change (only shown if refractory checked) -->
+      <div class="wizard-step" data-step="4">
+        <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
+        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
+        <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
+
+        <div class="esc-grid" id="sug-content"></div>
+
+        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+          <button class="nav-btn" data-action="back">← Back</button>
+          <button class="nav-btn primary" data-action="generate">Generate plan →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5 — PLAN SUMMARY -->
+      <div class="wizard-step" data-step="5">
+        <div class="eyebrow mb-4">The plan · Ready to paste into the notes</div>
+        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-8">Your AF rate-control plan.</h3>
+
+        <div class="plan-card">
+          <div class="flex items-baseline justify-between mb-6">
+            <div>
+              <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-2" id="plan-header-eyebrow">Rate-control · Discharge plan</div>
+              <div class="font-serif text-2xl font-medium text-ink" id="plan-header-title">For AF in the AEC pathway</div>
+            </div>
+            <button class="nav-btn" id="copy-btn" data-action="copy">Copy ↗</button>
+          </div>
+          <ol class="plan-list" id="plan-list"></ol>
+          <div class="plan-footnote" id="plan-footnote"></div>
+          <div class="hairline mt-8 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <span class="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-mute">After the West Suffolk AF/AEC protocol · Nov 2020</span>
+            <button class="nav-btn danger" data-action="restart">Start over ↺</button>
+          </div>
+        </div>
+
+        <div class="mt-10 flex justify-center">
+          <a href="#anticoag" data-target="anticoag" class="nav-btn">Next · Anticoagulation question? →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════ § II  ANTICOAGULATION ════════════════════════ -->
+<section id="anticoag" class="relative bg-paper overflow-hidden">
+  <div class="section-numeral">II</div>
+
+  <div class="relative px-8 md:px-16 pt-24 md:pt-32 pb-28">
+    <div class="grid md:grid-cols-12 gap-8 mb-16">
+      <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ II</div></div>
+      <div class="md:col-span-10">
+        <div class="eyebrow mb-4" data-reveal>Anticoagulation · Stroke vs. bleed</div>
+        <h2 class="font-serif text-[clamp(2.2rem,5vw,4rem)] leading-[1] tracking-[-0.02em] text-ink" data-reveal data-delay="1">
+          Score them<span class="text-accent">.</span> <span class="italic font-light text-ink-mid">Then decide.</span>
+        </h2>
+        <div class="hairline-ink mt-8 max-w-xl" data-reveal data-delay="2"></div>
+        <p class="body-lg mt-6 max-w-2xl" data-reveal data-delay="3">
+          Toggle the criteria that apply. CHA<sub>2</sub>DS<sub>2</sub>-VASc gives the annual stroke risk if untreated. ORBIT gives the annual major-bleed risk if anticoagulated. <mark class="ink">The clinician at the bedside is best placed to weigh one against the other.</mark>
+        </p>
+      </div>
+    </div>
+
+    <div class="ac-grid" id="ac-panels">
+
+      <!-- CHA panel — always visible -->
+      <section class="ac-panel ac-panel-cha" data-reveal>
+        <header class="ac-row-header">
+          <div class="flex items-baseline justify-between mb-4">
+            <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em]">CHA<sub>2</sub>DS<sub>2</sub>-VASc</h3>
+            <span class="eyebrow">Stroke risk</span>
+          </div>
+          <p class="body-md text-ink-mid">Annual stroke risk if untreated. Lip et al, <em>Chest</em> 2010.</p>
+        </header>
+
+        <div class="ac-row-crits">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="cha-criteria"></div>
+        </div>
+
+        <div class="ac-row-score">
+          <div class="hairline pt-6 grid grid-cols-12 gap-6 items-end">
+            <div class="col-span-5">
+              <div class="eyebrow mb-2">Score</div>
+              <div class="display-number text-[7rem] text-ink leading-none" id="cha-score">0</div>
+            </div>
+            <div class="col-span-7">
+              <div class="eyebrow mb-2">Annual stroke risk</div>
+              <div class="font-serif text-3xl text-accent font-medium leading-tight" id="cha-risk">0.2<span class="text-ink-mute text-xl font-mono ml-1 font-normal">/100</span></div>
+              <div class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-mute mt-1" id="cha-risk-sub">≈ 1 in 500 patient-years</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-row-rec">
+          <div class="body-md border-l-2 border-ink pl-5" id="cha-recommendation">
+            Score 0 (male) or 1 (female, sex-only) · <mark class="ink">no antithrombotic.</mark>
+          </div>
+        </div>
+      </section>
+
+      <!-- ORBIT panel — hidden when AC not indicated -->
+      <section class="ac-panel ac-panel-orbit" data-reveal data-delay="1">
+        <header class="ac-row-header">
+          <div class="flex items-baseline justify-between mb-4">
+            <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em]">ORBIT</h3>
+            <span class="eyebrow">Bleed risk</span>
+          </div>
+          <p class="body-md text-ink-mid">Annual major-bleed risk on anticoagulation. O'Brien et al, <em>Eur Heart J</em> 2015.</p>
+        </header>
+
+        <div class="ac-row-crits">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="orbit-criteria"></div>
+        </div>
+
+        <div class="ac-row-score">
+          <div class="hairline pt-6 grid grid-cols-12 gap-6 items-end">
+            <div class="col-span-5">
+              <div class="eyebrow mb-2">Score</div>
+              <div class="display-number text-[7rem] text-ink leading-none" id="orbit-score">0</div>
+            </div>
+            <div class="col-span-7">
+              <div class="eyebrow mb-2">Annual major-bleed risk</div>
+              <div class="font-serif text-3xl text-accent font-medium leading-tight" id="orbit-risk">2.4<span class="text-ink-mute text-xl font-mono ml-1 font-normal">/100</span></div>
+              <div class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-mute mt-1" id="orbit-risk-sub">Low risk band</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-row-rec">
+          <div class="body-md border-l-2 border-ink pl-5" id="orbit-recommendation">
+            A high bleed score is <mark class="ink">not</mark> a reason to withhold anticoagulation — it is a reason to address modifiable risk factors.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ──────────── Cockcroft-Gault ──────────── -->
+    <div class="mt-24 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
+      <div class="md:col-span-2"><div class="eyebrow">Renal function</div></div>
+      <div class="md:col-span-10">
+        <h3 class="font-serif text-2xl md:text-3xl text-ink font-medium tracking-[-0.01em] mb-2">
+          Creatinine clearance <span class="text-ink-mute font-normal italic">— Cockcroft–Gault</span>
+        </h3>
+        <p class="body-md text-ink-mid mb-6 max-w-2xl">
+          For Apixaban dose adjustment. Standard dose is 5 mg BD; reduce to 2.5 mg BD if CrCl 15 – 29 mL/min, or if 2 of 3 of: age ≥ 80 · weight ≤ 60 kg · creatinine ≥ 133 μmol/L.
+        </p>
+
+        <div class="crcl-bar">
+          <div class="crcl-field">
+            <label for="crcl-age">Age</label>
+            <div class="crcl-inputwrap">
+              <input type="number" id="crcl-age" min="18" max="120" placeholder="—" inputmode="numeric"/>
+              <span class="unit">yrs</span>
+            </div>
+          </div>
+
+          <div class="crcl-field">
+            <label>Sex</label>
+            <div class="sex-toggle" role="radiogroup" aria-label="Sex">
+              <button type="button" class="sex-btn is-active" data-sex="male" role="radio" aria-checked="true">Male</button>
+              <button type="button" class="sex-btn" data-sex="female" role="radio" aria-checked="false">Female</button>
+            </div>
+          </div>
+
+          <div class="crcl-field">
+            <label for="crcl-weight">Weight</label>
+            <div class="crcl-inputwrap">
+              <input type="number" id="crcl-weight" min="30" max="250" placeholder="—" inputmode="decimal"/>
+              <span class="unit">kg</span>
+            </div>
+          </div>
+
+          <div class="crcl-field">
+            <label for="crcl-cr">Creatinine</label>
+            <div class="crcl-inputwrap">
+              <input type="number" id="crcl-cr" min="20" max="2000" placeholder="—" inputmode="numeric"/>
+              <span class="unit">μmol/L</span>
+            </div>
+          </div>
+
+          <div class="crcl-arrow">→</div>
+
+          <div class="crcl-output">
+            <div class="crcl-value"><span id="crcl-value">—</span><span class="unit">mL/min</span></div>
+            <div class="crcl-dose is-empty" id="crcl-dose">Enter values to calculate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── Clerk note ──────────── -->
+    <div class="mt-12 grid md:grid-cols-12 gap-8" data-reveal>
+      <div class="md:col-span-2"><div class="eyebrow">Clerk note</div></div>
+      <div class="md:col-span-10">
+        <div class="plan-card">
+          <div class="flex items-baseline justify-between mb-6 flex-wrap gap-4">
+            <div>
+              <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-2">Stroke prophylaxis · Clerk note</div>
+              <div class="font-serif text-2xl font-medium text-ink">Paste straight into the notes</div>
+            </div>
+            <button class="nav-btn" id="copy-anticoag-btn">Copy ↗</button>
+          </div>
+          <div class="clerk-note-body" id="clerk-note-body"></div>
+          <div class="hairline mt-8 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <span class="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-mute">Updates live as you toggle criteria, CrCl &amp; decision</span>
+            <span class="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-mute">West Suffolk AF protocol · BNF · Nov 2020</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closing card -->
+    <div class="mt-24 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
+      <div class="md:col-span-2"><div class="eyebrow">Bottom line</div></div>
+      <div class="md:col-span-9">
+        <p class="font-serif text-2xl md:text-3xl leading-[1.3] text-ink tracking-[-0.01em]">
+          Scores inform. They don't decide. The clinician who knows this patient — their frailty, their falls, their priorities — is best placed to weigh stroke risk against bleed risk and make the call.
+        </p>
+        <div class="font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute mt-6">After the West Suffolk AF protocol · Nov 2020</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<footer class="footer-dark">
+  <div class="px-8 md:px-16 py-16 grid md:grid-cols-12 gap-8">
+    <div class="md:col-span-6">
+      <div class="eyebrow mb-5">Colophon</div>
+      <p class="font-serif text-xl leading-snug tracking-[-0.01em]">
+        A clinician decision guide for atrial fibrillation, produced by West Suffolk NHS Foundation Trust Cardiology in May 2026 to support referrers following the April 2026 referrals audit.
+      </p>
+    </div>
+    <div class="md:col-span-4">
+      <div class="eyebrow mb-5">Sources</div>
+      <ul class="font-serif text-[15px] leading-relaxed space-y-2 text-paper/80">
+        <li>West Suffolk AF/AEC protocol · Cardiology · Nov 2020</li>
+        <li>Lip GYH et al, <em>Chest</em> 2010 · CHA<sub>2</sub>DS<sub>2</sub>-VASc</li>
+        <li>O'Brien EC et al, <em>Eur Heart J</em> 2015 · ORBIT</li>
+        <li>April 2026 Cardiology Referrals Audit</li>
+      </ul>
+    </div>
+    <div class="md:col-span-2 text-right md:text-left">
+      <div class="eyebrow mb-5">Edition</div>
+      <div class="display-number text-5xl italic font-light leading-none">May<br/>’26</div>
+    </div>
+  </div>
+
+  <div class="px-8 md:px-16 py-5 border-t border-paper/10 flex flex-col md:flex-row justify-between gap-2 font-mono text-[11px] tracking-[0.16em] uppercase text-paper/40">
+    <span>West Suffolk NHS Foundation Trust · Cardiology</span>
+    <span>For clinician use · Not patient-facing</span>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════ SCRIPTS ════════════════════════ -->
 <script>
-  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+/* =============================================================
+   Anticoagulation calculators
+   ============================================================= */
+const CHA = [
+  { key:'c',  pts:1, label:'Congestive heart failure',      sub:'signs / symptoms or LVEF ≤ 40%' },
+  { key:'h',  pts:1, label:'Hypertension',                  sub:'or current antihypertensive therapy' },
+  { key:'a2', pts:2, label:'Age ≥ 75',                      sub:'' },
+  { key:'d',  pts:1, label:'Diabetes mellitus',             sub:'' },
+  { key:'s2', pts:2, label:'Stroke / TIA / thromboembolism',sub:'prior event' },
+  { key:'v',  pts:1, label:'Vascular disease',              sub:'prior MI, PAD or aortic plaque' },
+  { key:'a',  pts:1, label:'Age 65 – 74',                   sub:'' },
+  { key:'sc', pts:1, label:'Sex category (female)',         sub:'risk modifier' },
+];
+
+const ORBIT = [
+  { key:'hb', pts:2, label:'Anaemia',              sub:'Hb < 13 ♂ / < 12 ♀, or Hct < 40 / 36' },
+  { key:'ag', pts:1, label:'Age > 74',             sub:'' },
+  { key:'bh', pts:2, label:'Bleeding history',     sub:'GI, intracranial, haemorrhagic stroke' },
+  { key:'gf', pts:1, label:'eGFR < 60 mL/min',     sub:'or creatinine ≥ 133 µmol/L' },
+  { key:'ap', pts:1, label:'Antiplatelet therapy', sub:'concomitant aspirin or P2Y₁₂ inhibitor' },
+];
+
+const CHA_RISK = [0.2, 0.6, 2.2, 3.2, 4.8, 7.2, 9.7, 11.2, 10.8, 12.2];
+const ORBIT_RISK = { 0:2.4, 1:2.4, 2:2.4, 3:4.7, 4:8.1, 5:8.7, 6:8.7, 7:8.7 };
+const ORBIT_BAND = { 0:'Low risk band', 1:'Low risk band', 2:'Low risk band',
+                     3:'Intermediate risk', 4:'High risk', 5:'High risk', 6:'High risk', 7:'High risk' };
+
+function calculator(opts) {
+  const state = Object.fromEntries(opts.crits.map(c => [c.key, false]));
+
+  const wrap = document.getElementById(opts.critsEl);
+  opts.crits.forEach(c => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'crit';
+    btn.setAttribute('aria-pressed', 'false');
+    btn.dataset.key = c.key;
+    btn.innerHTML = `
+      <span class="crit-label">
+        <span>${c.label}</span>
+        ${c.sub ? `<span class="crit-sub">${c.sub}</span>` : ''}
+      </span>
+      <span class="pts">+${c.pts}</span>
+    `;
+    btn.addEventListener('click', () => {
+      state[c.key] = !state[c.key];
+      btn.setAttribute('aria-pressed', state[c.key] ? 'true' : 'false');
+      render();
+    });
+    wrap.appendChild(btn);
+  });
+
+  const scoreEl = document.getElementById(opts.scoreEl);
+  const riskEl  = document.getElementById(opts.riskEl);
+  const subEl   = document.getElementById(opts.subEl);
+  const recEl   = opts.recEl ? document.getElementById(opts.recEl) : null;
+
+  function render() {
+    const score = opts.crits.reduce((s, c) => s + (state[c.key] ? c.pts : 0), 0);
+    const risk  = opts.riskFn(score);
+
+    if (scoreEl.textContent !== String(score)) {
+      scoreEl.textContent = score;
+      scoreEl.classList.remove('score-pop');
+      void scoreEl.offsetWidth;
+      scoreEl.classList.add('score-pop');
+    }
+
+    riskEl.innerHTML = `${risk.value.toFixed(1)}<span class="text-ink-mute text-xl font-mono ml-1 font-normal">/100</span>`;
+    subEl.textContent = opts.subFn(score, risk.value);
+
+    if (recEl && opts.recFn) recEl.innerHTML = opts.recFn(score, risk.value, state);
+    if (opts.onChange) opts.onChange(score, risk.value, state);
+  }
+
+  render();
+  return { render };
+}
+
+/* =============================================================
+   Shared anticoagulation state — scores + CrCl + decision
+   ============================================================= */
+const acState = {
+  cha: 0, chaRisk: 0.2, chaSexOnly: false,
+  orbit: 0, orbitRisk: 2.4,
+  age: null, sex: 'male', weight: null, creatinine: null, crcl: null,
+  decision: null,  // 'yes' | 'no' | null
+};
+
+function shouldShowAnticoag() {
+  if (acState.cha === 0) return false;
+  if (acState.cha === 1 && acState.chaSexOnly) return false;
+  return true;
+}
+
+function updateAnticoagVisibility() {
+  const show = shouldShowAnticoag();
+  document.getElementById('ac-panels').classList.toggle('cha-only', !show);
+  document.querySelectorAll('[data-ac-section]').forEach(el => {
+    el.classList.toggle('is-hidden', !show);
+  });
+}
+
+function chaBand(r) {
+  if (r < 2) return 'low';
+  if (r < 5) return 'intermediate';
+  return 'high';
+}
+function orbitBand(s) {
+  if (s <= 2) return 'low';
+  if (s === 3) return 'intermediate';
+  return 'high';
+}
+
+function calculateCrCl() {
+  const { age, sex, weight, creatinine } = acState;
+  if (!age || !weight || !creatinine || age <= 0 || creatinine <= 0) {
+    acState.crcl = null;
+    return null;
+  }
+  const k = sex === 'male' ? 1.23 : 1.04;
+  const crcl = (k * (140 - age) * weight) / creatinine;
+  acState.crcl = crcl > 0 ? crcl : 0;
+  return acState.crcl;
+}
+
+function getApixabanRec() {
+  const { crcl, age, weight, creatinine } = acState;
+  if (crcl === null) return null;
+
+  if (crcl < 15) return {
+    dose: 'Unfractionated heparin',
+    detail: 'CrCl < 15 mL/min. Start UFH until acute renal impairment resolves. If CKD likely prolonged, seek renal team input for off-licence Apixaban 2.5 mg BD.',
+    tone: 'critical',
+  };
+  if (crcl < 30) return {
+    dose: 'Apixaban 2.5 mg BD',
+    detail: 'Reduced dose · CrCl 15–29 mL/min.',
+    tone: 'reduced',
+  };
+  // 2-of-3 BNF reduction criteria
+  const flags = [age >= 80, weight <= 60, creatinine >= 133].filter(Boolean).length;
+  if (flags >= 2) return {
+    dose: 'Apixaban 2.5 mg BD',
+    detail: 'Reduced dose · meets 2 of 3 BNF criteria (age ≥ 80, weight ≤ 60 kg, Cr ≥ 133 μmol/L).',
+    tone: 'reduced',
+  };
+  return {
+    dose: 'Apixaban 5 mg BD',
+    detail: 'Standard dose.',
+    tone: 'standard',
+  };
+}
+
+function renderCrCl() {
+  calculateCrCl();
+  const valueEl = document.getElementById('crcl-value');
+  const doseEl  = document.getElementById('crcl-dose');
+  if (!valueEl || !doseEl) return;
+
+  if (acState.crcl === null) {
+    valueEl.textContent = '—';
+    doseEl.innerHTML = 'Enter values to calculate';
+    doseEl.classList.add('is-empty');
+  } else {
+    valueEl.textContent = Math.round(acState.crcl);
+    const rec = getApixabanRec();
+    doseEl.classList.remove('is-empty');
+    if (rec) {
+      doseEl.innerHTML = `${rec.dose}<span class="detail">${rec.detail}</span>`;
+    }
+  }
+  renderClerkNote();
+}
+
+function renderClerkNote() {
+  const body = document.getElementById('clerk-note-body');
+  if (!body) return;
+
+  const cb = chaBand(acState.chaRisk);
+  const showAC = shouldShowAnticoag();
+
+  let html = '';
+  html += `<p>Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated.</p>`;
+
+  if (!showAC) {
+    // No-AC branch — short and clear.
+    if (acState.cha === 0) {
+      html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 0</strong>, translating to an <strong>annual stroke risk of ${acState.chaRisk.toFixed(1)}%</strong> — a low annual risk.</p>`;
+    } else {
+      html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of 1</strong>, attributable to <em>female sex</em> alone. By guideline this is not an indication for anticoagulation.</p>`;
+    }
+    html += `<p><mark class="ink">Anticoagulation is not indicated</mark> at this time. Reassess as risk factors accrue.</p>`;
+    body.innerHTML = html;
+    return;
+  }
+
+  const ob = orbitBand(acState.orbit);
+  html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of ${acState.cha}</strong>, which translates to an <strong>annual stroke risk of ${acState.chaRisk.toFixed(1)}%</strong> — an ${cb} annual risk.</p>`;
+  html += `<p>If anticoagulated, given the <strong>ORBIT score of ${acState.orbit}</strong>, this translates to an <strong>annual major-bleeding risk of ${acState.orbitRisk.toFixed(1)}%</strong> — a ${ob} risk category.</p>`;
+  if (acState.crcl !== null) {
+    html += `<p>Creatinine clearance (Cockcroft–Gault): <strong>${Math.round(acState.crcl)} mL/min</strong>.</p>`;
+  }
+  html += `<p>Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
+  if (acState.decision === 'yes') {
+    const rec = getApixabanRec();
+    if (rec && rec.tone === 'critical') {
+      html += `<mark class="ink">anticoagulate</mark> this patient. Plan: <strong>${rec.dose}</strong> — ${rec.detail}`;
+    } else if (rec) {
+      html += `<mark class="ink">anticoagulate</mark> this patient with <strong>${rec.dose}</strong>${rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : ''}.`;
+    } else {
+      html += `<mark class="ink">anticoagulate</mark> this patient with <strong>Apixaban 5 mg BD</strong> <em class="text-ink-mute">(enter age, weight &amp; creatinine above to confirm dose).</em>`;
+    }
+  } else if (acState.decision === 'no') {
+    html += `<mark class="ink">NOT anticoagulate</mark> this patient at this time.`;
+  } else {
+    html += `<em class="text-ink-mute">[select anticoagulate / do not anticoagulate above]</em>.`;
+  }
+  html += `</p>`;
+  body.innerHTML = html;
+}
+
+function clerkNoteAsText() {
+  const cb = chaBand(acState.chaRisk);
+  const showAC = shouldShowAnticoag();
+  let t = '';
+  t += `Atrial fibrillation/flutter carries an inherent risk of stroke, for which patients are often under-treated.\n\n`;
+
+  if (!showAC) {
+    if (acState.cha === 0) {
+      t += `This patient has a CHA2DS2-VASc score of 0, translating to an annual stroke risk of ${acState.chaRisk.toFixed(1)}% — a low annual risk.\n\n`;
+    } else {
+      t += `This patient has a CHA2DS2-VASc score of 1, attributable to female sex alone. By guideline this is not an indication for anticoagulation.\n\n`;
+    }
+    t += `Anticoagulation is not indicated at this time. Reassess as risk factors accrue.`;
+    return t;
+  }
+
+  const ob = orbitBand(acState.orbit);
+  t += `This patient has a CHA2DS2-VASc score of ${acState.cha}, which translates to an annual stroke risk of ${acState.chaRisk.toFixed(1)}% — an ${cb} annual risk.\n\n`;
+  t += `If anticoagulated, given the ORBIT score of ${acState.orbit}, this translates to an annual major-bleeding risk of ${acState.orbitRisk.toFixed(1)}% — a ${ob} risk category.\n\n`;
+  if (acState.crcl !== null) t += `Creatinine clearance (Cockcroft-Gault): ${Math.round(acState.crcl)} mL/min.\n\n`;
+  t += `Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
+  if (acState.decision === 'yes') {
+    const rec = getApixabanRec();
+    if (rec && rec.tone === 'critical') {
+      t += `anticoagulate this patient. Plan: ${rec.dose} — ${rec.detail}`;
+    } else if (rec) {
+      t += `anticoagulate this patient with ${rec.dose}` + (rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : '') + '.';
+    } else {
+      t += `anticoagulate this patient with Apixaban 5 mg BD.`;
+    }
+  } else if (acState.decision === 'no') {
+    t += `NOT anticoagulate this patient at this time.`;
+  } else {
+    t += `[anticoagulate / not anticoagulate] this patient.`;
+  }
+  return t;
+}
+
+// CrCl input wiring
+const ageEl  = document.getElementById('crcl-age');
+const wtEl   = document.getElementById('crcl-weight');
+const crEl   = document.getElementById('crcl-cr');
+ageEl.addEventListener('input', e => { acState.age = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
+wtEl .addEventListener('input', e => { acState.weight = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
+crEl .addEventListener('input', e => { acState.creatinine = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
+document.querySelectorAll('.sex-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    acState.sex = btn.dataset.sex;
+    document.querySelectorAll('.sex-btn').forEach(b => {
+      const on = b === btn;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    renderCrCl();
+  });
+});
+
+// Copy clerk note
+document.getElementById('copy-anticoag-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(clerkNoteAsText()).then(() => {
+    const btn = document.getElementById('copy-anticoag-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.style.background = 'var(--ok)';
+    btn.style.borderColor = 'var(--ok)';
+    btn.style.color = 'var(--paper)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 1800);
+  }).catch(() => alert('Copy failed — select the text and copy manually.'));
+});
+
+calculator({
+  crits: CHA, critsEl: 'cha-criteria',
+  scoreEl: 'cha-score', riskEl: 'cha-risk', subEl: 'cha-risk-sub', recEl: 'cha-recommendation',
+  riskFn: (s) => ({ value: CHA_RISK[Math.min(s, 9)] }),
+  subFn: (s, r) => {
+    if (s === 0) return '≈ 1 in 500 patient-years';
+    if (s === 1) return '≈ 1 in 167 patient-years';
+    if (r < 5)   return 'Intermediate annual risk';
+    return 'High annual risk';
+  },
+  recFn: (s, r, state) => {
+    const sexOnly = state && state.sc && !['c','h','a2','d','s2','v','a'].some(k => state[k]);
+    if (s === 0) return `Score <span class="font-mono">0</span> · <mark class="ink">No antithrombotic indicated.</mark> Reassess as risk factors accrue.`;
+    if (s === 1 && sexOnly) return `Score <span class="font-mono">1</span> <span class="text-ink-mute italic">(sex-only)</span> · <mark class="ink">No antithrombotic indicated.</mark> Reassess as risk factors accrue.`;
+    if (s === 1) return `Score <span class="font-mono">1</span> · <mark class="ink">Consider anticoagulation</mark> — males with one non-sex risk factor.`;
+    return `Score <span class="font-mono">${s}</span> · <mark class="ink">Anticoagulation indicated</mark> — DOAC unless mechanical valve or moderate-severe mitral stenosis (then warfarin).`;
+  },
+  onChange: (score, risk, state) => {
+    acState.cha = score;
+    acState.chaRisk = risk;
+    // Sex-only case: score 1 attributable to female sex with no other criteria.
+    const others = ['c','h','a2','d','s2','v','a'].some(k => state[k]);
+    acState.chaSexOnly = state.sc && !others;
+    updateAnticoagVisibility();
+    renderClerkNote();
+  }
+});
+
+calculator({
+  crits: ORBIT, critsEl: 'orbit-criteria',
+  scoreEl: 'orbit-score', riskEl: 'orbit-risk', subEl: 'orbit-risk-sub', recEl: 'orbit-recommendation',
+  riskFn: (s) => ({ value: ORBIT_RISK[Math.min(s, 7)] }),
+  subFn:  (s) => ORBIT_BAND[Math.min(s, 7)],
+  recFn: (s) => {
+    if (s <= 2) return `Score <span class="font-mono">${s}</span> · <mark class="ink">Low bleeding risk.</mark> Anticoagulate per CHA<sub>2</sub>DS<sub>2</sub>-VASc.`;
+    if (s === 3) return `Score <span class="font-mono">3</span> · <mark class="ink">Intermediate risk.</mark> Address modifiable factors (BP, alcohol, NSAIDs, antiplatelets). Do not withhold AC for the score alone.`;
+    return `Score <span class="font-mono">${s}</span> · <mark class="ink">High bleeding risk.</mark> Flag for regular review. A high score is a reason to <em>reduce modifiable risk</em>, not to withhold anticoagulation.`;
+  },
+  onChange: (score, risk) => {
+    acState.orbit = score;
+    acState.orbitRisk = risk;
+    renderClerkNote();
+  }
+});
+
+
+/* =============================================================
+   Rate-control wizard
+   ============================================================= */
+const AGENT_LABEL = {
+  bisoprolol: 'Bisoprolol 2.5 mg PO once daily',
+  verapamil:  'Verapamil 40 mg PO TDS (or MR 120 mg OD)',
+  digoxin:    'Digoxin — oral loading per BNF',
+};
+
+const wizardState = {
+  step: 1,
+  acute: false,         // exclusion-yes → terminal
+  agent: null,          // 'bisoprolol' | 'verapamil' | 'digoxin' — what the patient is on
+  septic: false,        // AF is septic-driven — Digoxin preferred
+  refractory: false,    // HR remains > 110 despite the medication change
+};
+
+// Map wizard step → visible progress segment (4 segs · plan = all done).
+const STEP_TO_SEG = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 };
+
+const wizard = document.getElementById('wizard');
+const stepEls = wizard.querySelectorAll('.wizard-step');
+const segs = wizard.querySelectorAll('.step-dots .seg');
+
+function setStep(n) {
+  wizardState.step = n;
+  stepEls.forEach(el => {
+    el.classList.toggle('is-active', Number(el.dataset.step) === n);
+  });
+  const cur = STEP_TO_SEG[n] || 1;
+  segs.forEach((s, idx) => {
+    const segNum = idx + 1;
+    s.classList.toggle('done',   cur > segNum);
+    s.classList.toggle('active', cur === segNum);
+  });
+  // Always land the progress bar at the same offset from the viewport top.
+  // requestAnimationFrame waits for the step transition to render, so we
+  // measure the bar's true layout position before scrolling.
+  requestAnimationFrame(() => {
+    const dots = document.getElementById('step-dots');
+    if (!dots) return;
+    const dotsTop = dots.getBoundingClientRect().top + window.scrollY;
+    const targetY = Math.max(0, dotsTop - 40);
+    if (Math.abs(window.scrollY - targetY) > 4) {
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+  });
+}
+
+function resetWizard() {
+  wizardState.acute = false;
+  wizardState.agent = null;
+  wizardState.septic = false;
+  wizardState.refractory = false;
+  wizard.querySelectorAll('.check-row').forEach(r => r.setAttribute('aria-checked', 'false'));
+  wizard.querySelectorAll('[data-action="agent"]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  setStep(1);
+}
+
+function renderSuggestion() {
+  const c = document.getElementById('sug-content');
+  const titleEl = document.getElementById('sug-title');
+  const introEl = document.getElementById('sug-intro');
+  if (!c) return;
+  const agent = wizardState.agent;
+  const septic = wizardState.septic;
+  let html = '';
+
+  // Digoxin loading recipe — used in multiple places.
+  const digoxinRecipe = `
+    <ol class="esc-recipe">
+      <li><strong>Digoxin 500 mcg PO stat</strong></li>
+      <li><strong>Digoxin 500 mcg PO 6 hours later</strong> if HR &gt; 110</li>
+      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>
+        <ul class="esc-subrecipe">
+          <li>Normal renal function — start directly</li>
+          <li>Impaired renal function — check digoxin pre-dose level <strong>&lt; 2 ng/mL</strong> before maintenance</li>
+        </ul>
+      </li>
+    </ol>
+  `;
+
+  if (agent === 'bisoprolol' || agent === 'verapamil') {
+    const cap = agent === 'bisoprolol' ? 'Bisoprolol' : 'Verapamil';
+    const upDose = agent === 'bisoprolol' ? '5 mg OD, then 10 mg OD if tolerated' : '80 mg TDS (or MR 240 mg OD)';
+    const combineWarn = agent === 'verapamil'
+      ? '<p class="esc-warn"><strong>Do not</strong> add Bisoprolol — combination contraindicated.</p>'
+      : '';
+    titleEl.textContent = `Patient is on ${cap}.`;
+
+    if (septic) {
+      // Septic — lead with Digoxin, demote uptitration.
+      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is preferred — it doesn't drop BP. Uptitration of ${cap} is a second line option.`;
+      html = `
+        ${combineWarn}
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">Add Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis</span></div>
+              <div class="esc-branch-sub">— BB/CCB drop BP in already-hypotensive septic patients</div>
+            </div>
+          </div>
+          ${digoxinRecipe}
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">Only if SBP comfortably &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
+              <div class="esc-branch-sub">— uptitrate ${cap}</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong> — second-line in sepsis.</p>
+        </div>
+      `;
+    } else {
+      // Not septic — normal logic.
+      introEl.innerHTML = `Two paths. Pick whichever applies, then reassess.`;
+      html = `
+        ${combineWarn}
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">If SBP &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
+              <div class="esc-branch-sub">— uptitrate ${cap}</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.</p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">If ${cap} cannot be uptitrated</div>
+              <div class="esc-branch-sub">— low SBP, side effects, intolerance — add Digoxin loading</div>
+            </div>
+          </div>
+          ${digoxinRecipe}
+        </div>
+      `;
+    }
+  } else if (agent === 'digoxin') {
+    titleEl.textContent = `Patient is on Digoxin.`;
+    if (septic) {
+      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is the appropriate choice — continue and avoid adding BB/CCB unless BP comfortably allows.`;
+      html = `
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">Continue Digoxin — preferred in sepsis</div>
+              <div class="esc-branch-sub">— treat the sepsis, fluid-resuscitate; rate often settles once driver is controlled</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Confirm full loading completed and maintenance dose appropriate for renal function. Reassess after sepsis is treated before considering a second agent.</p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">Only if SBP comfortably &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
+              <div class="esc-branch-sub">— add a second agent (BB or CCB)</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Add <strong>Bisoprolol 2.5 mg OD</strong> (uptitrate as tolerated) <em>or</em> <strong>Verapamil 40 mg TDS</strong> if β-blocker contraindicated. <em>Do not combine bisoprolol with verapamil.</em></p>
+        </div>
+      `;
+    } else {
+      introEl.innerHTML = `Already loaded over 24 hours. Add a second agent — pick whichever applies.`;
+      html = `
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">First choice — Bisoprolol</div>
+              <div class="esc-branch-sub">— if no β-blocker contraindication and SBP &gt; 100</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD as BP tolerates.</p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">Alternative — Verapamil</div>
+              <div class="esc-branch-sub">— if β-blocker contraindicated, SBP &gt; 100</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Start <strong>Verapamil 40 mg TDS</strong> (or MR 120 mg OD). Uptitrate as tolerated. <em>Do not combine with bisoprolol.</em></p>
+        </div>
+      `;
+    }
+  }
+  c.innerHTML = html;
+}
+
+function agentMedicationItems() {
+  const a = wizardState.agent;
+  const septic = wizardState.septic;
+  const items = [];
+
+  // Rate already controlled — just continue current agent, no uptitration.
+  if (!wizardState.refractory) {
+    if (a === 'bisoprolol') items.push({ em: 'Continue Bisoprolol at the current dose', body: 'HR controlled — no uptitration required.' });
+    else if (a === 'verapamil') items.push({ em: 'Continue Verapamil at the current dose', body: 'HR controlled — no uptitration required.' });
+    else if (a === 'digoxin')   items.push({ em: 'Continue Digoxin maintenance', body: 'HR controlled — no additional agent required. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
+    return items;
+  }
+
+  // Rate uncontrolled (refractory checkbox ticked) — escalate.
+  // Sepsis path: lead with Digoxin (BB/CCB drop BP in septic patients).
+  if (septic) {
+    items.push({ em: 'Sepsis flagged — Digoxin preferred', body: 'β-blockers and CCBs further drop BP in already-hypotensive septic patients. Treat sepsis first; rate often settles once the driver is controlled.' });
+    if (a === 'bisoprolol' || a === 'verapamil') {
+      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment). Preferred over uptitrating ' + (a === 'bisoprolol' ? 'Bisoprolol' : 'Verapamil') + ' in sepsis.' });
+      items.push({ em: 'Uptitrate current agent only if SBP comfortably &gt; 100 mmHg', body: 'Second line in sepsis — be cautious of further BP drop.' });
+    } else if (a === 'digoxin') {
+      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as needed', body: 'Already loaded — appropriate choice in sepsis. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
+      items.push({ em: 'Only add a second agent (BB or CCB) if SBP comfortably &gt; 100 mmHg', body: 'Reassess after sepsis is treated before adding Bisoprolol or Verapamil. Do not combine the two.' });
+    }
+  } else {
+    // Non-septic path: standard escalation.
+    if (a === 'bisoprolol') {
+      items.push({ em: 'Increase Bisoprolol up to 10 mg OD if the patient is able to tolerate', body: 'Step up to 5 mg OD, then 10 mg OD as SBP permits (&gt; 100 mmHg).' });
+      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
+    } else if (a === 'verapamil') {
+      items.push({ em: 'Increase Verapamil up to 80 mg TDS (or MR 240 mg OD) if the patient is able to tolerate', body: 'Provided SBP &gt; 100 mmHg.' });
+      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment). <em>Do not</em> combine Verapamil with Bisoprolol.' });
+    } else if (a === 'digoxin') {
+      items.push({ em: 'Add Bisoprolol 2.5 mg OD, uptitrating up to 10 mg OD if tolerated', body: 'First choice if no β-blocker contraindication and SBP &gt; 100. <em>Or</em>, if β-blocker contraindicated, add <strong>Verapamil 40 mg TDS</strong> (uptitrate as tolerated). Do not combine Bisoprolol with Verapamil.' });
+      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as needed', body: 'Already loaded with 500 mcg stat + 500 mcg at 6 h. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
+    }
+  }
+
+  return items;
+}
+
+function buildPlan() {
+  // Branch: acute exclusion.
+  if (wizardState.acute) {
+    return {
+      sections: [{
+        header: 'Acute care · Not for AEC',
+        items: [
+          { em: 'Patient meets exclusion criteria', body: 'Acutely unwell — not for the AEC pathway. Examples: BP &lt; 100/60, HR &lt; 60, LOC, ECG ischaemia, decompensated HF.' },
+          { em: 'DC cardioversion required', body: 'If haemodynamically compromised — proceed to synchronised DC cardioversion as per ALS protocol.' },
+          { em: 'Escalate immediately', body: 'Discuss with the on-call cardiology registrar. Patient requires monitored bed.' },
+        ]
+      }],
+      eyebrow: 'Acute care · Not for AEC',
+      title: 'Escalate · Do not template',
+    };
+  }
+
+  // SECTION 1 — Acute management (workup + meds + AC consideration)
+  const acute = [];
+  acute.push({ em: 'Add on TFTs',                    body: 'Thyroid function — rule out thyrotoxicosis as a precipitant.' });
+  acute.push({ em: 'Aim K<sup>+</sup> 4.0 – 4.5 mmol/L', body: 'Replace if below target.' });
+  acute.push({ em: 'Aim Mg<sup>2+</sup> &gt; 1.0 mmol/L', body: 'Replace if below target — often coexists with hypokalaemia.' });
+  acute.push({ em: 'Treat sepsis or dehydration if present', body: 'Common precipitants for new AF. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without further rate-control escalation.' });
+  agentMedicationItems().forEach(it => acute.push(it));
+  acute.push({ em: 'Consider anticoagulation', body: 'Score CHA<sub>2</sub>DS<sub>2</sub>-VASc and ORBIT (see § II — Anticoagulation below).' });
+  acute.push({ em: 'If the patient deteriorates · Call <strong>2222</strong>', body: 'Drop in BP, drop in conscious level, or signs of end-organ compromise — this is a medical emergency. Put out a <strong>Medical Emergency Call</strong>. Urgent cardiology input required.' });
+
+  // SECTION 2 — Outpatient follow-up (once HR < 110)
+  const outpatient = [
+    { em: 'Outpatient echocardiogram', body: 'Request if a recent one is not available — for structural assessment.' },
+    { em: 'Outpatient 24-hour tape', body: 'To quantify rate control and identify paroxysmal patterns.' },
+    { em: 'Advise patient to make a GP appointment', body: 'To uptitrate rate-control medication if required.' },
+    { em: 'Request outpatient cardiology clinic review', body: 'Send an eCare message to the cardiology secretaries — new-patient referral.' },
+  ];
+
+  const sections = [
+    { header: 'Acute management · Inpatient', items: acute },
+    {
+      header: wizardState.refractory ? 'Outpatient follow-up · once HR is controlled (< 110)' : 'Outpatient follow-up',
+      items: outpatient
+    }
+  ];
+
+  // SECTION 3 — Urgent re-referral (only when refractory)
+  if (wizardState.refractory) {
+    sections.push({
+      header: 'Only if HR remains > 110 despite maximum therapy',
+      items: [{
+        em: 'Urgent re-referral to cardiology',
+        body: 'Re-refer only if HR remains &gt; 110 despite <strong>maximal Digoxin 250 mcg OD</strong> (after full 500 mcg + 500 mcg loading) <strong>and</strong> <strong>Bisoprolol 10 mg OD</strong> (or as much as tolerable). New referral — patient remains in uncontrolled AF despite maximum oral therapy.'
+      }]
+    });
+  }
+
+  return {
+    sections,
+    eyebrow: 'Rate-control plan · AF · AEC pathway',
+    title: 'Plan — paste into the notes',
+    footnote: 'If the patient is not a candidate for cardioversion or ablation (frail, cannot undergo GA, permanent AF without rhythm-control benefit) — consider GP follow-up <em>only</em> instead of an outpatient cardiology clinic referral.'
+  };
+}
+
+function renderPlan() {
+  const plan = buildPlan();
+  document.getElementById('plan-header-eyebrow').textContent = plan.eyebrow;
+  document.getElementById('plan-header-title').textContent = plan.title;
+  const ol = document.getElementById('plan-list');
+  ol.innerHTML = '';
+
+  let idx = 0;
+  plan.sections.forEach((section, sIdx) => {
+    // Section header row
+    const headerLi = document.createElement('li');
+    headerLi.className = 'plan-section-head' + (sIdx === plan.sections.length - 1 && wizardState.refractory ? ' is-urgent' : '');
+    headerLi.innerHTML = `<span class="plan-section-label">§ ${sIdx + 1} · ${section.header}</span>`;
+    ol.appendChild(headerLi);
+
+    section.items.forEach(it => {
+      idx++;
+      const li = document.createElement('li');
+      const n = String(idx).padStart(2, '0');
+      li.innerHTML = `<span class="pn">${n}</span><span class="pt"><span class="em">${it.em}.</span> ${it.body}</span>`;
+      ol.appendChild(li);
+    });
+  });
+
+  // Footnote (clinician consideration).
+  const fnEl = document.getElementById('plan-footnote');
+  if (fnEl) {
+    if (plan.footnote) {
+      fnEl.innerHTML = `<span class="fn-label">Consider · </span>${plan.footnote}`;
+      fnEl.style.display = '';
+    } else {
+      fnEl.style.display = 'none';
+    }
+  }
+}
+
+function planAsText() {
+  const plan = buildPlan();
+  const strip = (s) => s.replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();
+
+  let idx = 0;
+  const sectionsTxt = plan.sections.map(section => {
+    const lines = section.items.map(it => {
+      idx++;
+      return `${String(idx).padStart(2,'0')}.  ${strip(it.em)}.  ${strip(it.body)}`;
+    });
+    const headerLine = `── ${strip(section.header).toUpperCase()} ──`;
+    return `${headerLine}\n${lines.join('\n')}`;
+  });
+
+  const fn = plan.footnote ? `\n\nConsider: ${strip(plan.footnote)}` : '';
+  return `${plan.title.toUpperCase()}\n${plan.eyebrow}\n\n${sectionsTxt.join('\n\n')}${fn}\n\nReference: West Suffolk AF/AEC protocol, Nov 2020.`;
+}
+
+// Wire up all wizard buttons.
+wizard.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-action]');
+  if (!t) return;
+  const action = t.dataset.action;
+
+  switch (action) {
+    case 'exclusion-yes':
+      wizardState.acute = true;
+      renderPlan();
+      setStep(5);
+      break;
+    case 'exclusion-no':
+      wizardState.acute = false;
+      setStep(2);
+      break;
+    case 'next':
+      setStep(wizardState.step + 1);
+      break;
+    case 'back':
+      if (wizardState.step > 1) setStep(wizardState.step - 1);
+      break;
+    case 'agent':
+      wizardState.agent = t.dataset.agent;
+      document.querySelectorAll('[data-action="agent"]').forEach(b => {
+        b.setAttribute('aria-pressed', b === t ? 'true' : 'false');
+      });
+      break;
+    case 'refractory':
+      wizardState.refractory = !wizardState.refractory;
+      t.setAttribute('aria-checked', wizardState.refractory ? 'true' : 'false');
+      break;
+    case 'septic':
+      wizardState.septic = !wizardState.septic;
+      t.setAttribute('aria-checked', wizardState.septic ? 'true' : 'false');
+      break;
+    case 'step3-continue':
+      if (!wizardState.agent) return;  // must pick an agent first
+      if (wizardState.refractory) {
+        renderSuggestion();
+        setStep(4);
+      } else {
+        renderPlan();
+        setStep(5);
+      }
+      break;
+    case 'generate':
+      renderPlan();
+      setStep(5);
+      break;
+    case 'restart':
+      resetWizard();
+      break;
+    case 'copy':
+      navigator.clipboard.writeText(planAsText()).then(() => {
+        const btn = document.getElementById('copy-btn');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.style.background = 'var(--ok)';
+        btn.style.borderColor = 'var(--ok)';
+        btn.style.color = 'var(--paper)';
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }, 1800);
+      }).catch(() => {
+        alert('Copy failed — please select the plan and copy manually.');
+      });
+      break;
+  }
+});
+
+
+/* =============================================================
+   Scroll progress + reveal + minimap
+   ============================================================= */
+const progress = document.getElementById('progress');
+const minimap = document.getElementById('minimap');
+
+function onScroll() {
+  const scrolled = window.scrollY;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? (scrolled / max) * 100 : 0;
+  progress.style.width = pct + '%';
+  if (scrolled > window.innerHeight * 0.55) minimap.classList.add('show');
+  else minimap.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('is-visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { rootMargin: '0px 0px -80px 0px', threshold: 0.1 });
+document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+
+const sectionIds = ['rate', 'anticoag'];
+const sections = sectionIds.map(id => document.getElementById(id));
+const links = Array.from(document.querySelectorAll('.minimap a'));
+
+const sectionIO = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      links.forEach(a => a.classList.toggle('is-active', a.dataset.target === id));
+    }
+  });
+}, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+sections.forEach(s => s && sectionIO.observe(s));
+
+// Reset wizard on entering rate section directly via URL fresh load? Keep state; user friendly.
 </script>
 </body>
 </html>
