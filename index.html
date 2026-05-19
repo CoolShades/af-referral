@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AF Referral Decision Guide</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --amber: #d29922;
+    --red: #f85149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+  }
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 0.85rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-dot.green { background: var(--green); }
+  .legend-dot.amber { background: var(--amber); }
+  .legend-dot.red { background: var(--red); }
+  .legend-dot.accent { background: var(--accent); }
+  .legend-dot.gray { background: var(--muted); }
+  .diagram-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+  .diagram-wrapper svg { max-width: 100%; height: auto; }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .card h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .card .stat {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--amber);
+  }
+  .card .stat.green { color: var(--green); }
+  .card .stat.red { color: var(--red); }
+  .card p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+  .footer {
+    text-align: center;
+    padding: 24px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.3rem; }
+    .diagram-wrapper { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>AF Referral Decision Guide</h1>
+  <p>Based on the April 2026 Cardiology Referrals Audit &mdash; West Suffolk NHS Foundation Trust</p>
+</div>
+
+<div class="container">
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot green"></span> Template (auto-reply)</span>
+    <span class="legend-item"><span class="legend-dot amber"></span> Borderline &mdash; brief addendum</span>
+    <span class="legend-item"><span class="legend-dot red"></span> Cardiology review required</span>
+    <span class="legend-item"><span class="legend-dot accent"></span> Decision node</span>
+    <span class="legend-item"><span class="legend-dot gray"></span> Outcome</span>
+  </div>
+
+  <div class="diagram-wrapper">
+    <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1f6feb', 'primaryTextColor': '#fff', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff', 'secondaryColor': '#161b22', 'tertiaryColor': '#0d1117', 'fontSize': '14px' }}}%%
+graph TD
+    START([AF referral received])
+    WORKUP{"Basic workup done?<br/>ECG, FBC, U&E, TFTs"}
+    ACUTE{"Patient acutely unwell?<br/>Haemodynamically unstable<br/>FAST AF / ACS"}
+    TRIAGE{"Referral question"}
+
+    START --> WORKUP
+    WORKUP -->|Not yet| DO_WORKUP[Complete basic workup]
+    WORKUP -->|Yes| ACUTE
+    ACUTE -->|Yes| URGENT[Urgent cardiology review]
+    ACUTE -->|No| TRIAGE
+
+    TRIAGE -->|Rate control| RATE_DEC{Appropriate for template?}
+    TRIAGE -->|Rhythm strategy| RHYTHM_DEC{Appropriate for template?}
+    TRIAGE -->|Anticoagulation| AC_DEC{Appropriate for template?}
+    TRIAGE -->|Other / complex| REVIEW_COMPLEX[Cardiology review]
+
+    RATE_DEC -->|Paroxysmal AF<br/>targets & agent choice<br/>no-action cases| T01[Template 01 - Rate control]
+    RATE_DEC -->|Symptomatic<br/>tachy-induced CM| RATE_REVIEW[Cardiology review]
+
+    RHYTHM_DEC -->|New AF strategy<br/>DCCV timing<br/>outpatient workup| T02[Template 02 - Rate vs rhythm]
+    RHYTHM_DEC -->|Structural disease<br/>recurrent despite drugs| RHYTHM_REVIEW[Cardiology review]
+
+    AC_DEC -->|CHA2DS2-VASc query<br/>DOAC initiation| T03[Template 03 - Anticoagulation]
+    AC_DEC -->|Bleed / renal failure<br/>mechanical valve| AC_REVIEW[Cardiology review]
+
+    T01 --> AUTO[Auto-reply sent]
+    T02 --> AUTO
+    T03 --> AUTO
+    DO_WORKUP --> AUTO
+
+    AUTO -.->|47 of 92 deflectable| STATS[51% of AF referrals<br/>answered by 3 templates]
+    URGENT --> REVIEW
+    RATE_REVIEW --> REVIEW
+    RHYTHM_REVIEW --> REVIEW
+    AC_REVIEW --> REVIEW
+    REVIEW_COMPLEX -.->|45 of 92 need input| STATS2[49% warrant cardiology review]
+
+    style START fill:#1f6feb,color:#fff,stroke:#58a6ff
+    style URGENT fill:#f85149,color:#fff,stroke:#f85149
+    style T01 fill:#0d5320,color:#fff,stroke:#3fb950
+    style T02 fill:#0d5320,color:#fff,stroke:#3fb950
+    style T03 fill:#0d5320,color:#fff,stroke:#3fb950
+    style AUTO fill:#0d5320,color:#fff,stroke:#3fb950
+    style RATE_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
+    style RHYTHM_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
+    style AC_REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
+    style REVIEW_COMPLEX fill:#7a1f1f,color:#fff,stroke:#f85149
+    style REVIEW fill:#7a1f1f,color:#fff,stroke:#f85149
+    style DO_WORKUP fill:#21262d,color:#8b949e,stroke:#30363d
+    </pre>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>AF referral volume</h3>
+      <div class="stat">27.3%</div>
+      <p>of all April referrals were AF-related &mdash; 92 of 337 audited.</p>
+    </div>
+    <div class="card">
+      <h3>Inappropriate rate</h3>
+      <div class="stat red">52.2%</div>
+      <p>of AF referrals rated inappropriate &mdash; 48 of 92.</p>
+    </div>
+    <div class="card">
+      <h3>Template-deflectable</h3>
+      <div class="stat green">51%</div>
+      <p>47 AF referrals answerable by one of three templated replies.</p>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Template 01 &mdash; Rate control</h3>
+      <div class="stat">26%</div>
+      <p>of AF referrals. Targets, agent choice, paroxysmal-AF-no-action. Treat the precipitant &mdash; AF self-reverts.</p>
+    </div>
+    <div class="card">
+      <h3>Template 02 &mdash; Rate vs rhythm / DCCV</h3>
+      <div class="stat">18%</div>
+      <p>Strategy choice, DCCV timing &amp; booking, new-AF outpatient workup. Refer to DCCV nurse where appropriate.</p>
+    </div>
+    <div class="card">
+      <h3>Template 03 &mdash; Anticoagulation</h3>
+      <div class="stat">7%</div>
+      <p>CHA<sub>2</sub>DS<sub>2</sub>-VASc scoring &amp; DOAC initiation. Referrer acts on result &mdash; cardiology sign-off not required.</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Based on <strong>The Cardiology Audit &mdash; May 2026</strong> (West Suffolk NHS Foundation Trust)<br>
+  337 referrals audited April 2026 &middot; 132 rated inappropriate &middot; 47 answerable by three templates</p>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+</body>
+</html>
