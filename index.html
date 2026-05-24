@@ -256,6 +256,137 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* Wizard shell — fixed-viewport modes.
+
+     mode-intro (step 1): editorial strip header + scrollable body
+                          + Yes/No nav pinned bottom. Full viewport.
+     mode-shell (2-4):    thin chapter strip + scrollable body
+                          + Back/Next pinned bottom. Full viewport.
+     mode-plan (step 5):  no fixed shell — page flows naturally. */
+  .wizard-strip {
+    display: none;
+  }
+  .wizard.mode-intro, .wizard.mode-shell {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    padding: 24px clamp(16px, 5vw, 64px) 0;
+    box-sizing: border-box;
+  }
+  .wizard.mode-intro .wizard-strip,
+  .wizard.mode-shell .wizard-strip {
+    display: block;
+    flex-shrink: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 18px;
+    transition: padding 320ms ease;
+  }
+  .wizard.mode-intro .wizard-strip .strip-full { display: block; max-width: 880px; margin: 0 auto; }
+  .wizard.mode-intro .wizard-strip .strip-mini { display: none; }
+  .wizard.mode-shell .wizard-strip .strip-full { display: none; }
+  .wizard.mode-shell .wizard-strip .strip-mini {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .wizard-strip .strip-mini .label {
+    font-family: 'Newsreader', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .wizard-strip .strip-mini .sublabel {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .wizard.mode-intro .step-dots,
+  .wizard.mode-shell .step-dots {
+    flex-shrink: 0;
+    max-width: 880px;
+    margin: 0 auto 18px;
+    width: 100%;
+  }
+
+  .wizard.mode-intro .wizard-step.is-active,
+  .wizard.mode-shell .wizard-step.is-active {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 880px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .wizard.mode-intro .step-header,
+  .wizard.mode-shell .step-header { flex-shrink: 0; }
+  .wizard.mode-intro .step-body,
+  .wizard.mode-shell .step-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 6px;
+    margin-right: -6px;
+  }
+  .wizard.mode-intro .step-nav,
+  .wizard.mode-shell .step-nav {
+    flex-shrink: 0;
+    padding-top: 16px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule);
+    margin-top: 16px;
+    background: var(--paper-2);
+  }
+
+  /* Step 1's nav is the Yes/No choice grid — keep its existing grid layout. */
+  .wizard.mode-intro .step-nav.choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Polish the scrollbar so the internal scroll feels editorial, not OS. */
+  .wizard.mode-intro .step-body,
+  .wizard.mode-shell .step-body { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
+  .wizard.mode-intro .step-body::-webkit-scrollbar,
+  .wizard.mode-shell .step-body::-webkit-scrollbar { width: 6px; }
+  .wizard.mode-intro .step-body::-webkit-scrollbar-thumb,
+  .wizard.mode-shell .step-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+  /* Hide the section's outer editorial heading whenever the wizard is in
+     fixed-shell mode — its content is captured by the strip. */
+  .wizard-section-heading {
+    transition: opacity 280ms ease, max-height 320ms ease, margin 320ms ease;
+    overflow: hidden;
+  }
+  body.wizard-shell-active .wizard-section-heading {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    pointer-events: none;
+  }
+  body.wizard-shell-full #rate > .relative {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  /* On narrow screens, force the thin strip even on step 1 — the full
+     editorial heading would otherwise eat too much vertical space. */
+  @media (max-width: 640px) {
+    .wizard.mode-intro .wizard-strip .strip-full { display: none; }
+    .wizard.mode-intro .wizard-strip .strip-mini { display: flex; }
+    .wizard.mode-intro .step-nav.choice-grid { grid-template-columns: 1fr; }
+  }
+
   /* Progress dots. */
   .step-dots {
     display: flex; align-items: center; gap: 10px;
@@ -1109,7 +1240,7 @@
   <div class="section-numeral">I</div>
 
   <div class="relative px-6 md:px-16 pt-24 md:pt-32 pb-28">
-    <div class="grid md:grid-cols-12 gap-8 mb-16 max-w-5xl mx-auto">
+    <div class="wizard-section-heading grid md:grid-cols-12 gap-8 mb-16 max-w-5xl mx-auto">
       <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ I</div></div>
       <div class="md:col-span-10">
         <div class="eyebrow mb-4" data-reveal>Rate control · The trust AEC protocol</div>
@@ -1125,6 +1256,21 @@
     <!-- WIZARD -->
     <div class="wizard" id="wizard">
 
+      <!-- Editorial strip: full on step 1, thin chapter label on steps 2-4. -->
+      <div class="wizard-strip">
+        <div class="strip-full">
+          <div class="eyebrow mb-2">§ I · Rate control · The trust AEC protocol</div>
+          <h2 class="font-serif text-[clamp(1.8rem,4vw,3rem)] leading-[1] tracking-[-0.02em] text-ink">
+            Let's walk through it<span class="text-accent">.</span>
+          </h2>
+        </div>
+        <div class="strip-mini">
+          <span class="label">§ I · Rate control</span>
+          <span class="sublabel">trust AEC protocol</span>
+        </div>
+      </div>
+
+
       <!-- progress bar -->
       <div class="step-dots mb-10" id="step-dots" data-reveal>
         <span class="seg" data-i="1"></span>
@@ -1135,19 +1281,23 @@
 
       <!-- STEP 1 — Exclusions -->
       <div class="wizard-step is-active" data-step="1">
-        <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
-        <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
+        <div class="step-header">
+          <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
+          <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
+        </div>
 
-        <ul class="exc-list">
-          <li>Systolic BP &lt; 100/60 mmHg</li>
-          <li>Heart rate &lt; 60 bpm</li>
-          <li>Loss of consciousness</li>
-          <li>ECG suggestive of acute ischaemia</li>
-          <li>Evidence of decompensated heart failure</li>
-        </ul>
+        <div class="step-body">
+          <ul class="exc-list">
+            <li>Systolic BP &lt; 100/60 mmHg</li>
+            <li>Heart rate &lt; 60 bpm</li>
+            <li>Loss of consciousness</li>
+            <li>ECG suggestive of acute ischaemia</li>
+            <li>Evidence of decompensated heart failure</li>
+          </ul>
+        </div>
 
-        <div class="grid md:grid-cols-2 gap-4 mt-8">
+        <div class="step-nav choice-grid">
           <button class="choice danger" data-action="exclusion-yes">
             <span>
               <span class="lbl text-accent">Yes — at least one</span>
@@ -1167,10 +1317,13 @@
 
       <!-- STEP 2 — Pre-treatment workup -->
       <div class="wizard-step" data-step="2">
-        <div class="eyebrow mb-4">Step 02 of 04 · Before you treat</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">Send the baseline workup.</h3>
-        <p class="body-md text-ink-mid mb-8">Send these — and identify the driver. Reversible precipitants are behind a lot of new AF, and fixing the driver alone often lets the patient self-revert without further rate control.</p>
+        <div class="step-header">
+          <div class="eyebrow mb-4">Step 02 of 04 · Before you treat</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">Send the baseline workup.</h3>
+          <p class="body-md text-ink-mid mb-8">Send these — and identify the driver. Reversible precipitants are behind a lot of new AF, and fixing the driver alone often lets the patient self-revert without further rate control.</p>
+        </div>
 
+        <div class="step-body">
         <div class="grid gap-3 mb-2">
           <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
             <span class="display-number text-3xl italic text-accent font-light">a</span>
@@ -1209,8 +1362,9 @@
             </div>
           </div>
         </div>
+        </div>
 
-        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+        <div class="step-nav flex items-center justify-between">
           <button class="nav-btn" data-action="back">← Back</button>
           <button class="nav-btn primary" data-action="next">Workup in hand · Continue →</button>
         </div>
@@ -1218,10 +1372,13 @@
 
       <!-- STEP 3 — What is the patient on? + reassess checkbox -->
       <div class="wizard-step" data-step="3">
-        <div class="eyebrow mb-4">Step 03 of 04 · Current rate-control agent</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">What is the patient on?</h3>
-        <p class="body-md text-ink-mid mb-8">Pick whichever agent the patient is currently taking (or has just been started on).</p>
+        <div class="step-header">
+          <div class="eyebrow mb-4">Step 03 of 04 · Current rate-control agent</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">What is the patient on?</h3>
+          <p class="body-md text-ink-mid mb-8">Pick whichever agent the patient is currently taking (or has just been started on).</p>
+        </div>
 
+        <div class="step-body">
         <div class="grid gap-3">
           <button class="agent" data-action="agent" data-agent="bisoprolol" aria-pressed="false">
             <span class="num">01</span>
@@ -1265,8 +1422,9 @@
             <span class="sub">Tick if uncontrolled — we'll suggest how to escalate. Leave unticked if the rate is already controlled.</span>
           </span>
         </button>
+        </div>
 
-        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+        <div class="step-nav flex items-center justify-between">
           <button class="nav-btn" data-action="back">← Back</button>
           <button class="nav-btn primary" data-action="step3-continue">Continue →</button>
         </div>
@@ -1274,13 +1432,17 @@
 
       <!-- STEP 4 — Suggested medication change (only shown if refractory checked) -->
       <div class="wizard-step" data-step="4">
-        <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
-        <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
+        <div class="step-header">
+          <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
+          <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
+        </div>
 
-        <div class="esc-grid" id="sug-content"></div>
+        <div class="step-body">
+          <div class="esc-grid" id="sug-content"></div>
+        </div>
 
-        <div class="flex items-center justify-between mt-10 pt-6 hairline">
+        <div class="step-nav flex items-center justify-between">
           <button class="nav-btn" data-action="back">← Back</button>
           <button class="nav-btn primary" data-action="generate">Generate plan →</button>
         </div>
@@ -1914,6 +2076,21 @@ const wizard = document.getElementById('wizard');
 const stepEls = wizard.querySelectorAll('.wizard-step');
 const segs = wizard.querySelectorAll('.step-dots .seg');
 
+// Step → layout mode. Intro: editorial heading inside shell.
+// Shell: thin strip, working content. Plan: breaks out, natural flow.
+const STEP_MODE = { 1: 'mode-intro', 2: 'mode-shell', 3: 'mode-shell', 4: 'mode-shell', 5: 'mode-plan' };
+
+function applyWizardMode(n) {
+  const mode = STEP_MODE[n] || 'mode-intro';
+  wizard.classList.remove('mode-intro', 'mode-shell', 'mode-plan');
+  wizard.classList.add(mode);
+  // wizard-shell-active stays on every step so the outer editorial heading
+  // doesn't re-appear at step 5. wizard-shell-full only on the viewport-locked
+  // modes — toggled off in plan so the section's natural padding returns.
+  document.body.classList.add('wizard-shell-active');
+  document.body.classList.toggle('wizard-shell-full', mode !== 'mode-plan');
+}
+
 function setStep(n) {
   wizardState.step = n;
   stepEls.forEach(el => {
@@ -1925,18 +2102,7 @@ function setStep(n) {
     s.classList.toggle('done',   cur > segNum);
     s.classList.toggle('active', cur === segNum);
   });
-  // Always land the progress bar at the same offset from the viewport top.
-  // requestAnimationFrame waits for the step transition to render, so we
-  // measure the bar's true layout position before scrolling.
-  requestAnimationFrame(() => {
-    const dots = document.getElementById('step-dots');
-    if (!dots) return;
-    const dotsTop = dots.getBoundingClientRect().top + window.scrollY;
-    const targetY = Math.max(0, dotsTop - 40);
-    if (Math.abs(window.scrollY - targetY) > 4) {
-      window.scrollTo({ top: targetY, behavior: 'smooth' });
-    }
-  });
+  applyWizardMode(n);
 }
 
 function resetWizard() {
@@ -2393,6 +2559,9 @@ wizard.addEventListener('click', (e) => {
   }
 });
 
+// Initial mode (step 1 is is-active in HTML; set the shell class to match).
+applyWizardMode(1);
+
 
 /* =============================================================
    Scroll progress + reveal + minimap
@@ -2410,73 +2579,6 @@ function onScroll() {
 }
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
-
-/* =============================================================
-   Directional soft-snap at each section boundary.
-   Only triggers on downward scrolls. At each boundary:
-   - If less than half of the next section is visible → bounce BACK
-     to the current section's end (you haven't committed yet).
-   - If more than half of the next section is visible → bounce FORWARD
-     to the next section's start (you've committed; finish the move).
-   Scrolling UP is never interrupted.
-   ============================================================= */
-(() => {
-  const sectionA = document.querySelector('.hero');
-  const sectionB = document.getElementById('rate');
-  const sectionC = document.getElementById('anticoag');
-  if (!sectionA || !sectionB || !sectionC) return;
-  const boundaries = [
-    { from: sectionA, to: sectionB, forwardOffset: 80 },  // land past rate's top padding so "Let's walk through it" sits below the top edge
-    { from: sectionB, to: sectionC, forwardOffset: 80 },  // same treatment for the anticoag eyebrow
-  ];
-
-  let lastY = window.scrollY;
-  let snapTimer = null;
-  let snapping = false;
-
-  function commitSnap(targetY, anchorY) {
-    snapTimer = setTimeout(() => {
-      if (Math.abs(window.scrollY - anchorY) < 4 && !snapping) {
-        snapping = true;
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
-        setTimeout(() => { snapping = false; lastY = window.scrollY; }, 700);
-      }
-    }, 130);
-  }
-
-  function maybeSnap() {
-    if (snapping) return;
-    const y = window.scrollY;
-    const going = y - lastY;
-    lastY = y;
-    if (going === 0) return;  // ignore non-scroll events (programmatic etc.)
-
-    const V = window.innerHeight;
-    for (const { to, forwardOffset } of boundaries) {
-      const toTop = to.offsetTop;
-      const fromEnd = toTop - V;
-      const half    = toTop - V / 2;
-      const forwardTarget = toTop + (forwardOffset || 0);
-      // Shrunk snap-back zone (50% of half-viewport) so back-snap is less
-      // aggressive — leaves a neutral zone in the middle.
-      const backUpper = fromEnd + (half - fromEnd) * 0.5;
-
-      if (y > fromEnd + 8 && y < backUpper) {
-        // Very close to fromEnd — bounce back to current section's end
-        clearTimeout(snapTimer);
-        commitSnap(fromEnd, y);
-        return;
-      }
-      if (y >= half && y < forwardTarget - 8) {
-        // > 50% of next section visible — bounce forward into next section
-        clearTimeout(snapTimer);
-        commitSnap(forwardTarget, y);
-        return;
-      }
-    }
-  }
-  window.addEventListener('scroll', maybeSnap, { passive: true });
-})();
 
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
@@ -2510,16 +2612,33 @@ sections.forEach(s => s && sectionIO.observe(s));
    correct it — visible flicker.
    ============================================================= */
 const SCROLL_OFFSETS = { rate: 80, anticoag: 80 };
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const targetY = el.offsetTop + (SCROLL_OFFSETS[id] || 0);
+  window.scrollTo({ top: targetY, behavior: 'smooth' });
+  history.replaceState(null, '', '#' + id);
+}
 document.querySelectorAll('a[data-target]').forEach(a => {
   a.addEventListener('click', (e) => {
     const id = a.dataset.target;
-    const el = document.getElementById(id);
-    if (!el) return;
+    if (!document.getElementById(id)) return;
     e.preventDefault();
-    const targetY = el.offsetTop + (SCROLL_OFFSETS[id] || 0);
-    window.scrollTo({ top: targetY, behavior: 'smooth' });
-    history.replaceState(null, '', '#' + id);
+    scrollToSection(id);
   });
+});
+
+/* Ctrl/Cmd + 1 / 2 — jump to chapter. */
+const SHORTCUT_TARGETS = { '1': 'rate', '2': 'anticoag' };
+window.addEventListener('keydown', (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+  const target = SHORTCUT_TARGETS[e.key];
+  if (!target) return;
+  // Don't steal the keystroke from inputs (e.g. CrCl number fields).
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  e.preventDefault();
+  scrollToSection(target);
 });
 </script>
 </body>
