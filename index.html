@@ -2073,7 +2073,7 @@
         <h3 class="font-serif text-2xl md:text-3xl text-ink font-medium tracking-[-0.01em] mb-2">
           Creatinine clearance <span class="text-ink-mute font-normal italic" id="crcl-title-suffix">— Cockcroft–Gault</span>
         </h3>
-        <p class="body-md text-ink-mid mb-6 max-w-2xl">
+        <p class="body-md text-ink-mid mb-6">
           For Apixaban dose adjustment. Standard dose is 5 mg BD; reduce to 2.5 mg BD if CrCl 15 – 29 mL/min, or if 2 of 3 of: age ≥ 80 · weight ≤ 60 kg · creatinine ≥ 133 μmol/L.
         </p>
 
@@ -2506,8 +2506,9 @@ function renderClerkNote() {
   if (acState.bmi !== null && acState.bmi > 40) {
     html += `<p>Cockcroft–Gault is unreliable at BMI > 40 — calculated CrCl not used for dose decisions.</p>`;
   } else if (acState.crcl !== null) {
+    const label = acState.weightMode === 'adjusted' ? 'Cockcroft–Gault, adjusted body weight' : 'Cockcroft–Gault';
     const qual = acState.crcl < 15 ? ' &mdash; severe renal impairment' : '';
-    html += `<p>Creatinine clearance (Cockcroft–Gault): <strong>${Math.round(acState.crcl)} mL/min</strong>${qual}.</p>`;
+    html += `<p>Creatinine clearance (${label}): <strong>${Math.round(acState.crcl)} mL/min</strong>${qual}.</p>`;
   }
   html += `<p>Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
   if (acState.decision === 'yes') {
@@ -2559,8 +2560,9 @@ function clerkNoteAsText() {
   if (acState.bmi !== null && acState.bmi > 40) {
     t += `Cockcroft-Gault is unreliable at BMI > 40 — calculated CrCl not used for dose decisions.\n\n`;
   } else if (acState.crcl !== null) {
+    const label = acState.weightMode === 'adjusted' ? 'Cockcroft-Gault, adjusted body weight' : 'Cockcroft-Gault';
     const qual = acState.crcl < 15 ? ' — severe renal impairment' : '';
-    t += `Creatinine clearance (Cockcroft-Gault): ${Math.round(acState.crcl)} mL/min${qual}.\n\n`;
+    t += `Creatinine clearance (${label}): ${Math.round(acState.crcl)} mL/min${qual}.\n\n`;
   }
   t += `Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
   if (acState.decision === 'yes') {
