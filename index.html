@@ -2071,7 +2071,7 @@
       <div class="md:col-span-2"><div class="eyebrow">03 · Renal function</div></div>
       <div class="md:col-span-10">
         <h3 class="font-serif text-2xl md:text-3xl text-ink font-medium tracking-[-0.01em] mb-2">
-          Creatinine clearance <span class="text-ink-mute font-normal italic">— Cockcroft–Gault</span>
+          Creatinine clearance <span class="text-ink-mute font-normal italic" id="crcl-title-suffix">— Cockcroft–Gault</span>
         </h3>
         <p class="body-md text-ink-mid mb-6 max-w-2xl">
           For Apixaban dose adjustment. Standard dose is 5 mg BD; reduce to 2.5 mg BD if CrCl 15 – 29 mL/min, or if 2 of 3 of: age ≥ 80 · weight ≤ 60 kg · creatinine ≥ 133 μmol/L.
@@ -2438,7 +2438,16 @@ function renderCrCl() {
   const valueEl = document.getElementById('crcl-value');
   const doseEl  = document.getElementById('crcl-dose');
   const fnEl    = document.getElementById('crcl-footnote');
+  const titleEl = document.getElementById('crcl-title-suffix');
   if (!valueEl || !doseEl) return;
+
+  // Section title flips to "(Adjusted)" while AjBW is in use — quick
+  // visual cue that the obesity correction is active.
+  if (titleEl) {
+    titleEl.textContent = acState.weightMode === 'adjusted'
+      ? '— Cockcroft–Gault (Adjusted)'
+      : '— Cockcroft–Gault';
+  }
 
   if (acState.crcl === null) {
     valueEl.textContent = '—';
