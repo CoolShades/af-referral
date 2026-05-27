@@ -1677,6 +1677,45 @@
     .back-home { font-size: 10px; }
   }
 
+  /* Version-trigger button in the hero footer — inline mono tag that
+     looks like text but opens the version-history modal on click. */
+  .version-trigger {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: var(--ink-mute);
+    cursor: pointer;
+    transition: color 220ms ease;
+  }
+  .version-trigger:hover { color: var(--ink); }
+  .version-trigger:focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+
+  /* Version-history entry styling inside the modal. */
+  .version-entry { margin-bottom: 28px; }
+  .version-entry:last-of-type { margin-bottom: 32px; }
+  .version-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .version-list {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-mid);
+  }
+  .version-list li { margin: 0; }
+  .version-list li + li { margin-top: 6px; }
+
   /* Clinical-disclaimer modal — overlays everything, must be acknowledged
      before entering either chapter. Native <dialog> would also work but
      keeping it as a div for animation control and the dim backdrop. */
@@ -1795,8 +1834,9 @@
 
     </div>
 
-    <div class="hairline mt-10 pt-6 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute whitespace-nowrap overflow-hidden text-ellipsis">
-      West Suffolk Hospital · Cardiology Department
+    <div class="hairline mt-10 pt-6 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute flex items-center justify-between gap-4 whitespace-nowrap">
+      <span class="overflow-hidden text-ellipsis">West Suffolk Hospital · Cardiology Department</span>
+      <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.0.0</button>
     </div>
   </div>
 </header>
@@ -2321,6 +2361,30 @@
       It is a <em>guide</em> — not a substitute for clinical judgement. The clinician using this tool retains full responsibility for the care of their patient, and any recommendation here should be cross-checked against the patient&rsquo;s complete clinical picture.
     </p>
     <button id="disclaimer-ack" type="button" class="nav-btn primary">I Understand.</button>
+  </div>
+</div>
+
+<!-- Version-history modal: triggered from the v1.0.0 button in the hero
+     footer. Shares the .disclaimer-modal styling. -->
+<div id="version-modal" class="disclaimer-modal" hidden aria-hidden="true">
+  <div class="disclaimer-modal-backdrop" data-action="version-close"></div>
+  <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="version-heading">
+    <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">Version history</div>
+    <h2 id="version-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-5">What&rsquo;s new.</h2>
+
+    <div class="version-entry">
+      <div class="version-tag">v1.0.0 — 27 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Initial release.</p>
+      <ul class="version-list">
+        <li>25-flow rate-control wizard following the West Suffolk AEC AF protocol — acute exclusion, septic/hypovolaemic flag, refractory escalation, and a paste-ready clerk-note plan.</li>
+        <li>CHA<sub>2</sub>DS<sub>2</sub>-VASc and ORBIT scoring with band-aware stroke / bleed risk framing and ×-baseline multipliers.</li>
+        <li>Cockcroft–Gault CrCl calculator with optional height-driven IBW / AjBW switching for obesity, BMI &gt; 40 pharmacist flag, and CrCl &lt; 15 nephrology referral.</li>
+        <li>Apixaban dose redacted until CrCl is confirmed — no risky default leaks into the clerk note.</li>
+        <li>Transparency &ldquo;How this is calculated&rdquo; expander on every calculator and a clinical-judgement disclaimer on entry into each chapter.</li>
+      </ul>
+    </div>
+
+    <button id="version-close" type="button" class="nav-btn primary">Close</button>
   </div>
 </div>
 
@@ -3888,6 +3952,35 @@ requestAnimationFrame(() => {
     navigate(t, { fresh: true });
   }
 });
+
+// Version-history modal — opens on click of the v1.0.0 trigger in the
+// hero footer; close on the button, backdrop click, or Escape.
+(() => {
+  const trigger = document.getElementById('version-trigger');
+  const modal   = document.getElementById('version-modal');
+  const closeBtn = document.getElementById('version-close');
+  if (!trigger || !modal || !closeBtn) return;
+  const open = () => {
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  };
+  const close = () => {
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    trigger.focus();
+  };
+  trigger.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', (e) => {
+    if (e.target.matches('[data-action="version-close"]')) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+})();
 </script>
 
 </body>
