@@ -1178,7 +1178,7 @@
   .crcl-field {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 8px;
     min-width: 0;
   }
@@ -1295,6 +1295,101 @@
     margin-top: 2px;
   }
   .crcl-dose.is-empty { color: var(--ink-mute); }
+
+  /* Footnote under the dose: which weight got plugged into C-G, and the BMI. */
+  .crcl-footnote {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 8px;
+    line-height: 1.45;
+  }
+  /* Transparency expander: native <details>/<summary> with hairline border
+     so it works without JS and is accessible by default. */
+  .crcl-explainer {
+    margin-top: 20px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .crcl-explainer > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+  .crcl-explainer > summary::-webkit-details-marker { display: none; }
+  .crcl-explainer-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    transition: color 220ms ease;
+  }
+  .crcl-explainer:hover > summary .crcl-explainer-eyebrow,
+  .crcl-explainer[open] > summary .crcl-explainer-eyebrow {
+    color: var(--ink);
+  }
+  .crcl-explainer-chev {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-mute);
+    transition: transform 240ms ease;
+  }
+  .crcl-explainer[open] .crcl-explainer-chev { transform: rotate(180deg); }
+  .crcl-explainer-body {
+    padding: 0 0 24px;
+    display: grid;
+    gap: 18px;
+  }
+  .crcl-explainer-section h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .crcl-explainer-section p {
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-mid);
+    margin: 0;
+  }
+  .crcl-explainer-section p + p { margin-top: 6px; }
+  .crcl-explainer-section em {
+    font-style: italic;
+    color: var(--ink);
+  }
+  .crcl-explainer-list {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-mid);
+  }
+  .crcl-explainer-list li { margin: 0; padding-left: 2px; }
+  .crcl-explainer-list li + li { margin-top: 4px; }
+  .crcl-explainer-list strong { color: var(--ink); font-weight: 500; }
+  .crcl-explainer-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    color: var(--ink-mute);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--rule);
+  }
+  .crcl-explainer-note strong { color: var(--ink); font-weight: 500; }
 
   /* Decision toggle — uses .choice, but adds selected state. */
   .choice.is-selected {
@@ -1986,6 +2081,14 @@
           </div>
 
           <div class="crcl-field">
+            <label for="crcl-height">Height</label>
+            <div class="crcl-inputwrap">
+              <input type="number" id="crcl-height" min="120" max="230" placeholder="—" inputmode="decimal"/>
+              <span class="unit">cm</span>
+            </div>
+          </div>
+
+          <div class="crcl-field">
             <label for="crcl-cr">Creatinine</label>
             <div class="crcl-inputwrap">
               <input type="number" id="crcl-cr" min="20" max="2000" placeholder="—" inputmode="numeric"/>
@@ -1997,8 +2100,50 @@
             <div class="crcl-output-label">Output ↘</div>
             <div class="crcl-value"><span id="crcl-value">—</span><span class="unit">mL/min</span></div>
             <div class="crcl-dose is-empty" id="crcl-dose">Enter values to calculate</div>
+            <div class="crcl-footnote" id="crcl-footnote" hidden></div>
           </div>
         </div>
+
+        <details class="crcl-explainer">
+          <summary>
+            <span class="crcl-explainer-eyebrow">How this is calculated</span>
+            <span class="crcl-explainer-chev" aria-hidden="true">↓</span>
+          </summary>
+          <div class="crcl-explainer-body">
+            <div class="crcl-explainer-section">
+              <h4>1 · Cockcroft–Gault</h4>
+              <p>CrCl (mL/min) = <em>k</em> × (140 − age) × weight / serum creatinine, where <em>k</em> = 1.23 (male) or 1.04 (female) when creatinine is in μmol/L. With creatinine in mg/dL, the equation uses /72 in the denominator and × 0.85 for female sex — same formula, lab-friendly form.</p>
+            </div>
+            <div class="crcl-explainer-section">
+              <h4>2 · Ideal body weight (Devine)</h4>
+              <p>Male: 50 + 0.9055 × (height_cm − 152.4). Female: 45.5 + 0.9055 × (height_cm − 152.4). Validated for height ≥ 152.4 cm (5 ft) — below that, IBW can dip below the base figure and is less well established; clinical judgement applies.</p>
+            </div>
+            <div class="crcl-explainer-section">
+              <h4>3 · Adjusted body weight</h4>
+              <p>AjBW = IBW + 0.4 × (ABW − IBW). Captures the partial metabolic contribution of excess adipose — the muscle and visceral organ mass that grows with sustained obesity does produce creatinine, just at a lower rate than lean tissue.</p>
+            </div>
+            <div class="crcl-explainer-section">
+              <h4>4 · Weight-selection ladder</h4>
+              <p>C-G assumes lean mass ≈ total mass; this breaks in obesity, where adipose inflates the weight term without contributing to creatinine production. The fix is to swap the weight variable:</p>
+              <ul class="crcl-explainer-list">
+                <li><strong>ABW &lt; IBW</strong> (underweight) → use <strong>ABW</strong></li>
+                <li><strong>IBW ≤ ABW ≤ 1.2 × IBW</strong> (normal weight) → use <strong>ABW</strong></li>
+                <li><strong>ABW &gt; 1.2 × IBW</strong> (obese — &gt; 20 % over IBW) → use <strong>AjBW</strong></li>
+              </ul>
+            </div>
+            <div class="crcl-explainer-section">
+              <h4>5 · Conditionals applied to the output</h4>
+              <ul class="crcl-explainer-list">
+                <li><strong>CrCl ≥ 30</strong> + 0 or 1 BNF flag → <strong>Apixaban 5 mg BD</strong></li>
+                <li><strong>CrCl ≥ 30</strong> + 2-of-3 BNF flags (age ≥ 80 · ABW ≤ 60 kg · Cr ≥ 133 μmol/L) → <strong>Apixaban 2.5 mg BD</strong></li>
+                <li><strong>CrCl 15–29</strong> → <strong>Apixaban 2.5 mg BD</strong> (reduced for renal impairment)</li>
+                <li><strong>CrCl &lt; 15</strong> → discuss with nephrology (off-licence Apixaban vs UFH bridge)</li>
+                <li><strong>BMI &gt; 40</strong> → flagged for ward pharmacist regardless of CrCl band — C-G unreliable in morbid obesity</li>
+              </ul>
+              <p class="crcl-explainer-note">The BNF 2-of-3 weight criterion uses <strong>ABW</strong> (a frailty marker), not the weight chosen for the C-G calculation.</p>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -2145,7 +2290,10 @@ function calculator(opts) {
 const acState = {
   cha: 0, chaRisk: 0.2, chaSexOnly: false,
   orbit: 0, orbitRisk: 2.4,
-  age: null, sex: 'male', weight: null, creatinine: null, crcl: null,
+  age: null, sex: 'male', weight: null, height: null, creatinine: null, crcl: null,
+  // Populated by calculateCrCl() — surfaced so the output footnote and
+  // expander can both reference the weight that actually went into C-G.
+  weightUsed: null, weightMode: null, bmi: null, ibw: null,
   decision: null,  // 'yes' | 'no' | null
 };
 
@@ -2179,24 +2327,56 @@ function orbitBand(s) {
 }
 
 function calculateCrCl() {
-  const { age, sex, weight, creatinine } = acState;
-  if (!age || !weight || !creatinine || age <= 0 || creatinine <= 0) {
+  const { age, sex, weight, height, creatinine } = acState;
+  // Require every field — height is new and necessary for IBW/AjBW selection.
+  if (!age || !weight || !height || !creatinine || age <= 0 || creatinine <= 0) {
     acState.crcl = null;
+    acState.weightUsed = null;
+    acState.weightMode = null;
+    acState.bmi = null;
+    acState.ibw = null;
     return null;
   }
+  // Devine IBW (kg). Validated above 152.4 cm; below that, value can dip
+  // under the base figure — clinical judgement applies (noted in expander).
+  const base = sex === 'male' ? 50 : 45.5;
+  const ibw = base + 0.9055 * (height - 152.4);
+  const ajbw = ibw + 0.4 * (weight - ibw);
+  const bmi = weight / Math.pow(height / 100, 2);
+
+  // Weight-selection ladder: ABW for under/normal weight; AjBW once ABW
+  // exceeds 120 % of IBW (MDCalc / NHS-pharmacy convention).
+  const useAjBW = weight > 1.2 * ibw;
+  const weightUsed = useAjBW ? ajbw : weight;
+  const weightMode = useAjBW ? 'adjusted' : 'actual';
+
   const k = sex === 'male' ? 1.23 : 1.04;
-  const crcl = (k * (140 - age) * weight) / creatinine;
+  const crcl = (k * (140 - age) * weightUsed) / creatinine;
+
   acState.crcl = crcl > 0 ? crcl : 0;
+  acState.weightUsed = weightUsed;
+  acState.weightMode = weightMode;
+  acState.bmi = bmi;
+  acState.ibw = ibw;
   return acState.crcl;
 }
 
 function getApixabanRec() {
-  const { crcl, age, weight, creatinine } = acState;
+  const { crcl, age, weight, creatinine, bmi } = acState;
   if (crcl === null) return null;
 
+  // BMI > 40 takes priority over CrCl bands: at morbid obesity the C-G
+  // number itself can't be trusted, so we don't offer an Apixaban dose
+  // — pharmacist owns the decision.
+  if (bmi !== null && bmi > 40) return {
+    dose: 'Discuss with ward pharmacist',
+    detail: 'Cockcroft–Gault unreliable in morbid obesity (BMI > 40).',
+    tone: 'critical',
+  };
+
   if (crcl < 15) return {
-    dose: 'Unfractionated heparin',
-    detail: 'CrCl < 15 mL/min. Start UFH until acute renal impairment resolves. If CKD likely prolonged, seek renal team input for off-licence Apixaban 2.5 mg BD.',
+    dose: 'Discuss with nephrology',
+    detail: 'CrCl < 15 mL/min. Discuss with nephrology re: off-licence Apixaban 2.5 mg BD vs UFH bridge until renal function recovers.',
     tone: 'critical',
   };
   if (crcl < 30) return {
@@ -2222,18 +2402,25 @@ function renderCrCl() {
   calculateCrCl();
   const valueEl = document.getElementById('crcl-value');
   const doseEl  = document.getElementById('crcl-dose');
+  const fnEl    = document.getElementById('crcl-footnote');
   if (!valueEl || !doseEl) return;
 
   if (acState.crcl === null) {
     valueEl.textContent = '—';
     doseEl.innerHTML = 'Enter values to calculate';
     doseEl.classList.add('is-empty');
+    if (fnEl) { fnEl.hidden = true; fnEl.textContent = ''; }
   } else {
     valueEl.textContent = Math.round(acState.crcl);
     const rec = getApixabanRec();
     doseEl.classList.remove('is-empty');
     if (rec) {
       doseEl.innerHTML = `${rec.dose}<span class="detail">${rec.detail}</span>`;
+    }
+    if (fnEl) {
+      const modeLabel = acState.weightMode === 'adjusted' ? 'adjusted body weight' : 'actual body weight';
+      fnEl.textContent = `Using ${modeLabel} · BMI ${acState.bmi.toFixed(1)}`;
+      fnEl.hidden = false;
     }
   }
   renderClerkNote();
@@ -2265,14 +2452,26 @@ function renderClerkNote() {
   const ob = orbitBand(acState.orbit);
   html += `<p>This patient has a <strong>CHA<sub>2</sub>DS<sub>2</sub>-VASc score of ${acState.cha}</strong>, which translates to an <strong>annual stroke risk of ${acState.chaRisk.toFixed(1)}%</strong> — an ${cb} annual risk.</p>`;
   html += `<p>If anticoagulated, given the <strong>ORBIT score of ${acState.orbit}</strong>, this translates to an <strong>annual major-bleeding risk of ${acState.orbitRisk.toFixed(1)}%</strong> — a ${ob} risk category.</p>`;
-  if (acState.crcl !== null) {
-    html += `<p>Creatinine clearance (Cockcroft–Gault): <strong>${Math.round(acState.crcl)} mL/min</strong>.</p>`;
+  // CrCl line: at BMI > 40 the calculated figure can't be trusted, so don't
+  // paste it into the notes; below 15 it gets a "severe renal impairment"
+  // qualifier so a reader scanning the line doesn't miss the implication.
+  if (acState.bmi !== null && acState.bmi > 40) {
+    html += `<p>Cockcroft–Gault is unreliable at BMI > 40 — calculated CrCl not used for dose decisions.</p>`;
+  } else if (acState.crcl !== null) {
+    const qual = acState.crcl < 15 ? ' &mdash; severe renal impairment' : '';
+    html += `<p>Creatinine clearance (Cockcroft–Gault): <strong>${Math.round(acState.crcl)} mL/min</strong>${qual}.</p>`;
   }
   html += `<p>Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
   if (acState.decision === 'yes') {
     const rec = getApixabanRec();
     if (rec && rec.tone === 'critical') {
-      html += `<mark class="ink">anticoagulate</mark> this patient. Plan: <strong>${rec.dose}</strong> — ${rec.detail}`;
+      // Branch on which critical condition fired so the sentence reads
+      // naturally instead of the generic "Plan: X — Y" stub.
+      if (acState.bmi !== null && acState.bmi > 40) {
+        html += `<mark class="ink">anticoagulate</mark> this patient; given the BMI &gt; 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft–Gault unreliable in morbid obesity).`;
+      } else {
+        html += `<mark class="ink">anticoagulate</mark> this patient; given the CrCl &lt; 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
+      }
     } else if (rec) {
       html += `<mark class="ink">anticoagulate</mark> this patient with <strong>${rec.dose}</strong>${rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : ''}.`;
     } else {
@@ -2309,12 +2508,21 @@ function clerkNoteAsText() {
   const ob = orbitBand(acState.orbit);
   t += `This patient has a CHA2DS2-VASc score of ${acState.cha}, which translates to an annual stroke risk of ${acState.chaRisk.toFixed(1)}% — an ${cb} annual risk.\n\n`;
   t += `If anticoagulated, given the ORBIT score of ${acState.orbit}, this translates to an annual major-bleeding risk of ${acState.orbitRisk.toFixed(1)}% — a ${ob} risk category.\n\n`;
-  if (acState.crcl !== null) t += `Creatinine clearance (Cockcroft-Gault): ${Math.round(acState.crcl)} mL/min.\n\n`;
+  if (acState.bmi !== null && acState.bmi > 40) {
+    t += `Cockcroft-Gault is unreliable at BMI > 40 — calculated CrCl not used for dose decisions.\n\n`;
+  } else if (acState.crcl !== null) {
+    const qual = acState.crcl < 15 ? ' — severe renal impairment' : '';
+    t += `Creatinine clearance (Cockcroft-Gault): ${Math.round(acState.crcl)} mL/min${qual}.\n\n`;
+  }
   t += `Taking into account the abovementioned risks, along with the patient's preferences, we have decided to `;
   if (acState.decision === 'yes') {
     const rec = getApixabanRec();
     if (rec && rec.tone === 'critical') {
-      t += `anticoagulate this patient. Plan: ${rec.dose} — ${rec.detail}`;
+      if (acState.bmi !== null && acState.bmi > 40) {
+        t += `anticoagulate this patient; given the BMI > 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft-Gault unreliable in morbid obesity).`;
+      } else {
+        t += `anticoagulate this patient; given the CrCl < 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
+      }
     } else if (rec) {
       t += `anticoagulate this patient with ${rec.dose}` + (rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : '') + '.';
     } else {
@@ -2331,9 +2539,11 @@ function clerkNoteAsText() {
 // CrCl input wiring
 const ageEl  = document.getElementById('crcl-age');
 const wtEl   = document.getElementById('crcl-weight');
+const htEl   = document.getElementById('crcl-height');
 const crEl   = document.getElementById('crcl-cr');
 ageEl.addEventListener('input', e => { acState.age = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
 wtEl .addEventListener('input', e => { acState.weight = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
+htEl .addEventListener('input', e => { acState.height = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
 crEl .addEventListener('input', e => { acState.creatinine = e.target.value ? parseFloat(e.target.value) : null; renderCrCl(); });
 document.querySelectorAll('.sex-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -3246,7 +3456,7 @@ function currentRoute() {
 
 function resetAnticoag() {
   document.querySelectorAll('.crit[aria-pressed="true"]').forEach(b => b.click());
-  ['crcl-age', 'crcl-weight', 'crcl-cr'].forEach(id => {
+  ['crcl-age', 'crcl-weight', 'crcl-height', 'crcl-cr'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.value = ''; el.dispatchEvent(new Event('input')); }
   });
