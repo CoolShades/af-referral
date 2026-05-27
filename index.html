@@ -79,7 +79,7 @@
   /* Hero heart — translucent maroon, gently pulsing. */
   .hero-heart {
     position: absolute;
-    top: 18vh;
+    top: 8vh;
     right: -4vw;
     width: 42vw;
     max-width: 600px;
@@ -108,51 +108,353 @@
     .hero-heart { animation: none; }
   }
 
-  /* Top scroll-progress bar. */
-  .progress {
-    position: fixed; top: 0; left: 0;
-    height: 2px; width: 0%;
-    background: var(--accent);
-    z-index: 80;
-    transition: width 80ms linear;
+  /* ─────── Hero fit-to-viewport ───────
+     Pin the hero to one screenful, then let internal sizing adapt to height.
+     Below 600 px tall (extreme case), allow scroll rather than crush content. */
+  .hero-fit {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  /* Top section is `flex-1` in the markup. Flex items default to
+     `min-height: auto`, which prevents shrinking below intrinsic content
+     height — pushing the bottom CTA cards past 100dvh and getting their
+     borders clipped. Force the flex item to honour its allocated share. */
+  .hero-fit > .flex-1 {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .hero-fit h1.display-number {
+    font-size: clamp(2rem, min(7vw, 11vh), 7rem) !important;
+    line-height: 0.92;
+  }
+  /* Hero intro/body fonts scale with viewport height so the top half fills
+     vertical space on tall windows rather than leaving a blank middle. */
+  .hero-fit .eyebrow {
+    font-size: clamp(11px, 1.25vh, 15px);
+  }
+  .hero-fit .body-lg {
+    font-size: clamp(15px, 2.3vh, 26px);
+    line-height: 1.55;
+  }
+  .hero-fit .body-md {
+    font-size: clamp(13px, 1.9vh, 22px);
+    line-height: 1.55;
+  }
+  /* Tighten paddings, gaps and card chrome at every viewport height — not
+     only short ones. On 900–1080 px windows the un-clamped Tailwind defaults
+     (pt-16 = 4rem, pb-20 = 5rem, pair-card padding = 36 px) push the hero
+     past 100dvh and clip the cards' bottom border. Each clamp has a sane
+     floor for short viewports and a max that leaves breathing room on tall. */
+  .hero-fit .pt-16 { padding-top: clamp(20px, 3.5vh, 56px); }
+  .hero-fit .md\:pt-20 { padding-top: clamp(20px, 3.5vh, 56px); }
+  .hero-fit .pb-12 { padding-bottom: clamp(12px, 2vh, 32px); }
+  .hero-fit .pb-20 { padding-bottom: clamp(16px, 3vh, 48px); }
+  .hero-fit .mt-10 { margin-top: clamp(8px, 1.8vh, 28px); }
+  .hero-fit .mt-8 { margin-top: clamp(8px, 1.5vh, 24px); }
+  .hero-fit .mt-5 { margin-top: clamp(6px, 1.2vh, 18px); }
+  .hero-fit .mb-10 { margin-bottom: clamp(8px, 1.8vh, 28px); }
+  .hero-fit .mb-6 { margin-bottom: clamp(8px, 1.5vh, 22px); }
+  .hero-fit .pt-6 { padding-top: clamp(8px, 1.4vh, 24px); }
+  .hero-fit .pair-card { padding: clamp(20px, 2.6vh, 30px) clamp(20px, 3vw, 36px); }
+  .hero-fit .pair-card h2 { font-size: clamp(1.5rem, min(3.2vw, 4vh), 2.6rem) !important; }
+  .hero-fit .pair-card p { font-size: clamp(13px, 1.6vh, 17px); line-height: 1.5; }
+  .hero-fit .pair-card .display-number { font-size: clamp(2.2rem, 5vh, 4rem) !important; }
+  .hero-fit .pair-card .mt-8 { margin-top: clamp(12px, 2vh, 28px); }
+  .hero-fit .pair-card .pt-4 { padding-top: clamp(6px, 1vh, 16px); }
+  /* Below 600 px tall — bail out gracefully and let the page scroll. */
+  @media (max-height: 600px) {
+    .hero-fit { height: auto; overflow: visible; min-height: 100vh; }
+    .hero-fit > .flex-1 { overflow: visible; }
   }
 
-  /* Mini side nav. */
-  .minimap {
-    position: fixed;
-    top: 50%; right: 28px;
-    transform: translateY(-50%);
-    z-index: 70;
-    opacity: 0;
-    transition: opacity 500ms ease;
-    pointer-events: none;
+  /* ─────── Chapter views fit-to-viewport ─────── */
+  /* Same approach as .hero-fit: lock the view to one screenful, flex column
+     so topbar is pinned and the section below flex-fills.
+     Wizard step 5 (the plan) is an exception — content is meant to be long. */
+  .view-wizard.is-active,
+  .view-anticoag.is-active {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  .minimap.show { opacity: 1; pointer-events: auto; }
-  .minimap a {
-    display: flex; align-items: center; justify-content: flex-end;
+  .view-wizard.is-active > .view-topbar,
+  .view-anticoag.is-active > .view-topbar {
+    flex-shrink: 0;
+  }
+  .view-wizard.is-active > section,
+  .view-anticoag.is-active > section {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .view-wizard.is-active > section > .relative,
+  .view-anticoag.is-active > section > .relative {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Step 5 of the wizard (plan summary) — fully opts out of fit-to-viewport.
+     The plan is genuinely long; the window scrolls naturally with the topbar
+     sticky to the top. */
+  .view-wizard.is-active[data-active-step="5"] {
+    height: auto;
+    overflow: visible;
+  }
+  .view-wizard.is-active[data-active-step="5"] > section {
+    flex: none;
+    display: block;
+    overflow: visible;
+  }
+  .view-wizard.is-active[data-active-step="5"] > section > .relative {
+    display: block;
+    flex: none;
+  }
+  .view-wizard.is-active[data-active-step="5"] .wizard,
+  .view-wizard.is-active[data-active-step="5"] .wizard-step.is-active {
+    display: block;
+    flex: none;
+  }
+
+  /* Anticoagulation has a lot of content (CHA + ORBIT + CrCl + clerk note);
+     fitting it all in one screenful crushes readability, so let it scroll. */
+  .view-anticoag.is-active > section {
+    overflow-y: auto;
+  }
+  .view-anticoag.is-active > section > .relative {
+    display: block;
+  }
+
+  /* Wizard internals — make the wizard itself flex-fill below the editorial
+     heading so each step's nav buttons stay near the bottom. */
+  .view-wizard.is-active .wizard {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .view-wizard.is-active .wizard > .step-dots {
+    flex-shrink: 0;
+  }
+  .view-wizard.is-active .wizard-step.is-active {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Step body scrolls internally; nav (sibling after .step-content) stays
+     pinned to the bottom of the viewport — Next button always visible. */
+  .view-wizard.is-active .wizard-step.is-active > .step-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* Center the step's content vertically within whatever height the
+       flex chain assigns. On tall viewports this puts the heading+body in
+       the optical middle of the section instead of pinning it to the top
+       with a dead band above the bottom-pinned Next/Continue button.
+       `safe center` falls back to `start` if content would overflow,
+       so the scrollbar still works on very short viewports. */
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    padding-right: 8px;
+    margin-right: -8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+  .view-wizard.is-active .wizard-step.is-active > .step-content::-webkit-scrollbar { width: 6px; }
+  .view-wizard.is-active .wizard-step.is-active > .step-content::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+  .view-wizard.is-active .wizard-step.is-active > .step-content + * {
+    flex-shrink: 0;
+  }
+  /* Pinned editorial heading at the top of each step — the eyebrow + h3 +
+     intro body stay put while .step-content (the interactive body below)
+     scrolls. */
+  .view-wizard.is-active .wizard-step.is-active > .step-head {
+    flex-shrink: 0;
+  }
+
+  /* "More below" affordance for any internally-scrolling region.
+     A .has-more-below class is toggled by JS (setupScrollAffordance)
+     when scrollHeight − scrollTop > clientHeight + 8 px tolerance.
+     We apply two cues simultaneously so the scroll cue is unmissable:
+     1) the bottom 56 px of the scrollable element's visible area fades
+        to transparent via mask-image (content visibly "dissolves"); and
+     2) a sibling .scroll-hint pill ("scroll for more ▾") just below
+        the scrollable area fades in. Both fade out together once the
+        user reaches the bottom. */
+  .step-content.has-more-below,
+  .view-anticoag.is-active > section.has-more-below {
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 56px), transparent 100%);
+            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 56px), transparent 100%);
+  }
+
+  .scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink-mute);
-    padding: 8px 0;
-    transition: color 220ms ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    margin-top: clamp(4px, 1vh, 12px);
+    flex-shrink: 0;
   }
-  .minimap a .label { opacity: 0; transform: translateX(6px); transition: all 240ms ease; }
-  .minimap a:hover { color: var(--ink); }
-  .minimap a:hover .label { opacity: 1; transform: translateX(0); }
-  .minimap a .dot {
-    width: 9px; height: 9px;
-    border: 1px solid var(--ink-mute);
-    border-radius: 50%;
-    transition: all 220ms ease;
+  .has-more-below + .scroll-hint { opacity: 1; }
+  .scroll-hint-chevron {
+    display: inline-block;
+    animation: scroll-hint-bounce 1800ms ease-in-out infinite;
   }
-  .minimap a.is-active { color: var(--accent); }
-  .minimap a.is-active .dot {
-    background: var(--accent);
-    border-color: var(--accent);
-    transform: scale(1.2);
+  @keyframes scroll-hint-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(3px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint-chevron { animation: none; }
+  }
+
+  /* Chapter views — sizes scale with viewport height via clamp() so the
+     wizard fills the screen gracefully on tall windows the same way the
+     hero does. Floors keep content readable on a 720 px laptop; ceilings
+     are high enough that on a 1080+ px viewport headings, body text and
+     paddings expand visibly rather than freezing at conservative caps. */
+
+  /* Section padding (wizard + anticoag) */
+  .view-wizard.is-active > section > .relative,
+  .view-anticoag.is-active > section > .relative {
+    padding-top: clamp(16px, 4vh, 80px);
+    padding-bottom: clamp(12px, 3vh, 60px);
+  }
+
+  /* Wizard step-dots breathing room */
+  .view-wizard.is-active .step-dots { margin-bottom: clamp(10px, 3vh, 48px); }
+
+  /* Step internals: margins, paddings, type sizes — all scaled with vh */
+  .view-wizard.is-active .wizard-step .mb-8 { margin-bottom: clamp(8px, 2.4vh, 36px); }
+  .view-wizard.is-active .wizard-step .mb-4 { margin-bottom: clamp(6px, 1.6vh, 22px); }
+  .view-wizard.is-active .wizard-step .mb-2 { margin-bottom: clamp(4px, 1vh, 12px); }
+  .view-wizard.is-active .wizard-step .mt-10 { margin-top: clamp(12px, 3vh, 48px); }
+  .view-wizard.is-active .wizard-step .mt-8 { margin-top: clamp(8px, 2.4vh, 36px); }
+  .view-wizard.is-active .wizard-step .mt-6 { margin-top: clamp(8px, 2vh, 28px); }
+  .view-wizard.is-active .wizard-step .mt-4 { margin-top: clamp(6px, 1.6vh, 20px); }
+  .view-wizard.is-active .wizard-step .mt-1 { margin-top: clamp(2px, 0.5vh, 6px); }
+  .view-wizard.is-active .wizard-step .pt-6 { padding-top: clamp(8px, 2vh, 32px); }
+  .view-wizard.is-active .wizard-step .py-5 {
+    padding-top: clamp(6px, 1.8vh, 26px);
+    padding-bottom: clamp(6px, 1.8vh, 26px);
+  }
+
+  /* Workup item display number + title (step 2 items a/b/c/d) */
+  .view-wizard.is-active .wizard-step .text-3xl { font-size: clamp(1.3rem, 3.4vh, 2.6rem); }
+  .view-wizard.is-active .wizard-step .text-xl { font-size: clamp(0.95rem, 2.4vh, 1.6rem); }
+
+  /* Step heading (h3) and body */
+  .view-wizard.is-active .wizard-step h3 {
+    font-size: clamp(1.3rem, min(3.2vw, 5vh), 3rem) !important;
+  }
+  .view-wizard.is-active .wizard-step .body-md,
+  .view-wizard.is-active .wizard-step .body-lg {
+    font-size: clamp(14px, 2vh, 22px);
+    line-height: 1.55;
+  }
+  .view-wizard.is-active .wizard-step .eyebrow {
+    font-size: clamp(10px, 1.4vh, 14px);
+  }
+
+  /* Exclusion list (step 1) */
+  .view-wizard.is-active .exc-list {
+    padding: clamp(12px, 3vh, 34px) clamp(16px, 3vw, 40px);
+    margin: clamp(12px, 2.4vh, 32px) 0;
+  }
+  .view-wizard.is-active .exc-list li {
+    font-size: clamp(14px, 2.4vh, 22px);
+    padding: clamp(4px, 1.2vh, 14px) 0;
+  }
+
+  /* Yes/No buttons (step 1) */
+  .view-wizard.is-active .choice { padding: clamp(14px, 3vh, 36px) clamp(18px, 3vw, 40px); }
+  .view-wizard.is-active .choice .lbl { font-size: clamp(1.05rem, 2.8vh, 1.9rem); }
+  .view-wizard.is-active .choice .sub { font-size: clamp(12px, 1.8vh, 18px); }
+
+  /* Agent buttons (step 3) */
+  .view-wizard.is-active .agent {
+    padding: clamp(14px, 2.8vh, 36px) clamp(20px, 3.4vw, 44px);
+    gap: clamp(12px, 2vw, 22px);
+  }
+  .view-wizard.is-active .agent .num { font-size: clamp(1.8rem, 4.4vh, 3.2rem); }
+  .view-wizard.is-active .agent .drug { font-size: clamp(1.1rem, 2.8vh, 1.8rem); }
+  .view-wizard.is-active .agent .note { font-size: clamp(13px, 2vh, 18px); }
+  .view-wizard.is-active .agent .meta { font-size: clamp(10px, 1.3vh, 13px); }
+
+  /* Check rows (sepsis, refractory) */
+  .view-wizard.is-active .check-row { padding: clamp(10px, 2.2vh, 26px) clamp(14px, 2.2vw, 28px); }
+  .view-wizard.is-active .check-row .ttl { font-size: clamp(0.95rem, 2.3vh, 1.35rem); }
+  .view-wizard.is-active .check-row .sub { font-size: clamp(12px, 1.8vh, 18px); }
+
+  /* Escalation branches (step 4) */
+  /* Asymmetric padding — extra room on the left for the "OPTION" spine
+     label (.esc-branch::before, see base block below). */
+  .view-wizard.is-active .esc-branch {
+    padding: clamp(14px, 2.8vh, 34px) clamp(18px, 3vw, 38px) clamp(14px, 2.8vh, 34px) clamp(34px, 3.8vw, 56px);
+  }
+  .view-wizard.is-active .esc-branch-title { font-size: clamp(1.05rem, 2.6vh, 1.7rem); }
+  .view-wizard.is-active .esc-branch-body,
+  .view-wizard.is-active .esc-recipe > li { font-size: clamp(13px, 2vh, 21px); }
+  .view-wizard.is-active .esc-grid {
+    gap: clamp(8px, 1.8vh, 22px);
+    /* Cards size to their content (Branch A's recipe is tall, Branch B's
+       paragraph is short) — don't force them to stretch to equal height. */
+    align-items: start;
+  }
+  /* Step 4 branches side-by-side on md+ — halves vertical footprint so the
+     worst case (verapamil+septic = warning + A + B) fits in 100dvh.
+     The optional .esc-warn paragraph is always the first child of .esc-grid
+     and spans both columns above the branches. */
+  @media (min-width: 768px) {
+    .view-wizard.is-active .esc-grid { grid-template-columns: 1fr 1fr; }
+    .view-wizard.is-active .esc-warn { grid-column: 1 / -1; }
+    /* In the narrower 2-column layout the 74 px text-column indent on
+       .esc-recipe / .esc-branch-body eats too much width — drop it. */
+    .view-wizard.is-active .esc-grid .esc-recipe,
+    .view-wizard.is-active .esc-grid .esc-branch-body {
+      margin-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  /* Anticoag: just tighten the headline + intro spacing; rest scrolls. */
+  .view-anticoag.is-active .mb-16 { margin-bottom: clamp(16px, 3vh, 64px); }
+  .view-anticoag.is-active h2 {
+    font-size: clamp(1.8rem, min(4vw, 5vh), 3.5rem) !important;
+  }
+
+  /* < 600 px tall — bail to scroll. */
+  @media (max-height: 600px) {
+    .view-wizard.is-active,
+    .view-anticoag.is-active {
+      height: auto;
+      overflow: visible;
+      min-height: 100vh;
+    }
+    .view-wizard.is-active > section,
+    .view-anticoag.is-active > section {
+      overflow: visible;
+    }
+    .view-wizard.is-active > section > .relative,
+    .view-anticoag.is-active > section > .relative {
+      display: block;
+    }
   }
 
   /* Reveal on scroll. */
@@ -240,6 +542,18 @@
     border-color: var(--ink);
   }
   .secondary-card:hover .pc-arrow { transform: translate(4px, -4px); }
+
+  /* Symmetric two-column pair (used on the equal-cards hero). */
+  .pair-card {
+    padding: 36px 36px 30px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .pair-card p { flex: 1; }
+  @media (max-width: 768px) {
+    .pair-card { padding: 28px 24px; }
+  }
 
   /* Wizard. */
   .wizard {
@@ -382,6 +696,21 @@
   }
   .check-row .ttl { display: block; font-family: 'Newsreader', serif; font-size: 1.15rem; color: var(--ink); line-height: 1.3; }
   .check-row .sub { display: block; color: var(--ink-mute); font-size: 15px; margin-top: 6px; font-style: italic; line-height: 1.4; }
+
+  /* Brief "swell" attention-getter — used to draw the eye to the
+     refractory checkbox after the clinician picks an agent in Step 3. */
+  @keyframes swell-pop {
+    0%   { transform: scale(1);    border-color: var(--rule); box-shadow: 0 0 0 0 rgba(122,30,30,0); }
+    25%  { transform: scale(1.025); border-color: var(--accent); box-shadow: 0 0 0 4px rgba(122,30,30,0.18); }
+    60%  { transform: scale(1);    border-color: var(--accent); box-shadow: 0 0 0 10px rgba(122,30,30,0); }
+    100% { transform: scale(1);    border-color: var(--rule); box-shadow: 0 0 0 0 rgba(122,30,30,0); }
+  }
+  .swell-pop {
+    animation: swell-pop 820ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .swell-pop { animation: none; }
+  }
 
   /* Nav buttons. */
   .nav-btn {
@@ -567,26 +896,58 @@
     margin-bottom: 8px;
   }
   .esc-branch {
+    position: relative;      /* containing block for the .esc-branch-letter watermark */
+    overflow: hidden;        /* clip the watermark to the card edge */
     border: 1px solid var(--rule);
-    padding: 24px 26px;
+    /* Asymmetric — left padding leaves room for the "OPTION" spine label. */
+    padding: 24px 26px 24px 44px;
     background: transparent;
     transition: border-color 280ms ease;
   }
   .esc-branch:hover { border-color: var(--ink-mid); }
-  .esc-branch-head {
-    display: grid;
-    grid-template-columns: 56px 1fr;
-    gap: 18px;
-    align-items: center;
-    margin-bottom: 14px;
+  /* Vertical "OPTION" wayfinder pinned along the top-left edge of each card.
+     `writing-mode: vertical-rl` lays the text top-down by default, then
+     `rotate(180deg)` flips it so it reads bottom-to-top with each character
+     tilted 90° anticlockwise — the editorial "spine" look. */
+  .esc-branch::before {
+    content: "OPTION";
+    position: absolute;
+    top: clamp(18px, 2.6vh, 30px);
+    left: clamp(8px, 1vw, 14px);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(9px, 1vh, 11px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
   }
+  /* "A" / "B" used to sit in a 56 px column to the left of the title,
+     eating horizontal width. It's now a translucent corner watermark —
+     same editorial pattern as .section-numeral at chapter level. */
   .esc-branch-letter {
+    position: absolute;
+    top: clamp(-12px, -1vh, -4px);
+    right: clamp(8px, 1.6vw, 24px);
     font-family: 'Newsreader', serif;
-    font-size: 2.6rem;
     font-style: italic;
     font-weight: 300;
+    font-size: clamp(6rem, 11vw, 12rem);
+    line-height: 0.85;
     color: var(--accent);
-    line-height: 1;
+    opacity: 0.08;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+  .esc-branch-head {
+    position: relative;      /* sits above the watermark */
+    z-index: 1;
+    margin-bottom: 14px;
   }
   .esc-branch-title {
     font-family: 'Newsreader', serif;
@@ -604,6 +965,8 @@
     margin-top: 4px;
   }
   .esc-branch-body {
+    position: relative;      /* above the watermark */
+    z-index: 1;
     font-family: 'Newsreader', serif;
     font-size: 17px;
     color: var(--ink);
@@ -611,6 +974,8 @@
     padding-left: 74px;
   }
   .esc-recipe {
+    position: relative;      /* above the watermark */
+    z-index: 1;
     list-style: none;
     padding: 0;
     margin: 0 0 0 74px;
@@ -679,7 +1044,9 @@
   .crit {
     display: flex; align-items: center; justify-content: space-between;
     gap: 16px;
-    padding: 16px 20px;
+    /* clamp-padded + clamp-sized so the buttons scale with viewport, same
+       rhythm as the wizard's .choice/.agent rules. */
+    padding: clamp(12px, 2vh, 18px) clamp(16px, 2vw, 22px);
     border: 1px solid var(--rule);
     background: transparent;
     cursor: pointer;
@@ -687,7 +1054,7 @@
     text-align: left; width: 100%;
     color: var(--ink-mid);
     font-family: 'Newsreader', serif;
-    font-size: 17px;
+    font-size: clamp(15px, 1.9vh, 18px);
     line-height: 1.35;
   }
   .crit:hover { border-color: var(--ink-mid); background: rgba(26,22,18,0.02); }
@@ -718,6 +1085,11 @@
   .crit[aria-pressed="true"] .crit-sub { color: rgba(243,237,225,0.7); }
 
   /* Anticoagulation panels — subgrid for row-aligned scores. */
+  /* Anticoagulation 2-panel grid — CHA + ORBIT sit side-by-side as a pair
+     (stroke risk ↔ bleed risk: you weigh one against the other). The
+     subgrid lets the four rows — header / criteria / score / recommendation —
+     line up horizontally across both panels. Collapses to single column
+     on narrow viewports. */
   .ac-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -741,13 +1113,14 @@
   .ac-panel-orbit .ac-row-crits {
     align-self: end;
   }
-  /* When CHA is the only panel, spread its criteria across more columns. */
+  /* When CHA is the only panel (no anticoag indicated), spread its criteria
+     across 3 columns so the full width is used. */
   .ac-grid.cha-only #cha-criteria {
     grid-template-columns: repeat(2, 1fr);
   }
   @media (min-width: 768px) {
     .ac-grid.cha-only #cha-criteria {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
   }
   @media (max-width: 900px) {
@@ -791,8 +1164,6 @@
     user-select: none;
   }
 
-  .footer-dark { background: var(--ink); color: var(--paper); }
-  .footer-dark .eyebrow { color: rgba(243,237,225,0.5); }
 
   /* Cockcroft-Gault calculator — single horizontal bar. */
   .crcl-bar {
@@ -866,6 +1237,9 @@
   }
   .sex-btn:hover { color: var(--ink); }
   .sex-btn.is-active { color: var(--accent); font-weight: 600; }
+  /* .crcl-arrow rule kept for any legacy callers, but the markup no longer
+     emits the arrow — the OUTPUT eyebrow inside .crcl-output is the
+     wayfinder between inputs and result. */
   .crcl-arrow {
     font-family: 'JetBrains Mono', monospace;
     font-size: 20px;
@@ -880,7 +1254,15 @@
     flex: 1;
     min-width: 220px;
     border-left: 1px solid var(--rule);
-    padding-left: 24px;
+    padding-left: 32px;
+  }
+  .crcl-output-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 4px;
   }
   .crcl-value {
     font-family: 'Newsreader', serif;
@@ -1000,7 +1382,6 @@
   @media (max-width: 768px) {
     body { font-size: 16px; }
     .section-numeral { font-size: 14rem; top: 2vh; right: -10vw; opacity: 0.035; }
-    .minimap { display: none; }
     .primary-card { padding: 32px 28px; }
     .plan-card { padding: 32px 24px; }
     .agent { grid-template-columns: 44px 1fr 20px; gap: 14px; padding: 22px; }
@@ -1009,93 +1390,202 @@
     .choice { padding: 22px 24px; }
     .choice .lbl { font-size: 1.3rem; }
   }
+
+  /* ─────── View architecture ─────── */
+  .view { display: none; }
+  .view.is-active {
+    display: block;
+    animation: viewIn 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes viewIn {
+    from { opacity: 0; transform: scale(1.012); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .view.is-active { animation: none; }
+  }
+  /* The .view.is-active { display: block } rule above sits at the same
+     specificity as the .view-wizard.is-active / .view-anticoag.is-active
+     fit-to-viewport rules higher up in the file, and appears later — so
+     cascade order would otherwise override their `display: flex`. Re-assert
+     it here. (Step-5's opt-out then overrides this back to block via an
+     attribute selector with higher specificity, which is what we want.) */
+  .view-wizard.is-active,
+  .view-anticoag.is-active { display: flex; }
+  .view-wizard.is-active[data-active-step="5"] > section,
+  .view-wizard.is-active[data-active-step="5"] > section > .relative,
+  .view-wizard.is-active[data-active-step="5"] .wizard,
+  .view-wizard.is-active[data-active-step="5"] .wizard-step.is-active { display: block; }
+
+  /* Top bar on tool views — sticky, hairline below. */
+  .view-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: inherit;
+    border-bottom: 1px solid var(--rule);
+  }
+  .view-topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    opacity: 0.92;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+  }
+  .view-wizard .view-topbar::before { background: var(--paper-2); }
+  .view-topbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    padding: 16px clamp(20px, 4vw, 48px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .back-home {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    margin: -6px -10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    transition: color 220ms ease, transform 220ms ease;
+  }
+  .back-home:hover {
+    color: var(--ink);
+  }
+  .back-home:hover .back-arrow {
+    transform: translateX(-4px);
+  }
+  .back-arrow {
+    font-size: 14px;
+    transition: transform 220ms ease;
+  }
+  .topbar-center {
+    text-align: center;
+    line-height: 1.1;
+  }
+  .topbar-app {
+    font-family: 'Newsreader', serif;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .topbar-attribution {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 3px;
+  }
+  .topbar-chapter {
+    justify-self: end;
+    font-family: 'Newsreader', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1;
+  }
+  @media (max-width: 640px) {
+    .view-topbar-inner {
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+    .topbar-center { display: none; }
+    .topbar-chapter { font-size: 1.3rem; }
+    .back-home { font-size: 10px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="progress" id="progress" aria-hidden="true"></div>
-
-<nav class="minimap" id="minimap" aria-label="Section navigation">
-  <a href="#rate" data-target="rate"><span class="label">Rate control</span><span class="dot"></span></a>
-  <a href="#anticoag" data-target="anticoag"><span class="label">Anticoagulation</span><span class="dot"></span></a>
-</nav>
-
+<!-- ════════════════════════ VIEW · HOME (hero + footer) ════════════════════════ -->
+<div class="view view-home is-active" data-view="home">
 
 <!-- ════════════════════════ HERO ════════════════════════ -->
-<header class="hero relative min-h-screen flex flex-col overflow-hidden">
+<header class="hero hero-fit relative flex flex-col overflow-hidden">
 
   <!-- Decorative heart — translucent maroon, gently pulsing. -->
   <svg class="hero-heart" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
     <path d="M50 86 C 22 70, 4 50, 4 30 C 4 16, 14 6, 26 6 C 36 6, 44 14, 50 24 C 56 14, 64 6, 74 6 C 86 6, 96 16, 96 30 C 96 50, 78 70, 50 86 Z"/>
   </svg>
 
-  <div class="relative z-10 px-8 md:px-16 pt-10 flex justify-between items-start text-[11px] tracking-[0.18em] font-mono uppercase text-ink-mute">
-    <div class="flex flex-col gap-1">
-      <span>West Suffolk · NHS Foundation Trust</span>
-      <span class="text-ink/40">Cardiology · AF Referral Guide</span>
-    </div>
-    <div class="text-right flex flex-col gap-1">
-      <span>Edition · May 2026</span>
-      <span class="text-ink/40">For clinician use</span>
-    </div>
-  </div>
-
   <div class="relative z-10 flex-1 grid md:grid-cols-12 gap-8 px-8 md:px-16 pt-16 md:pt-20 pb-12">
-    <div class="md:col-span-11">
+    <div class="md:col-span-11 flex flex-col">
       <div class="eyebrow mb-6" data-reveal>Atrial Fibrillation · Clinician Decision Guide</div>
-      <h1 class="display-number leading-[0.92] text-[clamp(2.8rem,7vw,6.5rem)] tracking-[-0.03em] text-ink" data-reveal data-delay="1">
-        Thank you for<br/>
-        <span class="italic font-light">your referral<span class="text-accent">.</span></span>
-      </h1>
-      <div class="hairline-ink mt-10 max-w-2xl" data-reveal data-delay="2"></div>
-      <p class="body-lg mt-8 max-w-2xl" data-reveal data-delay="3">
-        In an effort to reduce the cardiology referral burden — so that more acutely unwell patients can be reviewed sooner — we are referring you to this guide. You have been sent this link because your question most likely relates to <mark class="ink">rate control</mark> or <mark class="ink">anticoagulation</mark>.
-      </p>
-      <p class="body-md mt-5 max-w-2xl text-ink-mid italic" data-reveal data-delay="4">
-        Pick the chapter that matches your question.<br/>
-        Each path will walk you through it and produce a plan you can paste into the notes.
-      </p>
+      <div class="flex-1 flex flex-col justify-center">
+        <h1 class="display-number leading-[0.92] text-[clamp(2.8rem,7vw,6.5rem)] tracking-[-0.03em] text-ink" data-reveal data-delay="1">
+          Thank you for<br/>
+          <span class="italic font-light">your referral<span class="text-accent">.</span></span>
+        </h1>
+        <div class="hairline-ink mt-10 max-w-2xl" data-reveal data-delay="2"></div>
+        <p class="body-lg mt-8 max-w-2xl" data-reveal data-delay="3">
+          In an effort to reduce the cardiology referral burden — so that more acutely unwell patients can be reviewed sooner — we are referring you to this guide. You have been sent this link because your question most likely relates to <mark class="ink">rate control</mark> or <mark class="ink">anticoagulation</mark>.
+        </p>
+        <p class="body-md mt-5 max-w-2xl text-ink-mid italic" data-reveal data-delay="4">
+          Pick the chapter that matches your question.<br/>
+          Each path will walk you through it and produce a plan you can paste into the notes.
+        </p>
+      </div>
     </div>
   </div>
 
   <div class="relative z-10 px-8 md:px-16 pb-20">
     <div class="hairline mb-10"></div>
 
-    <a href="#rate" data-target="rate" class="primary-card block group" data-reveal>
-      <div class="grid md:grid-cols-12 gap-8 items-end">
-        <div class="md:col-span-9">
-          <div class="flex items-baseline gap-6 mb-4">
-            <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute">01 · Most common question</span>
-            <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent">Step-by-step</span>
-          </div>
-          <h2 class="font-serif text-[clamp(2.2rem,5vw,4.2rem)] font-medium text-ink leading-[1] tracking-[-0.02em] mb-3">
-            Rate control
-          </h2>
-          <p class="body-lg text-ink-mid max-w-xl">
-            How do I treat the heart rate in this patient with AF? Step through the trust AEC protocol — exclusions, agent choice, follow-up — and end with a management plan ready to copy.
-          </p>
-        </div>
-        <div class="md:col-span-3 flex md:justify-end">
-          <div class="flex items-center gap-4">
-            <span class="display-number text-[6rem] italic font-light text-accent leading-none">I</span>
-            <span class="pc-arrow font-mono text-3xl text-ink">↘</span>
-          </div>
-        </div>
-      </div>
-    </a>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <a href="#anticoag" data-target="anticoag" class="secondary-card group mt-px" data-reveal data-delay="1">
-      <div>
-        <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute mb-2">02 · Should this patient be anticoagulated?</div>
-        <h3 class="font-serif text-2xl md:text-3xl font-medium text-ink tracking-[-0.01em]">
-          Anticoagulation <span class="text-ink-mute font-normal italic">— CHA<sub>2</sub>DS<sub>2</sub>-VASc &amp; ORBIT</span>
-        </h3>
-      </div>
-      <div class="flex items-center gap-4 flex-shrink-0">
-        <span class="display-number text-4xl italic font-light text-accent leading-none">II</span>
-        <span class="pc-arrow font-mono text-2xl text-ink">↘</span>
-      </div>
-    </a>
+      <a href="#/wizard" data-target="wizard" class="primary-card pair-card group" data-reveal>
+        <div class="flex items-baseline gap-4 mb-6">
+          <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute">§ I</span>
+          <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent">Step-by-step</span>
+        </div>
+        <h2 class="font-serif text-[clamp(1.9rem,3.6vw,3rem)] font-medium text-ink leading-[1] tracking-[-0.02em] mb-4">
+          Rate control
+        </h2>
+        <p class="body-md text-ink-mid">
+          How do I treat the heart rate? Step through the trust AEC protocol — exclusions, agent choice, follow-up — and end with a plan ready to paste.
+        </p>
+        <div class="hairline mt-8 pt-4 flex items-end justify-between">
+          <span class="display-number text-[4rem] italic font-light text-accent leading-none">I</span>
+          <span class="pc-arrow font-mono text-3xl text-ink">↘</span>
+        </div>
+      </a>
+
+      <a href="#/anticoag" data-target="anticoag" class="primary-card pair-card group" data-reveal data-delay="1">
+        <div class="flex items-baseline gap-4 mb-6">
+          <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-ink-mute">§ II</span>
+          <span class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent">Score &amp; decide</span>
+        </div>
+        <h2 class="font-serif text-[clamp(1.9rem,3.6vw,3rem)] font-medium text-ink leading-[1] tracking-[-0.02em] mb-4">
+          Anticoagulation
+        </h2>
+        <p class="body-md text-ink-mid">
+          Should this patient be anticoagulated? Toggle CHA<sub>2</sub>DS<sub>2</sub>-VASc and ORBIT criteria — get a clerk note ready to paste alongside the dose.
+        </p>
+        <div class="hairline mt-8 pt-4 flex items-end justify-between">
+          <span class="display-number text-[4rem] italic font-light text-accent leading-none">II</span>
+          <span class="pc-arrow font-mono text-3xl text-ink">↘</span>
+        </div>
+      </a>
+
+    </div>
 
     <div class="hairline mt-10 pt-6 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute whitespace-nowrap overflow-hidden text-ellipsis">
       Following the April 2026 audit · 92 AF referrals · 52.2% rated inappropriate
@@ -1103,24 +1593,32 @@
   </div>
 </header>
 
+</div>
+<!-- /end view-home -->
+
+
+<!-- ════════════════════════ VIEW · WIZARD (Chapter I) ════════════════════════ -->
+<div class="view view-wizard" data-view="wizard" data-active-step="1">
+
+<div class="view-topbar">
+  <div class="view-topbar-inner">
+    <button class="back-home" data-route="home" type="button">
+      <span class="back-arrow">←</span>
+      <span class="back-text">Back to home</span>
+    </button>
+    <div class="topbar-center">
+      <div class="topbar-app">AF Referral Guide</div>
+      <div class="topbar-attribution">West Suffolk · Cardiology</div>
+    </div>
+    <div class="topbar-chapter">§ I</div>
+  </div>
+</div>
 
 <!-- ════════════════════════ § I  RATE CONTROL — WIZARD ════════════════════════ -->
 <section id="rate" class="relative bg-paper-2 overflow-hidden">
   <div class="section-numeral">I</div>
 
-  <div class="relative px-6 md:px-16 pt-24 md:pt-32 pb-28">
-    <div class="grid md:grid-cols-12 gap-8 mb-16 max-w-5xl mx-auto">
-      <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ I</div></div>
-      <div class="md:col-span-10">
-        <div class="eyebrow mb-4" data-reveal>Rate control · The trust AEC protocol</div>
-        <h2 class="font-serif text-[clamp(2.2rem,5vw,4rem)] leading-[1] tracking-[-0.02em] text-ink" data-reveal data-delay="1">
-          Let's walk through it<span class="text-accent">.</span>
-        </h2>
-        <p class="body-lg mt-6 max-w-2xl text-ink-mid" data-reveal data-delay="2">
-          One decision at a time. We'll build the discharge plan as you go.
-        </p>
-      </div>
-    </div>
+  <div class="relative px-6 md:px-16 pt-12 md:pt-16 pb-12">
 
     <!-- WIZARD -->
     <div class="wizard" id="wizard">
@@ -1135,17 +1633,21 @@
 
       <!-- STEP 1 — Exclusions -->
       <div class="wizard-step is-active" data-step="1">
-        <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
-        <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
+        <div class="step-head">
+          <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
+          <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
+        </div>
 
-        <ul class="exc-list">
-          <li>Systolic BP &lt; 100/60 mmHg</li>
-          <li>Heart rate &lt; 60 bpm</li>
-          <li>Loss of consciousness</li>
-          <li>ECG suggestive of acute ischaemia</li>
-          <li>Evidence of decompensated heart failure</li>
-        </ul>
+        <div class="step-content">
+          <ul class="exc-list">
+            <li>Systolic BP &lt; 100/60 mmHg</li>
+            <li>Heart rate &lt; 60 or &ge; 160 bpm</li>
+            <li>Loss of consciousness</li>
+            <li>ECG suggestive of acute ischaemia</li>
+            <li>Evidence of decompensated heart failure</li>
+          </ul>
+        </div>
 
         <div class="grid md:grid-cols-2 gap-4 mt-8">
           <button class="choice danger" data-action="exclusion-yes">
@@ -1167,10 +1669,13 @@
 
       <!-- STEP 2 — Pre-treatment workup -->
       <div class="wizard-step" data-step="2">
+        <div class="step-head">
         <div class="eyebrow mb-4">Step 02 of 04 · Before you treat</div>
         <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">Send the baseline workup.</h3>
         <p class="body-md text-ink-mid mb-8">Send these — and identify the driver. Reversible precipitants are behind a lot of new AF, and fixing the driver alone often lets the patient self-revert without further rate control.</p>
+        </div>
 
+        <div class="step-content">
         <div class="grid gap-3 mb-2">
           <div class="grid grid-cols-[60px_1fr] gap-6 items-start py-5 border-b border-rule">
             <span class="display-number text-3xl italic text-accent font-light">a</span>
@@ -1209,6 +1714,7 @@
             </div>
           </div>
         </div>
+        </div>
 
         <div class="flex items-center justify-between mt-10 pt-6 hairline">
           <button class="nav-btn" data-action="back">← Back</button>
@@ -1218,10 +1724,13 @@
 
       <!-- STEP 3 — What is the patient on? + reassess checkbox -->
       <div class="wizard-step" data-step="3">
+        <div class="step-head">
         <div class="eyebrow mb-4">Step 03 of 04 · Current rate-control agent</div>
         <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">What is the patient on?</h3>
         <p class="body-md text-ink-mid mb-8">Pick whichever agent the patient is currently taking (or has just been started on).</p>
+        </div>
 
+        <div class="step-content">
         <div class="grid gap-3">
           <button class="agent" data-action="agent" data-agent="bisoprolol" aria-pressed="false">
             <span class="num">01</span>
@@ -1255,7 +1764,7 @@
         </div>
 
         <p class="body-md text-ink-mute italic mt-4">
-          If the patient is not on any rate-control medication, leave all of these unticked. Click a selected agent again to deselect it.
+          Tick all that apply &mdash; patients are often on more than one rate-control agent. Click a selected agent again to deselect it.
         </p>
 
         <button class="check-row mt-6" role="checkbox" aria-checked="false" data-action="refractory">
@@ -1265,6 +1774,7 @@
             <span class="sub">Tick if uncontrolled — we'll suggest how to escalate. Leave unticked if the rate is already controlled.</span>
           </span>
         </button>
+        </div>
 
         <div class="flex items-center justify-between mt-10 pt-6 hairline">
           <button class="nav-btn" data-action="back">← Back</button>
@@ -1274,11 +1784,15 @@
 
       <!-- STEP 4 — Suggested medication change (only shown if refractory checked) -->
       <div class="wizard-step" data-step="4">
-        <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
-        <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
-        <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
+        <div class="step-head">
+          <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
+          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
+          <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
+        </div>
 
-        <div class="esc-grid" id="sug-content"></div>
+        <div class="step-content">
+          <div class="esc-grid" id="sug-content"></div>
+        </div>
 
         <div class="flex items-center justify-between mt-10 pt-6 hairline">
           <button class="nav-btn" data-action="back">← Back</button>
@@ -1308,7 +1822,7 @@
         </div>
 
         <div class="mt-10 flex justify-center">
-          <a href="#anticoag" data-target="anticoag" class="nav-btn">Next · Anticoagulation question? →</a>
+          <a href="#/anticoag" data-target="anticoag" class="nav-btn">Next · Anticoagulation question? →</a>
         </div>
       </div>
 
@@ -1317,12 +1831,34 @@
 </section>
 
 
+</div>
+<!-- /end view-wizard -->
+
+
+<!-- ════════════════════════ VIEW · ANTICOAG (Chapter II) ════════════════════════ -->
+<div class="view view-anticoag" data-view="anticoag">
+
+<div class="view-topbar">
+  <div class="view-topbar-inner">
+    <button class="back-home" data-route="home" type="button">
+      <span class="back-arrow">←</span>
+      <span class="back-text">Back to home</span>
+    </button>
+    <div class="topbar-center">
+      <div class="topbar-app">AF Referral Guide</div>
+      <div class="topbar-attribution">West Suffolk · Cardiology</div>
+    </div>
+    <div class="topbar-chapter">§ II</div>
+  </div>
+</div>
+
 <!-- ════════════════════════ § II  ANTICOAGULATION ════════════════════════ -->
 <section id="anticoag" class="relative bg-paper overflow-hidden">
   <div class="section-numeral">II</div>
 
-  <div class="relative px-8 md:px-16 pt-24 md:pt-32 pb-28">
-    <div class="grid md:grid-cols-12 gap-8 mb-16">
+  <div class="relative px-8 md:px-16 pt-12 md:pt-16 pb-20">
+    <!-- Hero -->
+    <div class="grid md:grid-cols-12 gap-8 mb-12 md:mb-16">
       <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ II</div></div>
       <div class="md:col-span-10">
         <div class="eyebrow mb-4" data-reveal>Anticoagulation · Stroke vs. bleed</div>
@@ -1339,7 +1875,8 @@
       </div>
     </div>
 
-    <div class="ac-grid" id="ac-panels">
+    <!-- ──────────── Scoring · CHA + ORBIT side-by-side ──────────── -->
+    <div class="ac-grid mt-16 md:mt-20" id="ac-panels">
 
       <!-- CHA panel — always visible -->
       <section class="ac-panel ac-panel-cha" data-reveal>
@@ -1376,7 +1913,7 @@
         </div>
       </section>
 
-      <!-- ORBIT panel — hidden when AC not indicated -->
+      <!-- ORBIT panel — hidden when AC not indicated (cha-only) -->
       <section class="ac-panel ac-panel-orbit" data-reveal data-delay="1">
         <header class="ac-row-header">
           <div class="flex items-baseline justify-between mb-4">
@@ -1412,9 +1949,9 @@
       </section>
     </div>
 
-    <!-- ──────────── Cockcroft-Gault ──────────── -->
-    <div class="mt-24 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
-      <div class="md:col-span-2"><div class="eyebrow">Renal function</div></div>
+    <!-- ──────────── 03 · Cockcroft–Gault ──────────── -->
+    <div class="mt-16 md:mt-20 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
+      <div class="md:col-span-2"><div class="eyebrow">03 · Renal function</div></div>
       <div class="md:col-span-10">
         <h3 class="font-serif text-2xl md:text-3xl text-ink font-medium tracking-[-0.01em] mb-2">
           Creatinine clearance <span class="text-ink-mute font-normal italic">— Cockcroft–Gault</span>
@@ -1456,9 +1993,8 @@
             </div>
           </div>
 
-          <div class="crcl-arrow">→</div>
-
           <div class="crcl-output">
+            <div class="crcl-output-label">Output ↘</div>
             <div class="crcl-value"><span id="crcl-value">—</span><span class="unit">mL/min</span></div>
             <div class="crcl-dose is-empty" id="crcl-dose">Enter values to calculate</div>
           </div>
@@ -1466,9 +2002,12 @@
       </div>
     </div>
 
-    <!-- ──────────── Clerk note ──────────── -->
-    <div class="mt-12 grid md:grid-cols-12 gap-8" data-reveal>
-      <div class="md:col-span-2"><div class="eyebrow">Clerk note</div></div>
+    <!-- ──────────── 04 · Clerk note (the deliverable) ──────────── -->
+    <!-- No data-ac-section here: the clerk note must stay visible even when
+         AC isn't indicated, because the "no anticoagulation indicated"
+         paragraph is itself the clinical decision the user wants to paste. -->
+    <div class="mt-16 md:mt-20 grid md:grid-cols-12 gap-8" data-reveal>
+      <div class="md:col-span-2"><div class="eyebrow">04 · Clerk note</div></div>
       <div class="md:col-span-10">
         <div class="plan-card">
           <div class="flex items-baseline justify-between mb-6 flex-wrap gap-4">
@@ -1487,8 +2026,8 @@
       </div>
     </div>
 
-    <!-- Closing card -->
-    <div class="mt-24 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
+    <!-- Closing -->
+    <div class="mt-16 md:mt-20 grid md:grid-cols-12 gap-8" data-reveal data-ac-section>
       <div class="md:col-span-2"><div class="eyebrow">Bottom line</div></div>
       <div class="md:col-span-9">
         <p class="font-serif text-2xl md:text-3xl leading-[1.3] text-ink tracking-[-0.01em]">
@@ -1500,36 +2039,8 @@
   </div>
 </section>
 
-
-<!-- ════════════════════════ FOOTER ════════════════════════ -->
-<footer class="footer-dark">
-  <div class="px-8 md:px-16 py-16 grid md:grid-cols-12 gap-8">
-    <div class="md:col-span-6">
-      <div class="eyebrow mb-5">Colophon</div>
-      <p class="font-serif text-xl leading-snug tracking-[-0.01em]">
-        A clinician decision guide for atrial fibrillation, produced by West Suffolk NHS Foundation Trust Cardiology in May 2026 to support referrers following the April 2026 referrals audit.
-      </p>
-    </div>
-    <div class="md:col-span-4">
-      <div class="eyebrow mb-5">Sources</div>
-      <ul class="font-serif text-[15px] leading-relaxed space-y-2 text-paper/80">
-        <li>West Suffolk AF/AEC protocol · Cardiology · Nov 2020</li>
-        <li>Lip GYH et al, <em>Chest</em> 2010 · CHA<sub>2</sub>DS<sub>2</sub>-VASc</li>
-        <li>O'Brien EC et al, <em>Eur Heart J</em> 2015 · ORBIT</li>
-        <li>April 2026 Cardiology Referrals Audit</li>
-      </ul>
-    </div>
-    <div class="md:col-span-2 text-right md:text-left">
-      <div class="eyebrow mb-5">Edition</div>
-      <div class="display-number text-5xl italic font-light leading-none">May<br/>’26</div>
-    </div>
-  </div>
-
-  <div class="px-8 md:px-16 py-5 border-t border-paper/10 flex flex-col md:flex-row justify-between gap-2 font-mono text-[11px] tracking-[0.16em] uppercase text-paper/40">
-    <span>West Suffolk NHS Foundation Trust · Cardiology</span>
-    <span>For clinician use · Not patient-facing</span>
-  </div>
-</footer>
+</div>
+<!-- /end view-anticoag -->
 
 
 <!-- ════════════════════════ SCRIPTS ════════════════════════ -->
@@ -1540,11 +2051,13 @@
 const CHA = [
   { key:'c',  pts:1, label:'Congestive heart failure',      sub:'signs / symptoms or LVEF ≤ 40%' },
   { key:'h',  pts:1, label:'Hypertension',                  sub:'or current antihypertensive therapy' },
-  { key:'a2', pts:2, label:'Age ≥ 75',                      sub:'' },
+  // The two age bands are mutually exclusive — selecting one untoggles the
+  // other. `excl` is honoured by calculator()'s click handler.
+  { key:'a2', pts:2, label:'Age ≥ 75',                      sub:'', excl:['a'] },
   { key:'d',  pts:1, label:'Diabetes mellitus',             sub:'' },
   { key:'s2', pts:2, label:'Stroke / TIA / thromboembolism',sub:'prior event' },
   { key:'v',  pts:1, label:'Vascular disease',              sub:'prior MI, PAD or aortic plaque' },
-  { key:'a',  pts:1, label:'Age 65 – 74',                   sub:'' },
+  { key:'a',  pts:1, label:'Age 65 – 74',                   sub:'', excl:['a2'] },
   { key:'sc', pts:1, label:'Sex category (female)',         sub:'risk modifier' },
 ];
 
@@ -1563,6 +2076,7 @@ const ORBIT_BAND = { 0:'Low risk band', 1:'Low risk band', 2:'Low risk band',
 
 function calculator(opts) {
   const state = Object.fromEntries(opts.crits.map(c => [c.key, false]));
+  const btns = {};
 
   const wrap = document.getElementById(opts.critsEl);
   opts.crits.forEach(c => {
@@ -1580,10 +2094,22 @@ function calculator(opts) {
     `;
     btn.addEventListener('click', () => {
       state[c.key] = !state[c.key];
+      // Mutually-exclusive criteria — when we turn ON a criterion that has
+      // `excl: [...]`, turn off the others it conflicts with (e.g. the two
+      // CHA age bands, Age 65-74 and Age ≥75).
+      if (state[c.key] && c.excl) {
+        c.excl.forEach(k => {
+          if (state[k]) {
+            state[k] = false;
+            if (btns[k]) btns[k].setAttribute('aria-pressed', 'false');
+          }
+        });
+      }
       btn.setAttribute('aria-pressed', state[c.key] ? 'true' : 'false');
       render();
     });
     wrap.appendChild(btn);
+    btns[c.key] = btn;
   });
 
   const scoreEl = document.getElementById(opts.scoreEl);
@@ -1631,7 +2157,11 @@ function shouldShowAnticoag() {
 
 function updateAnticoagVisibility() {
   const show = shouldShowAnticoag();
-  document.getElementById('ac-panels').classList.toggle('cha-only', !show);
+  // .ac-grid.cha-only hides the ORBIT panel and expands CHA to full width
+  // (with criteria spreading to 3 columns). CrCl, clerk note and closing
+  // carry [data-ac-section] and hide via .is-hidden in parallel.
+  const acPanels = document.getElementById('ac-panels');
+  if (acPanels) acPanels.classList.toggle('cha-only', !show);
   document.querySelectorAll('[data-ac-section]').forEach(el => {
     el.classList.toggle('is-hidden', !show);
   });
@@ -1902,10 +2432,21 @@ const AGENT_LABEL = {
 const wizardState = {
   step: 1,
   acute: false,         // exclusion-yes → terminal
-  agent: null,          // 'bisoprolol' | 'verapamil' | 'digoxin' — what the patient is on
+  // Multi-select: a patient can sit on more than one rate-control agent
+  // (commonly Bisoprolol+Digoxin or Verapamil+Digoxin). Bisoprolol+Verapamil
+  // is contraindicated and enforced as a mutex in the click handler.
+  agents: { bisoprolol: false, verapamil: false, digoxin: false },
   septic: false,        // AF is septic-driven — Digoxin preferred
   refractory: false,    // HR remains > 110 despite the medication change
 };
+
+// Helpers for reading the agent selection. Most call sites only care about
+// which combination is active.
+function activeAgents() {
+  return Object.keys(wizardState.agents).filter(k => wizardState.agents[k]);
+}
+function hasAgent(name) { return !!wizardState.agents[name]; }
+function agentCount() { return activeAgents().length; }
 
 // Map wizard step → visible progress segment (4 segs · plan = all done).
 const STEP_TO_SEG = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 };
@@ -1917,14 +2458,27 @@ const segs = wizard.querySelectorAll('.step-dots .seg');
 function setStep(n) {
   wizardState.step = n;
   stepEls.forEach(el => {
-    el.classList.toggle('is-active', Number(el.dataset.step) === n);
+    el.classList.toggle('is-active', el.dataset.step === String(n));
   });
+  // Always reset the new step's scrollable body to the top. Without this,
+  // the .step-content can inherit a scrollTop from a previous step layout
+  // and the user lands mid-content with the heading scrolled out of view
+  // — dangerous when the heading carries the safety question.
+  const activeStep = wizard.querySelector(`.wizard-step[data-step="${n}"]`);
+  if (activeStep) {
+    const sc = activeStep.querySelector('.step-content');
+    if (sc) sc.scrollTop = 0;
+  }
   const cur = STEP_TO_SEG[n] || 1;
   segs.forEach((s, idx) => {
     const segNum = idx + 1;
     s.classList.toggle('done',   cur > segNum);
     s.classList.toggle('active', cur === segNum);
   });
+  // Tell the view-wizard container which step is active — CSS uses this to
+  // enable scroll on step 5 (the plan) while steps 1-4 stay fit-to-viewport.
+  const view = document.querySelector('.view-wizard');
+  if (view) view.setAttribute('data-active-step', String(n));
   // Always land the progress bar at the same offset from the viewport top.
   // requestAnimationFrame waits for the step transition to render, so we
   // measure the bar's true layout position before scrolling.
@@ -1941,7 +2495,7 @@ function setStep(n) {
 
 function resetWizard() {
   wizardState.acute = false;
-  wizardState.agent = null;
+  wizardState.agents = { bisoprolol: false, verapamil: false, digoxin: false };
   wizardState.septic = false;
   wizardState.refractory = false;
   wizard.querySelectorAll('.check-row').forEach(r => r.setAttribute('aria-checked', 'false'));
@@ -1954,25 +2508,33 @@ function renderSuggestion() {
   const titleEl = document.getElementById('sug-title');
   const introEl = document.getElementById('sug-intro');
   if (!c) return;
-  const agent = wizardState.agent;
+  const biso  = hasAgent('bisoprolol');
+  const verap = hasAgent('verapamil');
+  const digox = hasAgent('digoxin');
+  const n     = agentCount();
   const septic = wizardState.septic;
   let html = '';
 
   // Digoxin loading recipe — used in multiple places.
+  // Note: reduce loading by 50 % in frail / elderly / low body-weight /
+  // renally impaired patients (BNF). The maintenance target trough is
+  // 0.8 – 2.0 ng/mL with an AF-specific lower band 0.5 – 0.9 (DIG post-
+  // hoc / ESC 2024) — "< 2 ng/mL" alone is the toxicity ceiling, not a
+  // therapeutic target.
   const digoxinRecipe = `
     <ol class="esc-recipe">
-      <li><strong>Digoxin 500 mcg PO stat</strong></li>
-      <li><strong>Digoxin 500 mcg PO 6 hours later</strong> if HR &gt; 110</li>
-      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>, <em>uptitratable up to 250 mcg OD</em> as needed
+      <li><strong>Digoxin 500 mcg PO stat</strong> <em>(reduce to 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30)</em></li>
+      <li><strong>Digoxin 500 mcg PO 6 hours later</strong> if HR &gt; 110 <em>(reduce to 250 mcg per above)</em></li>
+      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>, <em>uptitratable up to 250 mcg OD</em> as level and renal function allow
         <ul class="esc-subrecipe">
-          <li>Normal renal function — start directly</li>
-          <li>Impaired renal function — check digoxin pre-dose level <strong>&lt; 2 ng/mL</strong> before maintenance</li>
+          <li>Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; in AF aim <strong>0.5 – 0.9 ng/mL</strong></li>
+          <li>Hold if level &gt; 2.0 or signs of toxicity — nausea, visual halos, confusion, new bradyarrhythmia, AV block</li>
         </ul>
       </li>
     </ol>
   `;
 
-  if (!agent) {
+  if (n === 0) {
     titleEl.textContent = `Patient is not yet on rate-control.`;
     if (septic) {
       introEl.innerHTML = `<strong>Sepsis/hypovolemia flagged.</strong> Start with Digoxin — it doesn't drop BP.`;
@@ -1991,8 +2553,8 @@ function renderSuggestion() {
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">Only once driver is controlled and SBP &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
-              <div class="esc-branch-sub">— consider adding Bisoprolol</div>
+              <div class="esc-branch-title">Consider adding Bisoprolol</div>
+              <div class="esc-branch-sub">— once driver is controlled and SBP &gt; 100 mmHg, and patient remains stable</div>
             </div>
           </div>
           <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD as BP tolerates.</p>
@@ -2005,8 +2567,8 @@ function renderSuggestion() {
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">First-line — Bisoprolol 2.5 mg OD</div>
-              <div class="esc-branch-sub">— if no β-blocker contraindication and SBP &gt; 100 <span class="font-normal italic">and patient remains stable</span></div>
+              <div class="esc-branch-title">Start Bisoprolol 2.5 mg OD</div>
+              <div class="esc-branch-sub">— first-line if no β-blocker contraindication and SBP &gt; 100, patient stable</div>
             </div>
           </div>
           <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD if needed and BP tolerates. <em>If β-blocker contraindicated, start <strong>Verapamil 40 mg TDS</strong> instead — do not combine with bisoprolol.</em></p>
@@ -2015,25 +2577,96 @@ function renderSuggestion() {
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">If first-line cannot control HR</div>
-              <div class="esc-branch-sub">— add Digoxin loading</div>
+              <div class="esc-branch-title">Add Digoxin loading</div>
+              <div class="esc-branch-sub">— if first-line cannot control HR</div>
             </div>
           </div>
           ${digoxinRecipe}
         </div>
       `;
     }
-  } else if (agent === 'bisoprolol' || agent === 'verapamil') {
-    const cap = agent === 'bisoprolol' ? 'Bisoprolol' : 'Verapamil';
-    const upDose = agent === 'bisoprolol' ? '5 mg OD, then 10 mg OD if tolerated' : '80 mg TDS (or MR 240 mg OD)';
-    const combineWarn = agent === 'verapamil'
-      ? '<p class="esc-warn"><strong>Do not</strong> add Bisoprolol — combination contraindicated.</p>'
+  } else if (digox && (biso || verap)) {
+    // ─── Combo: BB/CCB + Digoxin ──────────────────────────────
+    const cap = biso ? 'Bisoprolol' : 'Verapamil';
+    const upDose = biso ? '5 mg OD, then 10 mg OD if tolerated (BNF step-up)' : '80 mg TDS (or MR 240 mg OD)';
+    // Verap+Digox is a BNF "severe" PK interaction — verapamil inhibits
+    // P-glycoprotein and raises digoxin levels ~50–75 %. Flag it loudly
+    // before any uptitration. Biso+Digox is PK-independent, so no warn.
+    const interactionWarn = verap
+      ? '<p class="esc-warn"><strong>Verapamil raises Digoxin levels ~50–75 %</strong> (BNF severe P-gp interaction). Check a pre-dose Digoxin level <strong>before any uptitration</strong> regardless of renal function; target combination trough <strong>&lt; 1.5 ng/mL</strong>.</p>'
+      : '';
+    titleEl.textContent = `Patient is on ${cap} + Digoxin.`;
+    if (septic) {
+      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin remains preferred; ${cap} should generally be <em>held</em>, not uptitrated, until stable.`;
+      html = `
+        ${interactionWarn}
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">Continue / uptitrate Digoxin maintenance <span class="text-ink-mute font-normal italic">— preferred in sepsis</span></div>
+              <div class="esc-branch-sub">— check pre-dose level first; uptitrate up to 250 mcg OD as level and renal function allow</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level + U&amp;Es BEFORE uptitrating</strong> — sepsis-AKI risks accumulation. Target trough <strong>0.8–2.0 ng/mL</strong> (AF: aim 0.5–0.9). Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, bradyarrhythmia, AV block).</p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
+              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while septic; refractory tachycardia may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis'}</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">${biso
+            ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing, and SBP comfortably &gt; 100.'
+            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once sepsis resolved, SBP &gt; 110 sustained, LV function known.'
+          }</p>
+        </div>
+      `;
+    } else {
+      introEl.innerHTML = `Both agents on board. ${verap ? '<strong>Check a Digoxin level first</strong> — Verapamil raises levels significantly. ' : ''}Maximise each carefully before re-referral.`;
+      html = `
+        ${interactionWarn}
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">A</span>
+            <div>
+              <div class="esc-branch-title">Uptitrate ${cap}</div>
+              <div class="esc-branch-sub">— gate on SBP &gt; 100 mmHg${verap ? ', LVEF ≥ 40 %, PR &lt; 200 ms, HR ≥ 60' : ', HR &gt; 60'}</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.${verap ? ' Verapamil is contraindicated in LVEF &lt; 40 % — request inpatient TTE if echo unavailable.' : ' β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.'}</p>
+        </div>
+        <div class="esc-branch">
+          <div class="esc-branch-head">
+            <span class="esc-branch-letter">B</span>
+            <div>
+              <div class="esc-branch-title">Uptitrate Digoxin maintenance</div>
+              <div class="esc-branch-sub">— ${verap ? 'cautiously; target trough &lt; 1.5 ng/mL given the Verapamil interaction' : 'up to 250 mcg OD as level and renal function allow'}</div>
+            </div>
+          </div>
+          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level first</strong> — interactions / electrolytes / volume can push levels independently of creatinine. Target trough <strong>0.8–2.0 ng/mL</strong> (AF: aim 0.5–0.9${verap ? '; combination with Verapamil: &lt; 1.5' : ''}). Uptitrate up to <strong>250 mcg OD</strong> as level and renal function allow.</p>
+        </div>
+      `;
+    }
+  } else if (biso || verap) {
+    // ─── Single agent: BB or CCB ──────────────────────────────
+    const cap = biso ? 'Bisoprolol' : 'Verapamil';
+    const upDose = biso
+      ? '5 mg OD, then 7.5 mg, then 10 mg OD (BNF step-up; reassess 12–24 h before each step)'
+      : '80 mg TDS (or MR 240 mg OD)';
+    const cautionPost = biso
+      ? ' Gate on SBP &gt; 100 mmHg, HR &gt; 60 throughout. If already at 10 mg OD and HR remains &gt; 110 → Digoxin loading.'
+      : ' <strong>Verapamil contraindicated in LVEF &lt; 40 %</strong> — request inpatient TTE if echo unavailable. Gate on SBP &gt; 100, PR &lt; 200 ms, HR &gt; 60.';
+    const combineWarn = verap
+      ? '<p class="esc-warn"><strong>Do not</strong> add Bisoprolol — combination with Verapamil contraindicated (β-blocker + non-DHP CCB → severe bradycardia / AV block / asystole).</p>'
       : '';
     titleEl.textContent = `Patient is on ${cap}.`;
 
     if (septic) {
       // Septic — lead with Digoxin, demote uptitration.
-      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is preferred — it doesn't drop BP. Uptitration of ${cap} is a second line option.`;
+      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin preferred (BP-neutral). ${cap} should generally be <em>held</em> or kept at current dose — not uptitrated — until sepsis is controlled.`;
       html = `
         ${combineWarn}
         <div class="esc-branch">
@@ -2041,7 +2674,7 @@ function renderSuggestion() {
             <span class="esc-branch-letter">A</span>
             <div>
               <div class="esc-branch-title">Add Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis</span></div>
-              <div class="esc-branch-sub">— BB/CCB drop BP in already-hypotensive septic patients</div>
+              <div class="esc-branch-sub">— β-blockers / CCBs further drop BP in already-hypotensive septic patients${verap ? '. Verapamil raises Digoxin levels ~50–75 % — start maintenance at 62.5 mcg OD; check level at 48–72 h' : ''}</div>
             </div>
           </div>
           ${digoxinRecipe}
@@ -2050,11 +2683,14 @@ function renderSuggestion() {
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">Only if SBP comfortably &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
-              <div class="esc-branch-sub">— uptitrate ${cap}</div>
+              <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
+              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while septic. Refractory tachycardia on a β-blocker may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis'}</div>
             </div>
           </div>
-          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong> — second-line in sepsis.</p>
+          <p class="esc-branch-body">${biso
+            ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing.'
+            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once sepsis resolved, SBP &gt; 110 sustained, LV function known.'
+          }</p>
         </div>
       `;
     } else {
@@ -2066,72 +2702,74 @@ function renderSuggestion() {
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">If SBP &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
-              <div class="esc-branch-sub">— uptitrate ${cap}</div>
+              <div class="esc-branch-title">Uptitrate ${cap}</div>
+              <div class="esc-branch-sub">— if SBP &gt; 100 mmHg, ${biso ? 'HR &gt; 60' : 'LVEF ≥ 40 %, PR &lt; 200 ms'}, patient stable</div>
             </div>
           </div>
-          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.</p>
+          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.${cautionPost}</p>
         </div>
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">If ${cap} cannot be uptitrated</div>
-              <div class="esc-branch-sub">— low SBP, side effects, intolerance — add Digoxin loading</div>
+              <div class="esc-branch-title">Add Digoxin loading</div>
+              <div class="esc-branch-sub">— if ${cap} cannot be uptitrated (low SBP, side effects, intolerance${verap ? ', constipation, neg-inotropy concerns' : ''})${verap ? '. Verapamil raises Digoxin levels — see body' : ''}</div>
             </div>
           </div>
           ${digoxinRecipe}
+          ${verap ? '<p class="esc-branch-body"><strong>Verapamil raises Digoxin levels ~50–75 %</strong> (BNF severe P-gp interaction). Start maintenance at 62.5 mcg OD (or alternate days if eGFR &lt; 50); check pre-dose level at 5–7 days; target trough &lt; 1.5 ng/mL. <em>Do not</em> combine Verapamil with Bisoprolol.</p>' : '<p class="esc-branch-body">β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.</p>'}
         </div>
       `;
     }
-  } else if (agent === 'digoxin') {
+  } else if (digox) {
+    // ─── Single agent: Digoxin ────────────────────────────────
     titleEl.textContent = `Patient is on Digoxin.`;
     if (septic) {
-      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is the appropriate choice — continue and avoid adding BB/CCB unless BP comfortably allows.`;
+      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is the appropriate choice — continue, optimise, and avoid adding BB/CCB unless BP comfortably allows. Refractory rate in a septic Digoxin patient may itself signal toxicity — check a level <em>first</em>.`;
       html = `
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">Continue Digoxin — preferred in sepsis</div>
-              <div class="esc-branch-sub">— treat the sepsis, fluid-resuscitate; rate often settles once driver is controlled</div>
+              <div class="esc-branch-title">Check pre-dose level + U&amp;Es, then continue / uptitrate Digoxin</div>
+              <div class="esc-branch-sub">— sepsis-AKI risks accumulation; refractory tachycardia may itself be toxicity</div>
             </div>
           </div>
-          <p class="esc-branch-body">Confirm full loading completed and maintenance dose appropriate for renal function. Reassess after sepsis is treated before considering a second agent.</p>
+          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; AF aim 0.5 – 0.9. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block — <em>DigiFab if life-threatening</em>). If level low and renal function adequate, uptitrate maintenance up to <strong>250 mcg OD</strong>. Treat the sepsis; rate often settles once driver is controlled.</p>
         </div>
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">Only if SBP comfortably &gt; 100 mmHg <span class="text-ink-mute font-normal italic">and patient remains stable</span></div>
-              <div class="esc-branch-sub">— add a second agent (BB or CCB)</div>
+              <div class="esc-branch-title">Add a second agent — only once stable</div>
+              <div class="esc-branch-sub">— SBP &gt; 100 <em>off vasopressors</em>, lactate trending down, no fluid/pressor requirement. Bisoprolol first; Verapamil only if β-blocker contraindicated <strong>and</strong> LV function known preserved</div>
             </div>
           </div>
-          <p class="esc-branch-body">Add <strong>Bisoprolol 2.5 mg OD</strong> (uptitrate as tolerated) <em>or</em> <strong>Verapamil 40 mg TDS</strong> if β-blocker contraindicated. <em>Do not combine bisoprolol with verapamil.</em></p>
+          <p class="esc-branch-body">Add <strong>Bisoprolol 2.5 mg OD</strong> (uptitrate as tolerated) <em>or</em> <strong>Verapamil 40 mg TDS</strong> if β-blocker contraindicated and LVEF ≥ 40 %. <em>Do not combine Bisoprolol with Verapamil.</em> If rate uncontrolled and patient deteriorating despite Digoxin, escalate to cardiology / critical care for IV amiodarone — do not delay for BB/CCB titration.</p>
         </div>
       `;
     } else {
-      introEl.innerHTML = `Already loaded over 24 hours. Add a second agent — pick whichever applies.`;
+      introEl.innerHTML = `Confirm Digoxin status first — is the patient mid-load, on chronic maintenance, or fully loaded? Optimise Digoxin before adding a second agent.`;
       html = `
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">First choice — Bisoprolol</div>
-              <div class="esc-branch-sub">— if no β-blocker contraindication and SBP &gt; 100</div>
+              <div class="esc-branch-title">Optimise existing Digoxin first — check level</div>
+              <div class="esc-branch-sub">— confirm fully loaded (500 + 500 mcg over 6 h), steady state, K⁺/Mg²⁺ replete; uptitrate maintenance to max 250 mcg OD as level allows</div>
             </div>
           </div>
-          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD as BP tolerates.</p>
+          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; AF aim 0.5 – 0.9. Hold if &gt; 2.0 or features of toxicity. Review interacting drugs (amiodarone, verapamil, macrolides, spironolactone — all raise levels).</p>
         </div>
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
-              <div class="esc-branch-title">Alternative — Verapamil</div>
-              <div class="esc-branch-sub">— if β-blocker contraindicated, SBP &gt; 100</div>
+              <div class="esc-branch-title">If still &gt; 110 after Digoxin optimised — add a second agent</div>
+              <div class="esc-branch-sub">— Bisoprolol first-line; Verapamil if β-blocker contraindicated and LVEF ≥ 40 %</div>
             </div>
           </div>
-          <p class="esc-branch-body">Start <strong>Verapamil 40 mg TDS</strong> (or MR 120 mg OD). Uptitrate as tolerated. <em>Do not combine with bisoprolol.</em></p>
+          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>, titrate as BP/HR tolerate (most inpatients leave on 2.5 – 5 mg; GP continues uptitration). <em>If β-blocker contraindicated:</em> start <strong>Verapamil 40 mg TDS</strong> (or MR 120 mg OD) — <strong>only if LVEF ≥ 40 %</strong> (request inpatient TTE if echo unavailable). <em>Do not combine Bisoprolol with Verapamil.</em> β-blocker + Digoxin: additive AV-nodal blockade — monitor for symptomatic bradycardia / AV block.</p>
         </div>
       `;
     }
@@ -2139,60 +2777,152 @@ function renderSuggestion() {
   c.innerHTML = html;
 }
 
+// ─── Reusable clinical text fragments ─────────────────────────────────
+// These get reused across many agent combinations. Centralising keeps
+// digoxin level language, BNF step-up wording, sepsis hold criteria,
+// HFrEF caveats and the Verap+Digox PK interaction consistent and easy
+// to amend in one place.
+const DIGOXIN_LEVEL_TEXT =
+  'Pre-dose level (≥ 6 h post-dose): target <strong>0.8–2.0 ng/mL</strong>; in AF aim <strong>0.5–0.9 ng/mL</strong> (DIG post-hoc / ESC 2024). Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block).';
+const BISO_STEP_TEXT =
+  'BNF step-up: 1.25 → 2.5 → 3.75 → 5 → 7.5 → 10 mg OD. Reassess after 12–24 h before each step. Gate on SBP &gt; 100 mmHg, HR &gt; 60. <em>If already on 10 mg OD and HR remains &gt; 110, escalate to Digoxin loading.</em>';
+const BB_CI_TEXT =
+  'β-blocker contraindications: asthma / severe COPD with reversibility, 2nd/3rd-degree AV block, sick sinus, decompensated HF, severe PVD, untreated phaeochromocytoma. If contraindicated, start <strong>Verapamil 40 mg TDS (or MR 120 mg OD)</strong> instead — <em>do not combine with Bisoprolol</em>.';
+const VERAP_HFREF_TEXT =
+  '<strong>Verapamil contraindicated in LVEF &lt; 40 %</strong> — if recent echo unavailable, request inpatient TTE before uptitration.';
+const VERAP_DIGOX_INTERACTION_TEXT =
+  '<strong>Verapamil raises Digoxin levels ~50–75 %</strong> (BNF severe P-gp interaction). Check pre-dose Digoxin level <strong>before any uptitration regardless of renal function</strong>; aim trough &lt; 1.5 ng/mL on combination. If Digoxin was started before Verapamil was added, anticipate accumulation — consider 30–50 % maintenance dose reduction.';
+const DIGOX_LOADING_TEXT =
+  'Loading: <strong>500 mcg PO stat</strong> + <strong>500 mcg at 6 h</strong> if HR &gt; 110. <em>Reduce to 250 + 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30.</em> Maintenance: 62.5 mcg OD initially, uptitrate up to 250 mcg OD as level and renal function allow.';
+const SEPSIS_BB_HOLD_TEXT =
+  '<strong>Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or NEWS2 ≥ 5</strong> — β-blockade blunts the tachycardic response to evolving sepsis; pre-empt rather than react. Reassess at each drug round.';
+const SEPSIS_VERAP_HOLD_TEXT =
+  '<strong>Hold and discuss cardiology if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI developing, or pulmonary congestion</strong> — Verapamil is negatively inotropic and vasodilatory and can unmask cardiovascular collapse as sepsis evolves. Switch rate-control to Digoxin alone if Verapamil held.';
+const DIGOX_BODYWEIGHT_PHRASE =
+  '<em>Reduce to 250 + 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30.</em> ';
+
 function agentMedicationItems() {
-  const a = wizardState.agent;
-  const septic = wizardState.septic;
+  const biso  = hasAgent('bisoprolol');
+  const verap = hasAgent('verapamil');
+  const digox = hasAgent('digoxin');
+  const n     = agentCount();
+  const septic     = wizardState.septic;
+  const refractory = wizardState.refractory;
   const items = [];
 
-  // No agent on board.
-  if (!a) {
-    if (!wizardState.refractory) {
-      // HR controlled spontaneously — no rate-control medication needed.
-      items.push({ em: 'No rate-control medication required at this time', body: 'Heart rate is well controlled; the patient is not on (and does not need) any rate-control agent.' });
+  // ─── No agent on board ────────────────────────────────────────────────
+  if (n === 0) {
+    if (!refractory) {
+      if (septic) {
+        items.push({
+          em: 'No rate-control medication at this time — but <strong>sepsis is the driver</strong>',
+          body: 'HR currently controlled. Reassess after fluid resuscitation and source control; if HR climbs &gt; 110, start <strong>Digoxin</strong> first (BP-neutral). <strong>Do NOT start a β-blocker or CCB pre-emptively while septic</strong> — both can precipitate collapse.'
+        });
+      } else {
+        items.push({
+          em: 'No rate-control medication required at this time',
+          body: 'HR currently &lt; 110 and asymptomatic. Reassess before discharge — if HR drifts ≥ 110 or symptoms develop, start <strong>Bisoprolol 1.25–2.5 mg OD</strong> (and re-enter the wizard with the refractory flag).'
+        });
+      }
       return items;
     }
-    // HR > 110 + no agent — recommend a first-line agent (Digoxin first if septic).
+    // No agent + refractory.
     if (septic) {
-      items.push({ em: 'Sepsis/hypovolemia flagged — Digoxin preferred as first agent', body: 'β-blockers and CCBs further drop BP in already-hypotensive patients. Treat the driver first.' });
-      items.push({ em: 'Start Digoxin loading: 0.5 mg PO stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Maintenance: <strong>62.5 mcg OD initially, uptitratable up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
-      items.push({ em: 'Only once sepsis/hypovolemia is controlled and SBP comfortably &gt; 100 mmHg — consider adding Bisoprolol 2.5 mg OD', body: 'Uptitrate up to 10 mg OD as tolerated.' });
+      items.push({ em: 'Sepsis flagged — Digoxin preferred as first agent', body: 'β-blockers and CCBs further drop BP in already-hypotensive patients. Treat the driver first (Sepsis Six). Digoxin onset is slow (1–2 h) — if rate control is needed urgently, discuss critical care / cardiology for IV amiodarone.' });
+      items.push({ em: 'Start Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT });
+      items.push({ em: 'Only once sepsis is controlled and SBP comfortably &gt; 100 mmHg — consider adding Bisoprolol 2.5 mg OD', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
     } else {
-      items.push({ em: 'Start Bisoprolol 2.5 mg OD — first-line per AEC protocol', body: 'If no β-blocker contraindication and SBP &gt; 100 mmHg. Uptitrate to 5 mg, then 10 mg OD as tolerated. <em>If β-blocker contraindicated, start Verapamil 40 mg TDS (or MR 120 mg OD) instead — do not combine with bisoprolol.</em>' });
-      items.push({ em: 'If first-line cannot control HR — load Digoxin 0.5 mg PO stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Maintenance: <strong>62.5 mcg OD initially, uptitratable up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
+      items.push({ em: 'Start Bisoprolol 2.5 mg OD — first-line per AEC protocol', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
+      items.push({ em: 'If first-line cannot control HR — load Digoxin', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' β-blocker + Digoxin together → additive AV-nodal blockade; monitor for symptomatic bradycardia and AV block.' });
     }
     return items;
   }
 
-  // Rate already controlled — just continue current agent, no uptitration.
-  if (!wizardState.refractory) {
-    if (a === 'bisoprolol') items.push({ em: 'Continue Bisoprolol at the current dose', body: 'HR controlled — no uptitration required.' });
-    else if (a === 'verapamil') items.push({ em: 'Continue Verapamil at the current dose', body: 'HR controlled — no uptitration required.' });
-    else if (a === 'digoxin')   items.push({ em: 'Continue Digoxin maintenance', body: 'HR controlled — no additional agent required. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
+  // ─── HR controlled (not refractory) ───────────────────────────────────
+  if (!refractory) {
+    if (n === 1) {
+      if (biso) {
+        if (septic) {
+          items.push({ em: 'Continue Bisoprolol at the current dose — with sepsis caution', body: SEPSIS_BB_HOLD_TEXT + ' Septic AF often self-terminates with source control; do not uptitrate while septic.' });
+        } else {
+          items.push({ em: 'Continue Bisoprolol at the current dose', body: '<strong>Document the current dose</strong> and confirm the patient is taking it. HR controlled — no acute uptitration required. NICE NG196 endorses lenient rate target (&lt; 110) only if asymptomatic <strong>and</strong> preserved LVEF; if symptomatic or HFrEF, target stricter rate or earlier cardiology input. Hold or reduce if SBP &lt; 100, HR &lt; 50, or bronchospasm.' });
+        }
+      } else if (verap) {
+        if (septic) {
+          items.push({ em: 'Continue Verapamil at the current dose — monitor closely', body: SEPSIS_VERAP_HOLD_TEXT + ' Continuous cardiac monitoring; hourly BP; daily ECG for PR prolongation / AV block. If a second agent is later needed, use <strong>Digoxin</strong> (not Bisoprolol — contraindicated with Verapamil).' });
+        } else {
+          items.push({ em: 'Continue Verapamil at the current dose', body: '<strong>Document the current dose</strong>; confirm Verapamil is being taken for AF rate control (not HTN/SVT) and adherence is good. ' + VERAP_HFREF_TEXT + ' If Digoxin is co-prescribed, recheck level (Verapamil raises Digoxin concentration). Ask about constipation, ankle oedema, bradycardia (common Verapamil intolerance triggers).' });
+        }
+      } else if (digox) {
+        if (septic) {
+          items.push({ em: 'Continue Digoxin maintenance — sepsis-AKI risk for toxicity', body: '<strong>Sepsis risks AKI → Digoxin accumulation and toxicity (narrow therapeutic window).</strong> Monitor U&amp;Es daily while septic. If creatinine rises or urine output drops, hold the next dose and send a pre-dose level. ' + DIGOXIN_LEVEL_TEXT });
+        } else {
+          items.push({ em: 'Continue Digoxin maintenance', body: 'Resting HR controlled — confirm <strong>exertional</strong> HR also controlled (24-h tape) before accepting monotherapy long-term, particularly if ambulant (Digoxin works via vagal tone, poor on exertion — NICE NG196 §1.5). ' + DIGOXIN_LEVEL_TEXT + ' Review interacting drugs (amiodarone, verapamil, macrolides, spironolactone, NSAIDs all raise Digoxin levels).' });
+        }
+      }
+    } else {
+      // Combo: biso+digox or verap+digox (biso+verap is mutex-prevented).
+      const bb = biso ? 'Bisoprolol' : 'Verapamil';
+      if (verap && digox) {
+        if (septic) {
+          items.push({ em: 'Continue Verapamil + Digoxin at current doses — <strong>with caution</strong>', body: SEPSIS_VERAP_HOLD_TEXT + ' ' + VERAP_DIGOX_INTERACTION_TEXT + ' Daily U&amp;Es; pre-dose Digoxin level if creatinine rising. ' + DIGOXIN_LEVEL_TEXT });
+        } else {
+          items.push({ em: 'Continue Verapamil + Digoxin at current doses', body: 'HR controlled on combination. ' + VERAP_DIGOX_INTERACTION_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' ' + VERAP_HFREF_TEXT + ' <strong>Review whether the combination is still required</strong> at GP follow-up — consider stepping down to monotherapy if rate has been stably controlled. Counsel patient to report dizziness, syncope, or pulse &lt; 50.' });
+        }
+      } else { // biso + digox
+        if (septic) {
+          items.push({ em: 'Continue ' + bb + ' + Digoxin at current doses — <strong>with caution</strong>', body: SEPSIS_BB_HOLD_TEXT + ' <strong>Sepsis-AKI risks Digoxin accumulation.</strong> Daily U&amp;Es; pre-dose level if creatinine rising. ' + DIGOXIN_LEVEL_TEXT });
+        } else {
+          items.push({ em: 'Continue Bisoprolol + Digoxin at current doses', body: 'HR controlled on combination — no uptitration required. ' + DIGOXIN_LEVEL_TEXT + ' <strong>Review whether the combination is still required</strong> at GP follow-up — consider stepping down to monotherapy if rate has been stably controlled (wean Digoxin first in active patients; wean Bisoprolol first if bradycardia, hypotension or fatigue). Document resting HR and BP and absence of symptomatic bradycardia before discharge.' });
+        }
+      }
+    }
     return items;
   }
 
-  // Rate uncontrolled (refractory checkbox ticked) — escalate.
-  // Sepsis path: lead with Digoxin (BB/CCB drop BP in septic patients).
+  // ─── Refractory (HR > 110 despite current therapy) ────────────────────
   if (septic) {
-    items.push({ em: 'Sepsis flagged — Digoxin preferred', body: 'β-blockers and CCBs further drop BP in already-hypotensive septic patients. Treat sepsis first; rate often settles once the driver is controlled.' });
-    if (a === 'bisoprolol' || a === 'verapamil') {
-      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment). Preferred over uptitrating ' + (a === 'bisoprolol' ? 'Bisoprolol' : 'Verapamil') + ' in sepsis.' });
-      items.push({ em: 'Uptitrate current agent only if SBP comfortably &gt; 100 mmHg', body: 'Second line in sepsis — be cautious of further BP drop.' });
-    } else if (a === 'digoxin') {
-      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as needed', body: 'Already loaded — appropriate choice in sepsis. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
-      items.push({ em: 'Only add a second agent (BB or CCB) if SBP comfortably &gt; 100 mmHg', body: 'Reassess after sepsis is treated before adding Bisoprolol or Verapamil. Do not combine the two.' });
+    items.push({ em: 'Sepsis flagged — Digoxin preferred', body: 'β-blockers <strong>and</strong> CCBs are negatively inotropic and vasodilatory; both can precipitate cardiovascular collapse in septic shock. Treat sepsis first; rate often settles once the driver is controlled. Cardiology / critical care may consider <strong>IV amiodarone</strong> if rate uncontrolled and patient deteriorating despite Digoxin — escalate early; do not delay for BB/CCB titration.' });
+
+    if (digox && verap) {
+      items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE any uptitration', body: VERAP_DIGOX_INTERACTION_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Hold uptitration if AKI developing, K⁺ &lt; 4.0, or features of toxicity (DigiFab if life-threatening).' });
+      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis. Target combo trough &lt; 1.5 ng/mL.' });
+      items.push({ em: '<strong>Consider holding Verapamil entirely</strong> while septic', body: SEPSIS_VERAP_HOLD_TEXT + ' Only resume / uptitrate once sepsis resolved, SBP &gt; 100 sustained, LV function known. Three converging hazards here — Verapamil negative inotropy + Verap-Digox PK interaction + sepsis-AKI risk for Digoxin toxicity.' });
+    } else if (digox && biso) {
+      items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE uptitrating', body: 'Sepsis-AKI risks Digoxin accumulation and toxicity. ' + DIGOXIN_LEVEL_TEXT + ' Hold uptitration if AKI developing, K⁺ &lt; 4.0, or features of toxicity.' });
+      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis.' });
+      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis is active — consider holding or halving</strong>', body: 'Refractory tachycardia in a septic β-blocked patient may be the only compensatory response left. Surviving Sepsis 2021 cautions against new/uptitrated β-blockade in undifferentiated septic shock. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once fluid-replete, off vasopressors, lactate clearing, and SBP comfortably &gt; 100.' });
+    } else if (verap) {
+      items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + VERAP_DIGOX_INTERACTION_TEXT + ' Start maintenance at 62.5 mcg OD (or alternate days if eGFR &lt; 50); check pre-dose level at 48–72 h. ' + DIGOXIN_LEVEL_TEXT });
+      items.push({ em: '<strong>Do NOT routinely uptitrate Verapamil in sepsis</strong>', body: SEPSIS_VERAP_HOLD_TEXT + ' Only consider 80 mg TDS once sepsis resolved, SBP &gt; 110 sustained, lactate normalising, no HF signs, and Digoxin alone has failed at 24 h.' });
+    } else if (biso) {
+      items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Preferred to uptitrating Bisoprolol while septic. β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.' });
+      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis is active — consider holding or halving</strong>', body: 'Refractory tachycardia on a β-blocker in sepsis may be the only compensatory response left. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once sepsis is controlled (source treated, lactate down, no fluid/pressor requirement) <strong>and</strong> SBP &gt; 100.' });
+    } else if (digox) {
+      items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE uptitrating', body: 'Sepsis-AKI risks Digoxin accumulation; refractory tachycardia in a Digoxin-loaded patient may itself be a sign of toxicity (paradoxical SVT/AT with block). ' + DIGOXIN_LEVEL_TEXT + ' Hold if AKI developing, K⁺ &lt; 4.0, or any features of toxicity (DigiFab if life-threatening).' });
+      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis.' });
+      items.push({ em: 'Only add a second agent (BB or CCB) once SBP &gt; 100 mmHg <em>off vasopressors</em>, lactate trending down, no fluid/pressor requirement', body: 'Reassess after sepsis is treated before adding Bisoprolol or Verapamil. <em>Avoid Verapamil if LV function unknown or HFrEF likely.</em> Do not combine Bisoprolol with Verapamil.' });
     }
   } else {
-    // Non-septic path: standard escalation.
-    if (a === 'bisoprolol') {
-      items.push({ em: 'Increase Bisoprolol up to 10 mg OD if the patient is able to tolerate', body: 'Step up to 5 mg OD, then 10 mg OD as SBP permits (&gt; 100 mmHg).' });
-      items.push({ em: 'If Bisoprolol does not control HR — load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment).' });
-    } else if (a === 'verapamil') {
-      items.push({ em: 'Increase Verapamil up to 80 mg TDS (or MR 240 mg OD) if the patient is able to tolerate', body: 'Provided SBP &gt; 100 mmHg.' });
-      items.push({ em: 'Load with Digoxin 0.5 mg stat and 0.5 mg in 6 hours if HR &gt; 110 at 6 h', body: 'Then maintenance Digoxin <strong>62.5 mcg OD initially, uptitrating up to 250 mcg OD</strong> as needed and as renal function allows (check pre-dose level &lt; 2 ng/mL first if renal impairment). <em>Do not</em> combine Verapamil with Bisoprolol.' });
-    } else if (a === 'digoxin') {
-      items.push({ em: 'Add Bisoprolol 2.5 mg OD, uptitrating up to 10 mg OD if tolerated', body: 'First choice if no β-blocker contraindication and SBP &gt; 100. <em>Or</em>, if β-blocker contraindicated, add <strong>Verapamil 40 mg TDS</strong> (uptitrate as tolerated). Do not combine Bisoprolol with Verapamil.' });
-      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as needed', body: 'Already loaded with 500 mcg stat + 500 mcg at 6 h. Check pre-dose level &lt; 2 ng/mL if renal function impaired.' });
+    // ─── Non-septic refractory ──────────────────────────────────────────
+    if (digox && verap) {
+      items.push({ em: '<strong>Mandatory: check pre-dose Digoxin level BEFORE uptitrating either drug</strong>', body: VERAP_DIGOX_INTERACTION_TEXT + ' ' + DIGOXIN_LEVEL_TEXT });
+      items.push({ em: 'Uptitrate Verapamil up to 80 mg TDS (or MR 240 mg OD) if tolerated', body: 'Gate on SBP &gt; 100 mmHg, LVEF ≥ 40 %, PR &lt; 200 ms, HR ≥ 60. ' + VERAP_HFREF_TEXT });
+      items.push({ em: 'Uptitrate Digoxin maintenance cautiously — target combo trough &lt; 1.5 ng/mL', body: 'Lower than monotherapy target because of the Verapamil interaction. Uptitrate up to 250 mcg OD only as level and renal function allow. <em>Do not</em> add Bisoprolol — combination with Verapamil contraindicated.' });
+    } else if (digox && biso) {
+      items.push({ em: 'Check pre-dose Digoxin level BEFORE uptitrating', body: 'Refractory HR on a Digoxin-loaded patient is a classic setting for a level check regardless of renal function — interactions, electrolytes, and volume status push levels independently. ' + DIGOXIN_LEVEL_TEXT });
+      items.push({ em: 'Uptitrate Bisoprolol', body: BISO_STEP_TEXT + ' β-blocker + Digoxin → additive AV-nodal blockade: monitor for symptomatic bradycardia / AV block.' });
+      items.push({ em: 'Uptitrate Digoxin maintenance up to 250 mcg OD as level and renal function allow', body: 'Already loaded — uptitrate stepwise.' });
+      items.push({ em: 'If still refractory — recheck reversible drivers before re-referral', body: 'TFTs back, K⁺/Mg²⁺ replete, no occult sepsis, no PE, no pain/anxiety/anaemia. Consider inpatient TTE for structural cause. Cardiology may consider rhythm-control (DCCV if anticoagulated ≥ 3 weeks or AF &lt; 48 h, ablation referral).' });
+    } else if (biso) {
+      items.push({ em: 'Uptitrate Bisoprolol', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
+      items.push({ em: 'If Bisoprolol cannot be uptitrated or HR remains &gt; 110 at 10 mg OD — load Digoxin', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.' });
+    } else if (verap) {
+      items.push({ em: 'Uptitrate Verapamil up to 80 mg TDS (or MR 240 mg OD) if tolerated', body: 'Gate on SBP &gt; 100 mmHg, LVEF ≥ 40 %, PR &lt; 200 ms, HR ≥ 60. ' + VERAP_HFREF_TEXT });
+      items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + VERAP_DIGOX_INTERACTION_TEXT + ' Start maintenance at 62.5 mcg OD (or alternate days if eGFR &lt; 50); check pre-dose level at 5–7 days. <em>Do not</em> combine Verapamil with Bisoprolol.' });
+    } else if (digox) {
+      items.push({ em: 'Optimise existing Digoxin first', body: 'Confirm <strong>fully loaded</strong> (500 + 500 mcg over 6 h), confirm <strong>steady state</strong> (~5–7 d on current maintenance), check pre-dose level, confirm K⁺/Mg²⁺ replete. ' + DIGOXIN_LEVEL_TEXT + ' Uptitrate maintenance to 250 mcg OD as level and renal function allow. Review interacting drugs (amiodarone, verapamil, macrolides, spironolactone all raise levels).' });
+      items.push({ em: 'If still &gt; 110 after Digoxin optimised — add a second agent', body: '<strong>Bisoprolol 2.5 mg OD first-line</strong> (titrate as BP/HR tolerate; most inpatients leave on 2.5–5 mg, GP continues uptitration). If β-blocker contraindicated, add <strong>Verapamil 40 mg TDS</strong> (' + VERAP_HFREF_TEXT.replace(/<[^>]+>/g, '') + '). <em>Do not combine Bisoprolol with Verapamil.</em> Additive AV-nodal blockade with Digoxin — monitor for bradycardia / AV block.' });
     }
   }
 
@@ -2200,37 +2930,87 @@ function agentMedicationItems() {
 }
 
 function buildPlan() {
-  // Branch: acute exclusion.
+  // Branch: acute exclusion. The patient has at least one adverse feature
+  // (SBP < 100/60, HR < 60 or ≥ 160, LOC, ECG ischaemia, decompensated HF) —
+  // they belong on the ALS adult tachyarrhythmia algorithm, NOT the AEC pathway.
+  // Item ordering is diagnostic-first: identify the driver, then escalate, then
+  // bundle, then DCCV, then disposition. Aligns with how the clerking clinician
+  // mentally works through the patient (per ALS adult tachyarrhythmia algorithm,
+  // Resus Council UK 2021).
   if (wizardState.acute) {
     return {
       sections: [{
-        header: 'Acute care · Not for AEC',
+        header: 'Peri-arrest AF · ALS pathway, not AEC',
         items: [
-          { em: 'Patient meets exclusion criteria', body: 'Acutely unwell — not for the AEC pathway. Examples: BP &lt; 100/60, HR &lt; 60, LOC, ECG ischaemia, decompensated HF.' },
-          { em: 'DC cardioversion required', body: 'If haemodynamically compromised — proceed to synchronised DC cardioversion as per ALS protocol.' },
-          { em: 'Escalate immediately', body: 'Discuss with the on-call cardiology registrar. Patient requires monitored bed.' },
+          { em: 'Identify which adverse feature fired — treat the specific driver', body: 'Map the adverse feature(s) to the right route. SBP &lt; 100/60 + HR &ge; 160 → consider DCCV — haemodynamic compromise driven by the rhythm. SBP &lt; 100/60 + HR &lt; 60 → consider atropine / pacing (not DCCV). HR &ge; 160 + ECG ischaemia → consider DCCV to break the rhythm and restore coronary perfusion — especially important in HFrEF, where AF with RVR is poorly tolerated.' },
+          { em: 'Consider calling <strong>2222</strong> — medical emergency call', body: 'Put out a 2222 to get the support required to discuss and undertake emergency cardioversion in the haemodynamically compromised patient. Consider reaching out to <strong>G7 ward</strong> to find a Cardiology Registrar to support if required, else the Medical Registrar should be able to safely cardiovert.' },
+          { em: 'Pre-DCCV bundle', body: 'IV access × 2 (one large-bore), continuous cardiac monitoring, 12-lead ECG, pads on. Bloods: <strong>troponin, K, Mg, TFTs, lactate, FBC, U&amp;Es, clotting/INR</strong>. <strong>LMWH or unfractionated heparin peri-cardioversion</strong> unless contraindicated.' },
+          { em: 'Consider synchronised DCCV — up to 3 attempts (ALS adult tachyarrhythmia algorithm)', body: 'Sedation by anaesthetics. If DCCV fails: <strong>Amiodarone 300 mg IV over 10–20 min</strong> via large-bore or central access, then <strong>900 mg IV over 24 h</strong>, and repeat DCCV.' },
+          { em: 'CCU / ITU monitored bed', body: 'Patient requires a monitored environment until stable; reassess for AEC re-entry only once adverse features have resolved.' },
         ]
       }],
-      eyebrow: 'Acute care · Not for AEC',
+      eyebrow: 'Peri-arrest AF · ALS pathway',
       title: 'Escalate · Do not template',
     };
   }
 
   // SECTION 1 — Acute management (workup + meds + AC consideration)
+  const biso  = hasAgent('bisoprolol');
+  const verap = hasAgent('verapamil');
+  const digox = hasAgent('digoxin');
+  const onAnyAgent = biso || verap || digox;
+  const onCombo    = (biso || verap) && digox;
+
   const acute = [];
   acute.push({ em: 'Add on TFTs',                    body: 'Thyroid function — rule out thyrotoxicosis as a precipitant.' });
-  acute.push({ em: 'Aim K<sup>+</sup> 4.0 – 4.5 mmol/L', body: 'Replace if below target.' });
-  acute.push({ em: 'Aim Mg<sup>2+</sup> &gt; 1.0 mmol/L', body: 'Replace if below target — often coexists with hypokalaemia.' });
-  acute.push({ em: 'Treat sepsis or hypovolemia if present', body: 'Common precipitants for new AF. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without further rate-control escalation.' });
+  acute.push({ em: 'Aim K<sup>+</sup> 4.0 – 4.5 mmol/L', body: 'Replace if below target. Hypokalaemia potentiates digoxin toxicity.' });
+  acute.push({ em: 'Aim Mg<sup>2+</sup> &gt; 1.0 mmol/L', body: 'Replace if below target — often coexists with hypokalaemia. Hypomagnesaemia also potentiates digoxin toxicity.' });
+  // Item 4 is sepsis-conditional. When sepsis was ticked in Step 2, this
+  // becomes an active management item (Sepsis Six). When sepsis was NOT
+  // ticked, this becomes a reassessment safety-net rather than a leak from
+  // the septic flows.
+  if (wizardState.septic) {
+    acute.push({
+      em: 'Treat sepsis / hypovolemia — driver-first',
+      body: 'IV fluids, blood cultures <strong>before</strong> antibiotics, broad-spectrum antibiotics within 1 h (<strong>Sepsis Six</strong>). Source control. Lactate trend. NEWS2 at least 4-hourly while septic. Fixing the driver often lets the rate settle without further rate-control escalation.'
+    });
+  } else {
+    acute.push({
+      em: 'Reassess for occult sepsis or hypovolemia if patient deteriorates',
+      body: 'Both are common precipitants of new AF — re-evaluate if NEWS2 rises or HR climbs &gt; 110.'
+    });
+  }
   agentMedicationItems().forEach(it => acute.push(it));
   acute.push({ em: 'Consider anticoagulation', body: 'Score CHA<sub>2</sub>DS<sub>2</sub>-VASc and ORBIT (see § II — Anticoagulation below).' });
   acute.push({ em: 'If the patient deteriorates · Call <strong>2222</strong>', body: 'Drop in BP, drop in conscious level, or signs of end-organ compromise — this is a medical emergency. Put out a <strong>Medical Emergency Call</strong>. Urgent cardiology input required.' });
 
-  // SECTION 2 — Outpatient follow-up (once HR < 110)
+  // SECTION 2 — Outpatient follow-up (once HR < 110). The GP advice item is
+  // state-aware: it makes no sense to ask the GP to "uptitrate" a drug the
+  // patient isn't on (Flow 02), and on combination therapy with controlled
+  // rate the right next step is a wean review (Flows 18 / 20), not more
+  // uptitration.
+  let gpAdvice;
+  if (!onAnyAgent && !wizardState.refractory) {
+    gpAdvice = {
+      em: 'GP review within 1–2 weeks',
+      body: 'For rhythm reassessment and to <strong>start</strong> rate-control if HR rises ≥ 110 or symptoms develop. The patient is not yet on any rate-control agent.'
+    };
+  } else if (onCombo && !wizardState.refractory) {
+    gpAdvice = {
+      em: 'GP review for combination therapy',
+      body: 'Patient is on dual rate-control with controlled HR. Review whether the combination is still required — consider stepping down to monotherapy if rate has been stably controlled. Wean Digoxin first in active patients; wean the BB/CCB first if bradycardia, hypotension or fatigue.'
+    };
+  } else {
+    gpAdvice = {
+      em: 'Advise patient to book a GP appointment within 2 weeks',
+      body: 'To uptitrate rate-control medication if HR rises or symptoms develop.'
+    };
+  }
+
   const outpatient = [
-    { em: 'Outpatient echocardiogram', body: 'Request if a recent one is not available — for structural assessment.' },
-    { em: 'Outpatient 24-hour tape', body: 'To quantify rate control and identify paroxysmal patterns.' },
-    { em: 'Advise patient to make a GP appointment', body: 'To uptitrate rate-control medication if required.' },
+    { em: 'Outpatient echocardiogram', body: 'Request if a recent one is not available — for structural assessment (rule out HFrEF; particularly relevant if patient is on a non-DHP CCB).' },
+    { em: 'Outpatient 24-hour tape', body: 'To quantify rate control and identify paroxysmal patterns; confirms <em>exertional</em> rate control (important if patient is on Digoxin monotherapy).' },
+    gpAdvice,
     { em: 'Request outpatient cardiology clinic review', body: 'Send an eCare message to the cardiology secretaries — new-patient referral.' },
   ];
 
@@ -2242,13 +3022,30 @@ function buildPlan() {
     }
   ];
 
-  // SECTION 3 — Urgent re-referral (only when refractory)
+  // SECTION 3 — Urgent re-referral (only when refractory). The "maximum
+  // therapy" ceiling is agent-specific so the wording matches what the
+  // patient is actually on. Previous version hard-coded Bisoprolol, which
+  // was contradictory for Verapamil flows.
   if (wizardState.refractory) {
+    let referralCeiling;
+    if (biso && digox) {
+      referralCeiling = 'maximal-tolerated <strong>Bisoprolol</strong> (target 10 mg OD) <strong>and</strong> maximal-tolerated <strong>Digoxin</strong> (up to 250 mcg OD after full 500 + 500 mcg loading)';
+    } else if (verap && digox) {
+      referralCeiling = 'maximal-tolerated <strong>Verapamil</strong> (target 80 mg TDS or MR 240 mg OD) <strong>and</strong> maximal-tolerated <strong>Digoxin</strong> (up to 250 mcg OD after full 500 + 500 mcg loading). <em>Do not add Bisoprolol — contraindicated with Verapamil.</em>';
+    } else if (biso) {
+      referralCeiling = 'maximal-tolerated <strong>Bisoprolol</strong> (target 10 mg OD) <strong>and</strong> added <strong>Digoxin</strong> (full 500 + 500 mcg load, maintenance up to 250 mcg OD)';
+    } else if (verap) {
+      referralCeiling = 'maximal-tolerated <strong>Verapamil</strong> (target 80 mg TDS or MR 240 mg OD) <strong>and</strong> added <strong>Digoxin</strong> (full 500 + 500 mcg load, maintenance up to 250 mcg OD). <em>Do not add Bisoprolol — contraindicated with Verapamil.</em>';
+    } else if (digox) {
+      referralCeiling = 'maximal-tolerated <strong>Digoxin</strong> (up to 250 mcg OD) <strong>and</strong> an added second agent (Bisoprolol first-line; Verapamil if β-blocker contraindicated)';
+    } else {
+      referralCeiling = 'maximal first-line therapy (Bisoprolol up to 10 mg OD, with added Digoxin if rate remains uncontrolled)';
+    }
     sections.push({
       header: 'Only if HR remains > 110 despite maximum therapy',
       items: [{
         em: 'Urgent re-referral to cardiology',
-        body: 'Re-refer only if HR remains &gt; 110 despite <strong>maximal Digoxin 250 mcg OD</strong> (after full 500 mcg + 500 mcg loading) <strong>and</strong> <strong>Bisoprolol 10 mg OD</strong> (or as much as tolerable). New referral — patient remains in uncontrolled AF despite maximum oral therapy.'
+        body: 'Re-refer only if HR remains &gt; 110 despite ' + referralCeiling + '. New referral — patient remains in uncontrolled AF despite maximum oral therapy. Cardiology may consider IV amiodarone, rhythm control or DCCV.'
       }]
     });
   }
@@ -2339,11 +3136,36 @@ wizard.addEventListener('click', (e) => {
       break;
     case 'agent': {
       const picked = t.dataset.agent;
-      // Re-clicking the selected agent deselects it.
-      wizardState.agent = (wizardState.agent === picked) ? null : picked;
+      const nowOn = !wizardState.agents[picked];
+      wizardState.agents[picked] = nowOn;
+      // Bisoprolol + Verapamil is contraindicated (β-blocker + non-DHP CCB
+      // → bradyarrhythmia / heart block). Enforce mutex — turning one on
+      // turns the other off — same pattern as the CHA age bands.
+      if (nowOn && picked === 'bisoprolol' && wizardState.agents.verapamil) {
+        wizardState.agents.verapamil = false;
+      } else if (nowOn && picked === 'verapamil' && wizardState.agents.bisoprolol) {
+        wizardState.agents.bisoprolol = false;
+      }
+      // Refresh every agent button's pressed state in one pass so the
+      // mutex untoggle is reflected without bespoke per-button logic.
       document.querySelectorAll('[data-action="agent"]').forEach(b => {
-        b.setAttribute('aria-pressed', b.dataset.agent === wizardState.agent ? 'true' : 'false');
+        b.setAttribute('aria-pressed', wizardState.agents[b.dataset.agent] ? 'true' : 'false');
       });
+      // When an agent is just turned ON, draw the eye to the refractory
+      // checkbox below — clinicians otherwise miss it and never tick
+      // "HR > 110 despite this". Smooth-scroll it into view, then trigger
+      // a brief swell animation. Deselecting doesn't re-prompt.
+      if (nowOn) {
+        const refBtn = document.querySelector('.wizard-step[data-step="3"] [data-action="refractory"]');
+        if (refBtn) {
+          refBtn.scrollIntoView({ block: 'end', behavior: 'smooth' });
+          // Force-reflow trick so the animation re-triggers on each agent click.
+          refBtn.classList.remove('swell-pop');
+          void refBtn.offsetWidth;
+          refBtn.classList.add('swell-pop');
+          setTimeout(() => refBtn.classList.remove('swell-pop'), 900);
+        }
+      }
       break;
     }
     case 'refractory':
@@ -2395,89 +3217,8 @@ wizard.addEventListener('click', (e) => {
 
 
 /* =============================================================
-   Scroll progress + reveal + minimap
+   Reveal on scroll — still useful inside scrolling views (anticoag).
    ============================================================= */
-const progress = document.getElementById('progress');
-const minimap = document.getElementById('minimap');
-
-function onScroll() {
-  const scrolled = window.scrollY;
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  const pct = max > 0 ? (scrolled / max) * 100 : 0;
-  progress.style.width = pct + '%';
-  if (scrolled > window.innerHeight * 0.55) minimap.classList.add('show');
-  else minimap.classList.remove('show');
-}
-window.addEventListener('scroll', onScroll, { passive: true });
-onScroll();
-
-/* =============================================================
-   Directional soft-snap at each section boundary.
-   Only triggers on downward scrolls. At each boundary:
-   - If less than half of the next section is visible → bounce BACK
-     to the current section's end (you haven't committed yet).
-   - If more than half of the next section is visible → bounce FORWARD
-     to the next section's start (you've committed; finish the move).
-   Scrolling UP is never interrupted.
-   ============================================================= */
-(() => {
-  const sectionA = document.querySelector('.hero');
-  const sectionB = document.getElementById('rate');
-  const sectionC = document.getElementById('anticoag');
-  if (!sectionA || !sectionB || !sectionC) return;
-  const boundaries = [
-    { from: sectionA, to: sectionB, forwardOffset: 80 },  // land past rate's top padding so "Let's walk through it" sits below the top edge
-    { from: sectionB, to: sectionC, forwardOffset: 80 },  // same treatment for the anticoag eyebrow
-  ];
-
-  let lastY = window.scrollY;
-  let snapTimer = null;
-  let snapping = false;
-
-  function commitSnap(targetY, anchorY) {
-    snapTimer = setTimeout(() => {
-      if (Math.abs(window.scrollY - anchorY) < 4 && !snapping) {
-        snapping = true;
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
-        setTimeout(() => { snapping = false; lastY = window.scrollY; }, 700);
-      }
-    }, 130);
-  }
-
-  function maybeSnap() {
-    if (snapping) return;
-    const y = window.scrollY;
-    const going = y - lastY;
-    lastY = y;
-    if (going === 0) return;  // ignore non-scroll events (programmatic etc.)
-
-    const V = window.innerHeight;
-    for (const { to, forwardOffset } of boundaries) {
-      const toTop = to.offsetTop;
-      const fromEnd = toTop - V;
-      const half    = toTop - V / 2;
-      const forwardTarget = toTop + (forwardOffset || 0);
-      // Shrunk snap-back zone (50% of half-viewport) so back-snap is less
-      // aggressive — leaves a neutral zone in the middle.
-      const backUpper = fromEnd + (half - fromEnd) * 0.5;
-
-      if (y > fromEnd + 8 && y < backUpper) {
-        // Very close to fromEnd — bounce back to current section's end
-        clearTimeout(snapTimer);
-        commitSnap(fromEnd, y);
-        return;
-      }
-      if (y >= half && y < forwardTarget - 8) {
-        // > 50% of next section visible — bounce forward into next section
-        clearTimeout(snapTimer);
-        commitSnap(forwardTarget, y);
-        return;
-      }
-    }
-  }
-  window.addEventListener('scroll', maybeSnap, { passive: true });
-})();
-
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -2488,38 +3229,183 @@ const io = new IntersectionObserver((entries) => {
 }, { rootMargin: '0px 0px -80px 0px', threshold: 0.1 });
 document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
 
-const sectionIds = ['rate', 'anticoag'];
-const sections = sectionIds.map(id => document.getElementById(id));
-const links = Array.from(document.querySelectorAll('.minimap a'));
+/* =============================================================
+   View router — hash-based, three views: home / wizard / anticoag.
+   ============================================================= */
+const VIEWS = ['home', 'wizard', 'anticoag'];
+const ROUTE_TO_VIEW = {
+  '': 'home', '/': 'home', '/home': 'home',
+  '/wizard': 'wizard', 'wizard': 'wizard',
+  '/anticoag': 'anticoag', 'anticoag': 'anticoag',
+};
 
-const sectionIO = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      links.forEach(a => a.classList.toggle('is-active', a.dataset.target === id));
-    }
+function currentRoute() {
+  const raw = location.hash.replace(/^#/, '');
+  return ROUTE_TO_VIEW[raw] || 'home';
+}
+
+function resetAnticoag() {
+  document.querySelectorAll('.crit[aria-pressed="true"]').forEach(b => b.click());
+  ['crcl-age', 'crcl-weight', 'crcl-cr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.dispatchEvent(new Event('input')); }
   });
-}, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
-sections.forEach(s => s && sectionIO.observe(s));
+  const maleBtn = document.querySelector('.sex-btn[data-sex="male"]');
+  if (maleBtn && !maleBtn.classList.contains('is-active')) maleBtn.click();
+  if (typeof acState !== 'undefined') acState.decision = null;
+  if (typeof renderClerkNote === 'function') renderClerkNote();
+}
+
+function showView(name) {
+  if (!VIEWS.includes(name)) name = 'home';
+  document.querySelectorAll('.view').forEach(v => {
+    v.classList.toggle('is-active', v.dataset.view === name);
+  });
+  VIEWS.forEach(v => document.body.classList.toggle('active-' + v, v === name));
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  // Reveal items in the now-active view immediately. IntersectionObserver
+  // doesn't reliably fire on display:none → block transitions, and the
+  // editorial fade-ins shouldn't depend on the user scrolling.
+  const active = document.querySelector('.view.is-active');
+  if (active) {
+    active.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('is-visible'));
+  }
+}
+
+function navigate(name, opts) {
+  const fresh = opts && opts.fresh;
+  if (fresh) {
+    if (name === 'wizard' && typeof resetWizard === 'function') resetWizard();
+    if (name === 'anticoag') resetAnticoag();
+  }
+  const target = name === 'home' ? '#/' : '#/' + name;
+  if (location.hash === target) {
+    showView(name);
+  } else {
+    history.pushState(null, '', target);
+    showView(name);
+  }
+}
+
+window.addEventListener('hashchange', () => showView(currentRoute()));
+showView(currentRoute());
+
+// Hero entry cards reset state — treat each entry as a fresh patient.
+document.querySelectorAll('.primary-card[data-target], .secondary-card[data-target]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigate(a.dataset.target, { fresh: true });
+  });
+});
+
+// All other data-target links (e.g. plan → anticoag follow-on) navigate
+// without resetting, so a single patient flow preserves state.
+document.querySelectorAll('a[data-target]:not(.primary-card):not(.secondary-card)').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigate(a.dataset.target);
+  });
+});
+
+// Back-to-home buttons inside view topbars.
+document.querySelectorAll('[data-route]').forEach(b => {
+  b.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigate(b.dataset.route);
+  });
+});
+
+/* Keyboard shortcuts: Cmd/Ctrl + 1 / 2 / H, ESC → home. */
+window.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (e.key === 'Escape') {
+    if (currentRoute() !== 'home') { e.preventDefault(); navigate('home'); }
+    return;
+  }
+  if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+  const key = e.key.toLowerCase();
+  const map = { '1': 'wizard', '2': 'anticoag', 'h': 'home' };
+  const dest = map[key];
+  if (!dest) return;
+  e.preventDefault();
+  navigate(dest, { fresh: dest !== 'home' });
+});
 
 /* =============================================================
-   Anchor link handlers — override native anchor scroll so each
-   target lands at the same offset the bounce-forward snap uses.
-   Without this, clicking "Anticoagulation" jumps to the section's
-   raw offsetTop (above the padding), then the snap kicks in to
-   correct it — visible flicker.
+   Scroll affordance — show a fade + "scroll for more ▾" hint
+   when a region overflows. Applied to wizard step-content
+   (steps 1–4) and the anticoag section. Hidden when the user
+   scrolls to the bottom or the content already fits.
    ============================================================= */
-const SCROLL_OFFSETS = { rate: 80, anticoag: 80 };
-document.querySelectorAll('a[data-target]').forEach(a => {
-  a.addEventListener('click', (e) => {
-    const id = a.dataset.target;
-    const el = document.getElementById(id);
-    if (!el) return;
-    e.preventDefault();
-    const targetY = el.offsetTop + (SCROLL_OFFSETS[id] || 0);
-    window.scrollTo({ top: targetY, behavior: 'smooth' });
-    history.replaceState(null, '', '#' + id);
+function setupScrollAffordance(scrollEl) {
+  if (!scrollEl) return null;
+  const hint = document.createElement('div');
+  hint.className = 'scroll-hint';
+  hint.setAttribute('aria-hidden', 'true');
+  hint.innerHTML = '<span class="scroll-hint-label">scroll for more</span><span class="scroll-hint-chevron">▾</span>';
+  scrollEl.parentNode.insertBefore(hint, scrollEl.nextSibling);
+
+  const update = () => {
+    const hasMore = (scrollEl.scrollHeight - scrollEl.scrollTop) > (scrollEl.clientHeight + 8);
+    scrollEl.classList.toggle('has-more-below', hasMore);
+  };
+  scrollEl.addEventListener('scroll', update, { passive: true });
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(update).observe(scrollEl);
+  }
+  window.addEventListener('resize', update, { passive: true });
+  requestAnimationFrame(update);
+  return update;
+}
+
+const __scrollUpdates = new Map();
+document.querySelectorAll('.view-wizard .wizard-step').forEach(step => {
+  const sc = step.querySelector('.step-content');
+  if (!sc) return;          // step 5 opts out — no .step-content
+  const upd = setupScrollAffordance(sc);
+  if (upd) __scrollUpdates.set(step, upd);
+});
+const __anticoagSection = document.querySelector('.view-anticoag > section');
+const __anticoagUpdate = __anticoagSection ? setupScrollAffordance(__anticoagSection) : null;
+
+/* Re-evaluate after a wizard step swap. ResizeObserver covers most
+   transitions, but a step's content can layout before its
+   computed height reaches steady state — a manual update on the
+   next frame is the reliable belt-and-braces. */
+const __origSetStep = setStep;
+setStep = function (n) {
+  __origSetStep(n);
+  requestAnimationFrame(() => {
+    const active = document.querySelector('.wizard-step.is-active');
+    const upd = active ? __scrollUpdates.get(active) : null;
+    if (upd) upd();
   });
+};
+
+/* Same for view transitions — when anticoag becomes visible, its
+   section finally has a measurable height. */
+const __origShowView = showView;
+showView = function (name) {
+  __origShowView(name);
+  requestAnimationFrame(() => {
+    if (name === 'anticoag' && __anticoagUpdate) __anticoagUpdate();
+    if (name === 'wizard') {
+      const active = document.querySelector('.wizard-step.is-active');
+      const upd = active ? __scrollUpdates.get(active) : null;
+      if (upd) upd();
+    }
+  });
+};
+// Re-run for the currently-active view (which was set before the wraps).
+requestAnimationFrame(() => {
+  const route = currentRoute();
+  if (route === 'anticoag' && __anticoagUpdate) __anticoagUpdate();
+  if (route === 'wizard') {
+    const active = document.querySelector('.wizard-step.is-active');
+    const upd = active ? __scrollUpdates.get(active) : null;
+    if (upd) upd();
+  }
 });
 </script>
 </body>
