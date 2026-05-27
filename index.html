@@ -1165,7 +1165,9 @@
   }
 
 
-  /* Cockcroft-Gault calculator — single horizontal bar. */
+  /* Cockcroft-Gault calculator — two-column layout. Left column (inputs)
+     wraps internally; right column (output) stays anchored so the
+     vertical divider doesn't drop below as the window narrows. */
   .crcl-bar {
     display: flex;
     align-items: stretch;
@@ -1173,7 +1175,15 @@
     padding: 24px 32px;
     border: 1px solid var(--ink);
     background: var(--paper);
+    flex-wrap: nowrap;
+  }
+  .crcl-inputs {
+    display: flex;
     flex-wrap: wrap;
+    align-items: stretch;
+    gap: 32px;
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .crcl-field {
     display: flex;
@@ -1261,8 +1271,9 @@
     flex-direction: column;
     justify-content: center;
     gap: 4px;
-    flex: 1;
-    min-width: 220px;
+    flex: 0 0 auto;
+    min-width: 240px;
+    max-width: 320px;
     border-left: 1px solid var(--rule);
     padding-left: 32px;
   }
@@ -1470,8 +1481,9 @@
   .ac-inline-reset:hover { border-color: var(--ink); color: var(--ink); }
 
   @media (max-width: 768px) {
-    .crcl-bar { gap: 20px; padding: 20px; }
-    .crcl-output { border-left: none; padding-left: 0; padding-top: 16px; border-top: 1px solid var(--rule); width: 100%; }
+    .crcl-bar { gap: 20px; padding: 20px; flex-direction: column; }
+    .crcl-inputs { gap: 20px; }
+    .crcl-output { border-left: none; padding-left: 0; padding-top: 16px; border-top: 1px solid var(--rule); width: 100%; max-width: none; }
   }
 
   /* Reduced motion. */
@@ -2066,43 +2078,45 @@
         </p>
 
         <div class="crcl-bar">
-          <div class="crcl-field">
-            <label for="crcl-age">Age</label>
-            <div class="crcl-inputwrap">
-              <input type="number" id="crcl-age" min="18" max="120" placeholder="—" inputmode="numeric"/>
-              <span class="unit">yrs</span>
+          <div class="crcl-inputs">
+            <div class="crcl-field">
+              <label for="crcl-age">Age</label>
+              <div class="crcl-inputwrap">
+                <input type="number" id="crcl-age" min="18" max="120" placeholder="—" inputmode="numeric"/>
+                <span class="unit">yrs</span>
+              </div>
             </div>
-          </div>
 
-          <div class="crcl-field">
-            <label>Sex</label>
-            <div class="sex-toggle" role="radiogroup" aria-label="Sex">
-              <button type="button" class="sex-btn is-active" data-sex="male" role="radio" aria-checked="true">Male</button>
-              <button type="button" class="sex-btn" data-sex="female" role="radio" aria-checked="false">Female</button>
+            <div class="crcl-field">
+              <label>Sex</label>
+              <div class="sex-toggle" role="radiogroup" aria-label="Sex">
+                <button type="button" class="sex-btn is-active" data-sex="male" role="radio" aria-checked="true">Male</button>
+                <button type="button" class="sex-btn" data-sex="female" role="radio" aria-checked="false">Female</button>
+              </div>
             </div>
-          </div>
 
-          <div class="crcl-field">
-            <label for="crcl-weight">Weight</label>
-            <div class="crcl-inputwrap">
-              <input type="number" id="crcl-weight" min="30" max="250" placeholder="—" inputmode="decimal"/>
-              <span class="unit">kg</span>
+            <div class="crcl-field">
+              <label for="crcl-weight">Weight</label>
+              <div class="crcl-inputwrap">
+                <input type="number" id="crcl-weight" min="30" max="250" placeholder="—" inputmode="decimal"/>
+                <span class="unit">kg</span>
+              </div>
             </div>
-          </div>
 
-          <div class="crcl-field">
-            <label for="crcl-height">Height <span class="crcl-opt">opt.</span></label>
-            <div class="crcl-inputwrap">
-              <input type="number" id="crcl-height" min="120" max="230" placeholder="—" inputmode="decimal"/>
-              <span class="unit">cm</span>
+            <div class="crcl-field">
+              <label for="crcl-height">Height <span class="crcl-opt">opt.</span></label>
+              <div class="crcl-inputwrap">
+                <input type="number" id="crcl-height" min="120" max="230" placeholder="—" inputmode="decimal"/>
+                <span class="unit">cm</span>
+              </div>
             </div>
-          </div>
 
-          <div class="crcl-field">
-            <label for="crcl-cr">Creatinine</label>
-            <div class="crcl-inputwrap">
-              <input type="number" id="crcl-cr" min="20" max="2000" placeholder="—" inputmode="numeric"/>
-              <span class="unit">μmol/L</span>
+            <div class="crcl-field">
+              <label for="crcl-cr">Creatinine</label>
+              <div class="crcl-inputwrap">
+                <input type="number" id="crcl-cr" min="20" max="2000" placeholder="—" inputmode="numeric"/>
+                <span class="unit">μmol/L</span>
+              </div>
             </div>
           </div>
 
@@ -2440,12 +2454,11 @@ function renderCrCl() {
     }
     if (fnEl) {
       const modeLabel = acState.weightMode === 'adjusted' ? 'adjusted body weight' : 'actual body weight';
-      // Height-less calc → no BMI / IBW correction; spell that out so the
-      // clinician knows what they got.
-      const tail = acState.bmi !== null
-        ? `BMI ${acState.bmi.toFixed(1)}`
-        : 'height not entered · IBW correction not applied';
-      fnEl.textContent = `Using ${modeLabel} · ${tail}`;
+      // Footnote tightens to just the weight mode when height is absent —
+      // BMI/IBW info is irrelevant when not computed.
+      fnEl.textContent = acState.bmi !== null
+        ? `Using ${modeLabel} · BMI ${acState.bmi.toFixed(1)}`
+        : `Using ${modeLabel}`;
       fnEl.hidden = false;
     }
   }
@@ -2853,19 +2866,19 @@ function renderSuggestion() {
               <div class="esc-branch-sub">— check pre-dose level first; uptitrate up to 250 mcg OD as level and renal function allow</div>
             </div>
           </div>
-          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level + U&amp;Es BEFORE uptitrating</strong> — sepsis-AKI risks accumulation. Target trough <strong>0.8–2.0 ng/mL</strong> (AF: aim 0.5–0.9). Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, bradyarrhythmia, AV block).</p>
+          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level + U&amp;Es BEFORE uptitrating</strong> — AKI risks accumulation. Target trough <strong>0.8–2.0 ng/mL</strong> (AF: aim 0.5–0.9). Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, bradyarrhythmia, AV block).</p>
         </div>
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">B</span>
             <div>
               <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
-              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while septic; refractory tachycardia may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis'}</div>
+              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while sepsis/hypovolemia is active; refractory tachycardia may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis or hypovolemia'}</div>
             </div>
           </div>
           <p class="esc-branch-body">${biso
             ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing, and SBP comfortably &gt; 100.'
-            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once sepsis resolved, SBP &gt; 110 sustained, LV function known.'
+            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once the driver is resolved, SBP &gt; 110 sustained, LV function known.'
           }</p>
         </div>
       `;
@@ -2929,12 +2942,12 @@ function renderSuggestion() {
             <span class="esc-branch-letter">B</span>
             <div>
               <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
-              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while septic. Refractory tachycardia on a β-blocker may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis'}</div>
+              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while sepsis/hypovolemia is active. Refractory tachycardia on a β-blocker may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis or hypovolemia'}</div>
             </div>
           </div>
           <p class="esc-branch-body">${biso
             ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing.'
-            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once sepsis resolved, SBP &gt; 110 sustained, LV function known.'
+            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once the driver is resolved, SBP &gt; 110 sustained, LV function known.'
           }</p>
         </div>
       `;
@@ -2977,7 +2990,7 @@ function renderSuggestion() {
             <span class="esc-branch-letter">A</span>
             <div>
               <div class="esc-branch-title">Check pre-dose level + U&amp;Es, then continue / uptitrate Digoxin</div>
-              <div class="esc-branch-sub">— sepsis-AKI risks accumulation; refractory tachycardia may itself be toxicity</div>
+              <div class="esc-branch-sub">— AKI risks accumulation; refractory tachycardia may itself be toxicity</div>
             </div>
           </div>
           <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; AF aim 0.5 – 0.9. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block — <em>DigiFab if life-threatening</em>). If level low and renal function adequate, uptitrate maintenance up to <strong>250 mcg OD</strong>. Treat the driver; rate often settles once it is controlled.</p>
@@ -3040,9 +3053,9 @@ const VERAP_DIGOX_INTERACTION_TEXT =
 const DIGOX_LOADING_TEXT =
   'Loading: <strong>500 mcg PO stat</strong> + <strong>500 mcg at 6 h</strong> if HR &gt; 110. <em>Reduce to 250 + 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30.</em> Maintenance: 62.5 mcg OD initially, uptitrate up to 250 mcg OD as level and renal function allow.';
 const SEPSIS_BB_HOLD_TEXT =
-  '<strong>Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or NEWS2 ≥ 5</strong> — β-blockade blunts the tachycardic response to evolving sepsis; pre-empt rather than react. Reassess at each drug round.';
+  '<strong>Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or NEWS2 ≥ 5</strong> — β-blockade blunts the tachycardic response to evolving sepsis or hypovolemia; pre-empt rather than react. Reassess at each drug round.';
 const SEPSIS_VERAP_HOLD_TEXT =
-  '<strong>Hold and discuss cardiology if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI developing, or pulmonary congestion</strong> — Verapamil is negatively inotropic and vasodilatory and can unmask cardiovascular collapse as sepsis evolves. Switch rate-control to Digoxin alone if Verapamil held.';
+  '<strong>Hold and discuss cardiology if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI developing, or pulmonary congestion</strong> — Verapamil is negatively inotropic and vasodilatory and can unmask cardiovascular collapse as sepsis or hypovolemia evolves. Switch rate-control to Digoxin alone if Verapamil held.';
 const DIGOX_BODYWEIGHT_PHRASE =
   '<em>Reduce to 250 + 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30.</em> ';
 
@@ -3061,7 +3074,7 @@ function agentMedicationItems() {
       if (septic) {
         items.push({
           em: 'No rate-control medication at this time — but <strong>sepsis/hypovolemia is the driver</strong>',
-          body: 'HR currently controlled. Reassess after fluid resuscitation and source control; if HR climbs &gt; 110, start <strong>Digoxin</strong> first (BP-neutral). <strong>Do NOT start a β-blocker or CCB pre-emptively while septic</strong> — both can precipitate collapse.'
+          body: 'HR currently controlled. Reassess after fluid resuscitation and source control; if HR climbs &gt; 110, start <strong>Digoxin</strong> first (BP-neutral). <strong>Do NOT start a β-blocker or CCB pre-emptively while sepsis/hypovolemia is active</strong> — both can precipitate collapse.'
         });
       } else {
         items.push({
@@ -3088,7 +3101,7 @@ function agentMedicationItems() {
     if (n === 1) {
       if (biso) {
         if (septic) {
-          items.push({ em: 'Continue Bisoprolol at the current dose — with sepsis caution', body: SEPSIS_BB_HOLD_TEXT + ' Septic AF often self-terminates with source control; do not uptitrate while septic.' });
+          items.push({ em: 'Continue Bisoprolol at the current dose — with sepsis/hypovolemia caution', body: SEPSIS_BB_HOLD_TEXT + ' Sepsis/hypovolemia-driven AF often self-terminates with source control / volume replenishment; do not uptitrate while sepsis/hypovolemia is active.' });
         } else {
           items.push({ em: 'Continue Bisoprolol at the current dose', body: '<strong>Document the current dose</strong> and confirm the patient is taking it. HR controlled — no acute uptitration required. NICE NG196 endorses lenient rate target (&lt; 110) only if asymptomatic <strong>and</strong> preserved LVEF; if symptomatic or HFrEF, target stricter rate or earlier cardiology input. Hold or reduce if SBP &lt; 100, HR &lt; 50, or bronchospasm.' });
         }
@@ -3100,7 +3113,7 @@ function agentMedicationItems() {
         }
       } else if (digox) {
         if (septic) {
-          items.push({ em: 'Continue Digoxin maintenance — sepsis-AKI risk for toxicity', body: '<strong>Sepsis risks AKI → Digoxin accumulation and toxicity (narrow therapeutic window).</strong> Monitor U&amp;Es daily while septic. If creatinine rises or urine output drops, hold the next dose and send a pre-dose level. ' + DIGOXIN_LEVEL_TEXT });
+          items.push({ em: 'Continue Digoxin maintenance — AKI risk for toxicity', body: '<strong>Sepsis or hypovolemia risks AKI → Digoxin accumulation and toxicity (narrow therapeutic window).</strong> Monitor U&amp;Es daily while sepsis/hypovolemia is active. If creatinine rises or urine output drops, hold the next dose and send a pre-dose level. ' + DIGOXIN_LEVEL_TEXT });
         } else {
           items.push({ em: 'Continue Digoxin maintenance', body: 'Resting HR controlled — confirm <strong>exertional</strong> HR also controlled (24-h tape) before accepting monotherapy long-term, particularly if ambulant (Digoxin works via vagal tone, poor on exertion — NICE NG196 §1.5). ' + DIGOXIN_LEVEL_TEXT + ' Review interacting drugs (amiodarone, verapamil, macrolides, spironolactone, NSAIDs all raise Digoxin levels).' });
         }
@@ -3131,22 +3144,22 @@ function agentMedicationItems() {
 
     if (digox && verap) {
       items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE any uptitration', body: VERAP_DIGOX_INTERACTION_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Hold uptitration if AKI developing, K⁺ &lt; 4.0, or features of toxicity (DigiFab if life-threatening).' });
-      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis. Target combo trough &lt; 1.5 ng/mL.' });
-      items.push({ em: '<strong>Consider holding Verapamil entirely</strong> while septic', body: SEPSIS_VERAP_HOLD_TEXT + ' Only resume / uptitrate once sepsis resolved, SBP &gt; 100 sustained, LV function known. Three converging hazards here — Verapamil negative inotropy + Verap-Digox PK interaction + sepsis-AKI risk for Digoxin toxicity.' });
+      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis/hypovolemia. Target combo trough &lt; 1.5 ng/mL.' });
+      items.push({ em: '<strong>Consider holding Verapamil entirely</strong> while sepsis/hypovolemia is active', body: SEPSIS_VERAP_HOLD_TEXT + ' Only resume / uptitrate once the driver is resolved, SBP &gt; 100 sustained, LV function known. Three converging hazards here — Verapamil negative inotropy + Verap-Digox PK interaction + AKI risk for Digoxin toxicity.' });
     } else if (digox && biso) {
       items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE uptitrating', body: 'Sepsis-AKI risks Digoxin accumulation and toxicity. ' + DIGOXIN_LEVEL_TEXT + ' Hold uptitration if AKI developing, K⁺ &lt; 4.0, or features of toxicity.' });
-      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis.' });
-      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis is active — consider holding or halving</strong>', body: 'Refractory tachycardia in a septic β-blocked patient may be the only compensatory response left. Surviving Sepsis 2021 cautions against new/uptitrated β-blockade in undifferentiated septic shock. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once fluid-replete, off vasopressors, lactate clearing, and SBP comfortably &gt; 100.' });
+      items.push({ em: 'Continue / uptitrate Digoxin maintenance — up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis/hypovolemia.' });
+      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis/hypovolemia is active — consider holding or halving</strong>', body: 'Refractory tachycardia in a β-blocked patient with active sepsis or hypovolemia may be the only compensatory response left. Surviving Sepsis 2021 cautions against new/uptitrated β-blockade in undifferentiated septic shock — the same compensatory-tachycardia logic applies in active hypovolemia. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once fluid-replete, off vasopressors, lactate clearing (if septic), and SBP comfortably &gt; 100.' });
     } else if (verap) {
       items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + VERAP_DIGOX_INTERACTION_TEXT + ' Start maintenance at 62.5 mcg OD (or alternate days if eGFR &lt; 50); check pre-dose level at 48–72 h. ' + DIGOXIN_LEVEL_TEXT });
-      items.push({ em: '<strong>Do NOT routinely uptitrate Verapamil in sepsis</strong>', body: SEPSIS_VERAP_HOLD_TEXT + ' Only consider 80 mg TDS once sepsis resolved, SBP &gt; 110 sustained, lactate normalising, no HF signs, and Digoxin alone has failed at 24 h.' });
+      items.push({ em: '<strong>Do NOT routinely uptitrate Verapamil in sepsis/hypovolemia</strong>', body: SEPSIS_VERAP_HOLD_TEXT + ' Only consider 80 mg TDS once the driver is resolved, SBP &gt; 110 sustained, lactate normalising (if septic) and no HF signs, and Digoxin alone has failed at 24 h.' });
     } else if (biso) {
-      items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Preferred to uptitrating Bisoprolol while septic. β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.' });
-      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis is active — consider holding or halving</strong>', body: 'Refractory tachycardia on a β-blocker in sepsis may be the only compensatory response left. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once sepsis is controlled (source treated, lactate down, no fluid/pressor requirement) <strong>and</strong> SBP &gt; 100.' });
+      items.push({ em: 'Add Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Preferred to uptitrating Bisoprolol while sepsis/hypovolemia is active. β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.' });
+      items.push({ em: '<strong>Do not uptitrate Bisoprolol while sepsis/hypovolemia is active — consider holding or halving</strong>', body: 'Refractory tachycardia on a β-blocker in active sepsis or hypovolemia may be the only compensatory response left. ' + SEPSIS_BB_HOLD_TEXT + ' Only consider uptitration once the driver is controlled (source treated / volume replenished, lactate down if septic, no fluid/pressor requirement) <strong>and</strong> SBP &gt; 100.' });
     } else if (digox) {
       items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE uptitrating', body: 'Sepsis-AKI risks Digoxin accumulation; refractory tachycardia in a Digoxin-loaded patient may itself be a sign of toxicity (paradoxical SVT/AT with block). ' + DIGOXIN_LEVEL_TEXT + ' Hold if AKI developing, K⁺ &lt; 4.0, or any features of toxicity (DigiFab if life-threatening).' });
-      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis.' });
-      items.push({ em: 'Only add a second agent (BB or CCB) once SBP &gt; 100 mmHg <em>off vasopressors</em>, lactate trending down, no fluid/pressor requirement', body: 'Reassess after sepsis is treated before adding Bisoprolol or Verapamil. <em>Avoid Verapamil if LV function unknown or HFrEF likely.</em> Do not combine Bisoprolol with Verapamil.' });
+      items.push({ em: 'Continue Digoxin maintenance — uptitrate up to 250 mcg OD as level and renal function allow', body: 'Already loaded — appropriate choice in sepsis/hypovolemia.' });
+      items.push({ em: 'Only add a second agent (BB or CCB) once SBP &gt; 100 mmHg <em>off vasopressors</em>, lactate trending down (if septic), no fluid/pressor requirement', body: 'Reassess after the driver is treated before adding Bisoprolol or Verapamil. <em>Avoid Verapamil if LV function unknown or HFrEF likely.</em> Do not combine Bisoprolol with Verapamil.' });
     }
   } else {
     // ─── Non-septic refractory ──────────────────────────────────────────
@@ -3158,7 +3171,7 @@ function agentMedicationItems() {
       items.push({ em: 'Check pre-dose Digoxin level BEFORE uptitrating', body: 'Refractory HR on a Digoxin-loaded patient is a classic setting for a level check regardless of renal function — interactions, electrolytes, and volume status push levels independently. ' + DIGOXIN_LEVEL_TEXT });
       items.push({ em: 'Uptitrate Bisoprolol', body: BISO_STEP_TEXT + ' β-blocker + Digoxin → additive AV-nodal blockade: monitor for symptomatic bradycardia / AV block.' });
       items.push({ em: 'Uptitrate Digoxin maintenance up to 250 mcg OD as level and renal function allow', body: 'Already loaded — uptitrate stepwise.' });
-      items.push({ em: 'If still refractory — recheck reversible drivers before re-referral', body: 'TFTs back, K⁺/Mg²⁺ replete, no occult sepsis, no PE, no pain/anxiety/anaemia. Consider inpatient TTE for structural cause. Cardiology may consider rhythm-control (DCCV if anticoagulated ≥ 3 weeks or AF &lt; 48 h, ablation referral).' });
+      items.push({ em: 'If still refractory — recheck reversible drivers before re-referral', body: 'TFTs back, K⁺/Mg²⁺ replete, no occult sepsis or hypovolemia, no PE, no pain/anxiety/anaemia. Consider inpatient TTE for structural cause. Cardiology may consider rhythm-control (DCCV if anticoagulated ≥ 3 weeks or AF &lt; 48 h, ablation referral).' });
     } else if (biso) {
       items.push({ em: 'Uptitrate Bisoprolol', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
       items.push({ em: 'If Bisoprolol cannot be uptitrated or HR remains &gt; 110 at 10 mg OD — load Digoxin', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.' });
@@ -3217,7 +3230,7 @@ function buildPlan() {
   if (wizardState.septic) {
     acute.push({
       em: 'Treat sepsis / hypovolemia — driver-first',
-      body: 'IV fluids, blood cultures <strong>before</strong> antibiotics, broad-spectrum antibiotics within 1 h (<strong>Sepsis Six</strong>). Source control. Lactate trend. NEWS2 at least 4-hourly while septic. Fixing the driver often lets the rate settle without further rate-control escalation.'
+      body: 'IV fluids and source control as the driver dictates. If septic: blood cultures <strong>before</strong> antibiotics, broad-spectrum antibiotics within 1 h (<strong>Sepsis Six</strong>), lactate trend. If hypovolaemic: identify and replenish the volume losses (bleeding, GI, third-spacing). NEWS2 at least 4-hourly. Fixing the driver often lets the rate settle without further rate-control escalation.'
     });
   } else {
     acute.push({
