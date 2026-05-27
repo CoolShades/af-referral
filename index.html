@@ -1189,6 +1189,16 @@
     text-transform: uppercase;
     color: var(--ink-mute);
   }
+  /* Small "opt." badge inside a field label — un-uppercases to stay
+     visually softer than the field name. */
+  .crcl-opt {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    font-style: italic;
+    opacity: 0.65;
+    margin-left: 4px;
+  }
   .crcl-inputwrap {
     display: flex;
     align-items: baseline;
@@ -2081,7 +2091,7 @@
           </div>
 
           <div class="crcl-field">
-            <label for="crcl-height">Height</label>
+            <label for="crcl-height">Height <span class="crcl-opt">opt.</span></label>
             <div class="crcl-inputwrap">
               <input type="number" id="crcl-height" min="120" max="230" placeholder="—" inputmode="decimal"/>
               <span class="unit">cm</span>
@@ -2117,6 +2127,7 @@
             <div class="crcl-explainer-section">
               <h4>2 · Ideal body weight (Devine)</h4>
               <p>Male: 50 + 0.9055 × (height_cm − 152.4). Female: 45.5 + 0.9055 × (height_cm − 152.4). Validated for height ≥ 152.4 cm (5 ft) — below that, IBW can dip below the base figure and is less well established; clinical judgement applies.</p>
+              <p><em>Height is optional</em> — leave blank to fall back to the standard Cockcroft–Gault calculation using actual body weight directly (no IBW / AjBW / BMI correction).</p>
             </div>
             <div class="crcl-explainer-section">
               <h4>3 · Adjusted body weight</h4>
@@ -2328,8 +2339,10 @@ function orbitBand(s) {
 
 function calculateCrCl() {
   const { age, sex, weight, height, creatinine } = acState;
-  // Require every field — height is new and necessary for IBW/AjBW selection.
-  if (!age || !weight || !height || !creatinine || age <= 0 || creatinine <= 0) {
+  // Required: age, weight, creatinine. Height is optional — when blank we
+  // skip the IBW/AjBW correction and feed ABW straight into C-G (the
+  // original pre-correction behaviour).
+  if (!age || !weight || !creatinine || age <= 0 || creatinine <= 0) {
     acState.crcl = null;
     acState.weightUsed = null;
     acState.weightMode = null;
@@ -2337,18 +2350,26 @@ function calculateCrCl() {
     acState.ibw = null;
     return null;
   }
-  // Devine IBW (kg). Validated above 152.4 cm; below that, value can dip
-  // under the base figure — clinical judgement applies (noted in expander).
-  const base = sex === 'male' ? 50 : 45.5;
-  const ibw = base + 0.9055 * (height - 152.4);
-  const ajbw = ibw + 0.4 * (weight - ibw);
-  const bmi = weight / Math.pow(height / 100, 2);
 
-  // Weight-selection ladder: ABW for under/normal weight; AjBW once ABW
-  // exceeds 120 % of IBW (MDCalc / NHS-pharmacy convention).
-  const useAjBW = weight > 1.2 * ibw;
-  const weightUsed = useAjBW ? ajbw : weight;
-  const weightMode = useAjBW ? 'adjusted' : 'actual';
+  let weightUsed = weight;
+  let weightMode = 'actual';
+  let bmi = null;
+  let ibw = null;
+
+  if (height && height > 0) {
+    // Devine IBW (kg). Validated above 152.4 cm; below that, value can dip
+    // under the base figure — clinical judgement applies (noted in expander).
+    const base = sex === 'male' ? 50 : 45.5;
+    ibw = base + 0.9055 * (height - 152.4);
+    const ajbw = ibw + 0.4 * (weight - ibw);
+    bmi = weight / Math.pow(height / 100, 2);
+
+    // Weight-selection ladder: ABW for under/normal weight; AjBW once ABW
+    // exceeds 120 % of IBW (MDCalc / NHS-pharmacy convention).
+    const useAjBW = weight > 1.2 * ibw;
+    weightUsed = useAjBW ? ajbw : weight;
+    weightMode = useAjBW ? 'adjusted' : 'actual';
+  }
 
   const k = sex === 'male' ? 1.23 : 1.04;
   const crcl = (k * (140 - age) * weightUsed) / creatinine;
@@ -2419,7 +2440,12 @@ function renderCrCl() {
     }
     if (fnEl) {
       const modeLabel = acState.weightMode === 'adjusted' ? 'adjusted body weight' : 'actual body weight';
-      fnEl.textContent = `Using ${modeLabel} · BMI ${acState.bmi.toFixed(1)}`;
+      // Height-less calc → no BMI / IBW correction; spell that out so the
+      // clinician knows what they got.
+      const tail = acState.bmi !== null
+        ? `BMI ${acState.bmi.toFixed(1)}`
+        : 'height not entered · IBW correction not applied';
+      fnEl.textContent = `Using ${modeLabel} · ${tail}`;
       fnEl.hidden = false;
     }
   }
@@ -2556,6 +2582,15 @@ document.querySelectorAll('.sex-btn').forEach(btn => {
     renderCrCl();
   });
 });
+
+// Seed acState from values the browser restored on refresh (input cache /
+// autofill). Without this the inputs visually show numbers but acState
+// stays null, so the output reads as empty until the user retypes a field.
+if (ageEl.value) acState.age = parseFloat(ageEl.value);
+if (wtEl.value)  acState.weight = parseFloat(wtEl.value);
+if (htEl.value)  acState.height = parseFloat(htEl.value);
+if (crEl.value)  acState.creatinine = parseFloat(crEl.value);
+renderCrCl();
 
 // Inline anticoagulate / not anticoagulate decision buttons inside the clerk note.
 document.getElementById('clerk-note-body').addEventListener('click', (e) => {
