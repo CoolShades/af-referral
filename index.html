@@ -1181,7 +1181,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
-    gap: 32px;
+    gap: 24px;
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -1973,7 +1973,7 @@
 <section id="anticoag" class="relative bg-paper overflow-hidden">
   <div class="section-numeral">II</div>
 
-  <div class="relative px-8 md:px-16 pt-12 md:pt-16 pb-20">
+  <div class="relative px-8 md:px-16 pt-12 md:pt-16 pb-20 max-w-7xl mx-auto">
     <!-- Hero -->
     <div class="grid md:grid-cols-12 gap-8 mb-12 md:mb-16">
       <div class="md:col-span-2"><div class="eyebrow" data-reveal>§ II</div></div>
@@ -2640,7 +2640,9 @@ calculator({
     if (s === 0) return '≈ 1 in 500 patient-years';
     if (s === 1) return '≈ 1 in 167 patient-years';
     if (r < 5)   return 'Intermediate annual risk';
-    return 'High annual risk';
+    // High band: quote the multiplier-of-baseline so the magnitude lands
+    // for the reader. Baseline is the score-0 risk (0.2 %).
+    return `(${Math.round(r / 0.2)}× baseline risk)`;
   },
   recFn: (s, r, state) => {
     const sexOnly = state && state.sc && !['c','h','a2','d','s2','v','a'].some(k => state[k]);
