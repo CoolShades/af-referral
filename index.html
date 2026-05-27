@@ -402,37 +402,6 @@
   .view-wizard.is-active .check-row .ttl { font-size: clamp(0.95rem, 2.3vh, 1.35rem); }
   .view-wizard.is-active .check-row .sub { font-size: clamp(12px, 1.8vh, 18px); }
 
-  /* Escalation branches (step 4) */
-  /* Asymmetric padding — extra room on the left for the "OPTION" spine
-     label (.esc-branch::before, see base block below). */
-  .view-wizard.is-active .esc-branch {
-    padding: clamp(14px, 2.8vh, 34px) clamp(18px, 3vw, 38px) clamp(14px, 2.8vh, 34px) clamp(34px, 3.8vw, 56px);
-  }
-  .view-wizard.is-active .esc-branch-title { font-size: clamp(1.05rem, 2.6vh, 1.7rem); }
-  .view-wizard.is-active .esc-branch-body,
-  .view-wizard.is-active .esc-recipe > li { font-size: clamp(13px, 2vh, 21px); }
-  .view-wizard.is-active .esc-grid {
-    gap: clamp(8px, 1.8vh, 22px);
-    /* Cards size to their content (Branch A's recipe is tall, Branch B's
-       paragraph is short) — don't force them to stretch to equal height. */
-    align-items: start;
-  }
-  /* Step 4 branches side-by-side on md+ — halves vertical footprint so the
-     worst case (verapamil+septic = warning + A + B) fits in 100dvh.
-     The optional .esc-warn paragraph is always the first child of .esc-grid
-     and spans both columns above the branches. */
-  @media (min-width: 768px) {
-    .view-wizard.is-active .esc-grid { grid-template-columns: 1fr 1fr; }
-    .view-wizard.is-active .esc-warn { grid-column: 1 / -1; }
-    /* In the narrower 2-column layout the 74 px text-column indent on
-       .esc-recipe / .esc-branch-body eats too much width — drop it. */
-    .view-wizard.is-active .esc-grid .esc-recipe,
-    .view-wizard.is-active .esc-grid .esc-branch-body {
-      margin-left: 0;
-      padding-left: 0;
-    }
-  }
-
   /* Anticoag: just tighten the headline + intro spacing; rest scrolls. */
   .view-anticoag.is-active .mb-16 { margin-bottom: clamp(16px, 3vh, 64px); }
   .view-anticoag.is-active h2 {
@@ -907,153 +876,6 @@
     line-height: 1.45;
   }
 
-  /* Escalation branch cards. */
-  .esc-grid { display: grid; gap: 16px; }
-  .esc-intro {
-    font-family: 'Newsreader', serif;
-    font-size: 18px;
-    color: var(--ink);
-    margin-bottom: 4px;
-    font-style: italic;
-  }
-  .esc-warn {
-    padding: 14px 18px;
-    border-left: 3px solid var(--accent);
-    background: rgba(122,30,30,0.05);
-    font-family: 'Newsreader', serif;
-    font-size: 16px;
-    color: var(--ink);
-    line-height: 1.45;
-    margin-bottom: 8px;
-  }
-  .esc-branch {
-    position: relative;      /* containing block for the .esc-branch-letter watermark */
-    overflow: hidden;        /* clip the watermark to the card edge */
-    border: 1px solid var(--rule);
-    /* Asymmetric — left padding leaves room for the "OPTION" spine label. */
-    padding: 24px 26px 24px 44px;
-    background: transparent;
-    transition: border-color 280ms ease;
-  }
-  .esc-branch:hover { border-color: var(--ink-mid); }
-  /* Vertical "OPTION" wayfinder pinned along the top-left edge of each card.
-     `writing-mode: vertical-rl` lays the text top-down by default, then
-     `rotate(180deg)` flips it so it reads bottom-to-top with each character
-     tilted 90° anticlockwise — the editorial "spine" look. */
-  .esc-branch::before {
-    content: "OPTION";
-    position: absolute;
-    top: clamp(18px, 2.6vh, 30px);
-    left: clamp(8px, 1vw, 14px);
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(9px, 1vh, 11px);
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    z-index: 1;
-  }
-  /* "A" / "B" used to sit in a 56 px column to the left of the title,
-     eating horizontal width. It's now a translucent corner watermark —
-     same editorial pattern as .section-numeral at chapter level. */
-  .esc-branch-letter {
-    position: absolute;
-    top: clamp(-12px, -1vh, -4px);
-    right: clamp(8px, 1.6vw, 24px);
-    font-family: 'Newsreader', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(6rem, 11vw, 12rem);
-    line-height: 0.85;
-    color: var(--accent);
-    opacity: 0.08;
-    pointer-events: none;
-    user-select: none;
-    z-index: 0;
-  }
-  .esc-branch-head {
-    position: relative;      /* sits above the watermark */
-    z-index: 1;
-    margin-bottom: 14px;
-  }
-  .esc-branch-title {
-    font-family: 'Newsreader', serif;
-    font-size: 1.35rem;
-    font-weight: 500;
-    color: var(--ink);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-  }
-  .esc-branch-sub {
-    font-family: 'Newsreader', serif;
-    font-size: 15px;
-    font-style: italic;
-    color: var(--ink-mute);
-    margin-top: 4px;
-  }
-  .esc-branch-body {
-    position: relative;      /* above the watermark */
-    z-index: 1;
-    font-family: 'Newsreader', serif;
-    font-size: 17px;
-    color: var(--ink);
-    line-height: 1.55;
-    padding-left: 74px;
-  }
-  .esc-recipe {
-    position: relative;      /* above the watermark */
-    z-index: 1;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0 74px;
-    counter-reset: rcp;
-  }
-  .esc-recipe > li {
-    counter-increment: rcp;
-    position: relative;
-    padding: 10px 0 10px 36px;
-    border-bottom: 1px solid var(--rule);
-    font-family: 'Newsreader', serif;
-    font-size: 17px;
-    color: var(--ink);
-    line-height: 1.5;
-  }
-  .esc-recipe > li:last-child { border-bottom: none; }
-  .esc-recipe > li::before {
-    content: counter(rcp, decimal-leading-zero);
-    position: absolute;
-    left: 0;
-    top: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    color: var(--ink-mute);
-  }
-  .esc-subrecipe {
-    list-style: none;
-    padding: 8px 0 0 0;
-    margin: 0;
-  }
-  .esc-subrecipe li {
-    padding: 5px 0 5px 18px;
-    position: relative;
-    font-size: 15px;
-    color: var(--ink-mid);
-    line-height: 1.4;
-  }
-  .esc-subrecipe li::before {
-    content: "—";
-    position: absolute;
-    left: 0;
-    color: var(--ink-mute);
-  }
-  @media (max-width: 768px) {
-    .esc-branch-body, .esc-recipe { padding-left: 0; margin-left: 0; }
-  }
 
   /* Exclusion list. */
   .exc-list {
@@ -1836,7 +1658,7 @@
 
     <div class="hairline mt-10 pt-6 text-[12px] font-mono tracking-[0.14em] uppercase text-ink-mute flex items-center justify-between gap-4 whitespace-nowrap">
       <span class="overflow-hidden text-ellipsis">West Suffolk Hospital · Cardiology Department</span>
-      <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.0.0</button>
+      <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.1.0</button>
     </div>
   </div>
 </header>
@@ -1876,13 +1698,12 @@
         <span class="seg" data-i="1"></span>
         <span class="seg" data-i="2"></span>
         <span class="seg" data-i="3"></span>
-        <span class="seg" data-i="4"></span>
       </div>
 
       <!-- STEP 1 — Exclusions -->
       <div class="wizard-step is-active" data-step="1">
         <div class="step-head">
-          <div class="eyebrow mb-4">Step 01 of 05 · Acute safety check</div>
+          <div class="eyebrow mb-4">Step 01 of 03 · Acute safety check</div>
           <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">First — is this patient acutely unwell?</h3>
           <p class="body-md text-ink-mid mb-4">Check the patient against these criteria. Any one of them means this patient is <strong>not</strong> for the AEC pathway.</p>
         </div>
@@ -1918,7 +1739,7 @@
       <!-- STEP 2 — Pre-treatment workup -->
       <div class="wizard-step" data-step="2">
         <div class="step-head">
-        <div class="eyebrow mb-4">Step 02 of 04 · Before you treat</div>
+        <div class="eyebrow mb-4">Step 02 of 03 · Before you treat</div>
         <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">Send the baseline workup.</h3>
         <p class="body-md text-ink-mid mb-8">Send these — and identify the driver. Reversible precipitants are behind a lot of new AF, and fixing the driver alone often lets the patient self-revert without further rate control.</p>
         </div>
@@ -1973,7 +1794,7 @@
       <!-- STEP 3 — What is the patient on? + reassess checkbox -->
       <div class="wizard-step" data-step="3">
         <div class="step-head">
-        <div class="eyebrow mb-4">Step 03 of 04 · Current rate-control agent</div>
+        <div class="eyebrow mb-4">Step 03 of 03 · Current rate-control agent</div>
         <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2">What is the patient on?</h3>
         <p class="body-md text-ink-mid mb-8">Click whichever agents the patient is currently taking.<br>Leave all blank if the patient is not on any rate-control medication yet.</p>
         </div>
@@ -2024,25 +1845,7 @@
 
         <div class="flex items-center justify-between mt-10 pt-6 hairline">
           <button class="nav-btn" data-action="back">← Back</button>
-          <button class="nav-btn primary" data-action="step3-continue">Continue →</button>
-        </div>
-      </div>
-
-      <!-- STEP 4 — Suggested medication change (only shown if refractory checked) -->
-      <div class="wizard-step" data-step="4">
-        <div class="step-head">
-          <div class="eyebrow mb-4">Step 04 of 04 · Escalate</div>
-          <h3 class="font-serif text-3xl md:text-4xl text-ink font-medium tracking-[-0.01em] leading-tight mb-2" id="sug-title">What to do next.</h3>
-          <p class="body-md text-ink-mid mb-8" id="sug-intro">Based on what the patient is already on.</p>
-        </div>
-
-        <div class="step-content">
-          <div class="esc-grid" id="sug-content"></div>
-        </div>
-
-        <div class="flex items-center justify-between mt-10 pt-6 hairline">
-          <button class="nav-btn" data-action="back">← Back</button>
-          <button class="nav-btn primary" data-action="generate">Generate plan →</button>
+          <button class="nav-btn primary" data-action="step3-continue">Generate plan →</button>
         </div>
       </div>
 
@@ -2371,6 +2174,16 @@
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="version-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">Version history</div>
     <h2 id="version-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-5">What&rsquo;s new.</h2>
+
+    <div class="version-entry">
+      <div class="version-tag">v1.1.0 — 27 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Wizard streamlined.</p>
+      <ul class="version-list">
+        <li>Removed the Step 4 escalation-suggestion screen — the cards duplicated content that already lands in the Step 5 plan and framed things as options rather than a definitive plan. Refractory flows now go straight from Step 3 to the plan.</li>
+        <li>Wizard is now three decision steps (acute exclusion → sepsis/hypovolaemia → agent + refractory) followed by the plan. Progress bar reduced to three segments and the Step 3 button now reads &ldquo;Generate plan&rdquo;.</li>
+        <li>~440 lines of code removed (escalation rendering, per-flow branch markup, .esc-* CSS).</li>
+      </ul>
+    </div>
 
     <div class="version-entry">
       <div class="version-tag">v1.0.0 — 27 May 2026</div>
@@ -2899,7 +2712,7 @@ function hasAgent(name) { return !!wizardState.agents[name]; }
 function agentCount() { return activeAgents().length; }
 
 // Map wizard step → visible progress segment (4 segs · plan = all done).
-const STEP_TO_SEG = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 };
+const STEP_TO_SEG = { 1: 1, 2: 2, 3: 3, 5: 4 };
 
 const wizard = document.getElementById('wizard');
 const stepEls = wizard.querySelectorAll('.wizard-step');
@@ -2953,278 +2766,6 @@ function resetWizard() {
   setStep(1);
 }
 
-function renderSuggestion() {
-  const c = document.getElementById('sug-content');
-  const titleEl = document.getElementById('sug-title');
-  const introEl = document.getElementById('sug-intro');
-  if (!c) return;
-  const biso  = hasAgent('bisoprolol');
-  const verap = hasAgent('verapamil');
-  const digox = hasAgent('digoxin');
-  const n     = agentCount();
-  const septic = wizardState.septic;
-  let html = '';
-
-  // Digoxin loading recipe — used in multiple places.
-  // Note: reduce loading by 50 % in frail / elderly / low body-weight /
-  // renally impaired patients (BNF). The maintenance target trough is
-  // 0.8 – 2.0 ng/mL — "< 2 ng/mL" alone is the toxicity ceiling, not a
-  // therapeutic target.
-  const digoxinRecipe = `
-    <ol class="esc-recipe">
-      <li><strong>Digoxin 500 mcg PO stat</strong> <em>(reduce to 250 mcg if elderly, frail, weight &lt; 60 kg, or eGFR &lt; 30)</em></li>
-      <li><strong>Digoxin 500 mcg PO 6 hours later</strong> if HR &gt; 110 <em>(reduce to 250 mcg per above)</em></li>
-      <li>Maintenance: <strong>Digoxin 62.5 mcg PO OD</strong>, <em>uptitratable up to 250 mcg OD</em> as level and renal function allow
-        <ul class="esc-subrecipe">
-          <li>Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong></li>
-          <li>Hold if level &gt; 2.0 or signs of toxicity — nausea, visual halos, confusion, new bradyarrhythmia, AV block</li>
-        </ul>
-      </li>
-    </ol>
-  `;
-
-  if (n === 0) {
-    titleEl.textContent = `Patient is not yet on rate-control.`;
-    if (septic) {
-      introEl.innerHTML = `<strong>Sepsis/hypovolaemia flagged.</strong> Start with Digoxin — it doesn't drop BP.`;
-      html = `
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Start Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolaemia</span></div>
-              <div class="esc-branch-sub">— β-blockers and CCBs further drop BP in already-hypotensive patients</div>
-            </div>
-          </div>
-          ${digoxinRecipe}
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">Consider adding Bisoprolol</div>
-              <div class="esc-branch-sub">— once driver is controlled and SBP &gt; 100 mmHg, and patient remains stable</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD as BP tolerates.</p>
-        </div>
-      `;
-    } else {
-      introEl.innerHTML = `Per the trust AEC protocol, here's how to start.`;
-      html = `
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Start Bisoprolol 2.5 mg OD</div>
-              <div class="esc-branch-sub">— first-line if no β-blocker contraindication and SBP &gt; 100, patient stable</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>. Uptitrate to 5 mg, then 10 mg OD if needed and BP tolerates. <em>If β-blocker contraindicated, start <strong>Verapamil 40 mg TDS</strong> instead — do not combine with bisoprolol.</em></p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">Add Digoxin loading</div>
-              <div class="esc-branch-sub">— if first-line cannot control HR</div>
-            </div>
-          </div>
-          ${digoxinRecipe}
-        </div>
-      `;
-    }
-  } else if (digox && (biso || verap)) {
-    // ─── Combo: BB/CCB + Digoxin ──────────────────────────────
-    const cap = biso ? 'Bisoprolol' : 'Verapamil';
-    const upDose = biso ? '5 mg OD, then 10 mg OD if tolerated (BNF step-up)' : '80 mg TDS (or MR 240 mg OD)';
-    // Verap+Digox is a BNF "severe" PK interaction — verapamil inhibits
-    // P-glycoprotein and raises digoxin levels ~50–75 %. Flag it loudly
-    // before any uptitration. Biso+Digox is PK-independent, so no warn.
-    const interactionWarn = verap
-      ? '<p class="esc-warn"><strong>Verapamil raises Digoxin levels ~50–75 %</strong> (BNF severe P-gp interaction). Check a pre-dose Digoxin level <strong>before any uptitration</strong> regardless of renal function; target pre-dose Digoxin level <strong>&lt; 1.5 ng/mL</strong> on the combination.</p>'
-      : '';
-    titleEl.textContent = `Patient is on ${cap} + Digoxin.`;
-    if (septic) {
-      introEl.innerHTML = `<strong>Sepsis/hypovolaemia flagged.</strong> Digoxin remains preferred; ${cap} should generally be <em>held</em>, not uptitrated, until stable.`;
-      html = `
-        ${interactionWarn}
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Continue / uptitrate Digoxin maintenance <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolaemia</span></div>
-              <div class="esc-branch-sub">— check pre-dose level first; uptitrate up to 250 mcg OD as level and renal function allow</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level + U&amp;Es BEFORE uptitrating</strong> — AKI risks accumulation. Target trough <strong>0.8–2.0 ng/mL</strong>. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, bradyarrhythmia, AV block).</p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
-              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while sepsis/hypovolaemia is active; refractory tachycardia may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis or hypovolaemia'}</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">${biso
-            ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing, and SBP comfortably &gt; 100.'
-            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once the driver is resolved, SBP &gt; 110 sustained, LV function known.'
-          }</p>
-        </div>
-      `;
-    } else {
-      introEl.innerHTML = `Both agents on board. ${verap ? '<strong>Check a Digoxin level first</strong> — Verapamil raises levels significantly. ' : ''}Maximise each carefully before re-referral.`;
-      html = `
-        ${interactionWarn}
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Uptitrate ${cap}</div>
-              <div class="esc-branch-sub">— only if SBP &gt; 100 mmHg${verap ? ', LVEF ≥ 40 %, PR &lt; 200 ms, HR ≥ 60' : ', HR &gt; 60'}</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.${verap ? ' Verapamil is contraindicated in LVEF &lt; 40 % — request inpatient TTE if echo unavailable.' : ' β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.'}</p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">Uptitrate Digoxin maintenance</div>
-              <div class="esc-branch-sub">— ${verap ? 'cautiously; target pre-dose Digoxin level &lt; 1.5 ng/mL given the Verapamil interaction' : 'up to 250 mcg OD as level and renal function allow'}</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Confirm full loading completed. <strong>Check pre-dose level first</strong> — interactions / electrolytes / volume can push levels independently of creatinine. Target pre-dose Digoxin level <strong>0.8–2.0 ng/mL</strong>${verap ? ' (on combination with Verapamil: &lt; 1.5 ng/mL)' : ''}. Uptitrate up to <strong>250 mcg OD</strong> as level and renal function allow.</p>
-        </div>
-      `;
-    }
-  } else if (biso || verap) {
-    // ─── Single agent: BB or CCB ──────────────────────────────
-    const cap = biso ? 'Bisoprolol' : 'Verapamil';
-    const upDose = biso
-      ? '5 mg OD, then 7.5 mg, then 10 mg OD (BNF step-up; reassess 12–24 h before each step)'
-      : '80 mg TDS (or MR 240 mg OD)';
-    const cautionPost = biso
-      ? ' Only if SBP &gt; 100 mmHg, HR &gt; 60 throughout. If already at 10 mg OD and HR remains &gt; 110 → Digoxin loading.'
-      : ' <strong>Verapamil contraindicated in LVEF &lt; 40 %</strong> — request inpatient TTE if echo unavailable. Only if SBP &gt; 100, PR &lt; 200 ms, HR &gt; 60.';
-    const combineWarn = verap
-      ? '<p class="esc-warn"><strong>Do not</strong> add Bisoprolol — combination with Verapamil contraindicated (β-blocker + non-DHP CCB → severe bradycardia / AV block / asystole).</p>'
-      : '';
-    titleEl.textContent = `Patient is on ${cap}.`;
-
-    if (septic) {
-      // Septic — lead with Digoxin, demote uptitration.
-      introEl.innerHTML = `<strong>Sepsis/hypovolaemia flagged.</strong> Digoxin preferred (BP-neutral). ${cap} should generally be <em>held</em> or kept at current dose — not uptitrated — until the driver is controlled.`;
-      html = `
-        ${combineWarn}
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Add Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolaemia</span></div>
-              <div class="esc-branch-sub">— β-blockers / CCBs further drop BP in already-hypotensive patients${verap ? '. Verapamil raises Digoxin levels ~50–75 % — start maintenance at 62.5 mcg OD; check level at 48–72 h' : ''}</div>
-            </div>
-          </div>
-          ${digoxinRecipe}
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">${biso ? 'Consider holding or halving ' + cap : 'Consider holding ' + cap}</div>
-              <div class="esc-branch-sub">— ${biso ? 'do <strong>not</strong> uptitrate while sepsis/hypovolaemia is active. Refractory tachycardia on a β-blocker may be compensatory' : 'Verapamil negative inotropy + vasodilation can unmask cardiovascular collapse in sepsis or hypovolaemia'}</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">${biso
-            ? 'Hold the next dose if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, or AKI developing. Only consider uptitrating to <strong>' + upDose + '</strong> once fluid-replete, off vasopressors, lactate clearing.'
-            : 'Hold Verapamil if SBP &lt; 100 mmHg, MAP &lt; 65, lactate rising, AKI, or pulmonary congestion. Only consider uptitration to <strong>' + upDose + '</strong> once the driver is resolved, SBP &gt; 110 sustained, LV function known.'
-          }</p>
-        </div>
-      `;
-    } else {
-      // Not septic — normal logic.
-      introEl.innerHTML = `Two paths. Pick whichever applies, then reassess.`;
-      html = `
-        ${combineWarn}
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Uptitrate ${cap}</div>
-              <div class="esc-branch-sub">— if SBP &gt; 100 mmHg, ${biso ? 'HR &gt; 60' : 'LVEF ≥ 40 %, PR &lt; 200 ms'}, patient stable</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Increase ${cap} to <strong>${upDose}</strong>.${cautionPost}</p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">Add Digoxin loading</div>
-              <div class="esc-branch-sub">— if ${cap} cannot be uptitrated (low SBP, side effects, intolerance${verap ? ', constipation, neg-inotropy concerns' : ''})${verap ? '. Verapamil raises Digoxin levels — see body' : ''}</div>
-            </div>
-          </div>
-          ${digoxinRecipe}
-          ${verap ? '<p class="esc-branch-body"><strong>Verapamil raises Digoxin levels ~50–75 %</strong> (BNF severe P-gp interaction). Start maintenance at 62.5 mcg OD (or alternate days if eGFR &lt; 50); target pre-dose Digoxin level &lt; 1.5 ng/mL on the combination; recheck at 5–7 days. <em>Do not</em> combine Verapamil with Bisoprolol.</p>' : '<p class="esc-branch-body">β-blocker + Digoxin → additive AV-nodal blockade; monitor for symptomatic bradycardia / AV block.</p>'}
-        </div>
-      `;
-    }
-  } else if (digox) {
-    // ─── Single agent: Digoxin ────────────────────────────────
-    titleEl.textContent = `Patient is on Digoxin.`;
-    if (septic) {
-      introEl.innerHTML = `<strong>Sepsis/hypovolaemia flagged.</strong> Digoxin is the appropriate choice — continue, optimise, and avoid adding BB/CCB unless BP comfortably allows. Refractory rate in a Digoxin patient may itself signal toxicity — check a level <em>first</em>.`;
-      html = `
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Check pre-dose level + U&amp;Es, then continue / uptitrate Digoxin</div>
-              <div class="esc-branch-sub">— AKI risks accumulation; refractory tachycardia may itself be toxicity</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block — <em>DigiFab if life-threatening</em>). If level low and renal function adequate, uptitrate maintenance up to <strong>250 mcg OD</strong>. Treat the driver; rate often settles once it is controlled.</p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">Add a second agent — only once stable</div>
-              <div class="esc-branch-sub">— SBP &gt; 100 <em>off vasopressors</em>, lactate trending down, no fluid/pressor requirement. Bisoprolol first; Verapamil only if β-blocker contraindicated <strong>and</strong> LV function known preserved</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Add <strong>Bisoprolol 2.5 mg OD</strong> (uptitrate as tolerated) <em>or</em> <strong>Verapamil 40 mg TDS</strong> if β-blocker contraindicated and LVEF ≥ 40 %. <em>Do not combine Bisoprolol with Verapamil.</em> If rate uncontrolled and patient deteriorating despite Digoxin, escalate to cardiology / critical care for IV amiodarone — do not delay for BB/CCB titration.</p>
-        </div>
-      `;
-    } else {
-      introEl.innerHTML = `Confirm Digoxin status first — is the patient mid-load, on chronic maintenance, or fully loaded? Optimise Digoxin before adding a second agent.`;
-      html = `
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">A</span>
-            <div>
-              <div class="esc-branch-title">Optimise existing Digoxin first — check level</div>
-              <div class="esc-branch-sub">— confirm fully loaded (500 + 500 mcg over 6 h), steady state, K⁺/Mg²⁺ replete; uptitrate maintenance to max 250 mcg OD as level allows</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>. Hold if &gt; 2.0 or features of toxicity. Review interacting drugs (amiodarone, verapamil, macrolides, spironolactone — all raise levels).</p>
-        </div>
-        <div class="esc-branch">
-          <div class="esc-branch-head">
-            <span class="esc-branch-letter">B</span>
-            <div>
-              <div class="esc-branch-title">If still &gt; 110 after Digoxin optimised — add a second agent</div>
-              <div class="esc-branch-sub">— Bisoprolol first-line; Verapamil if β-blocker contraindicated and LVEF ≥ 40 %</div>
-            </div>
-          </div>
-          <p class="esc-branch-body">Start <strong>Bisoprolol 2.5 mg OD</strong>, titrate as BP/HR tolerate (most inpatients leave on 2.5 – 5 mg; GP continues uptitration). <em>If β-blocker contraindicated:</em> start <strong>Verapamil 40 mg TDS</strong> (or MR 120 mg OD) — <strong>only if LVEF ≥ 40 %</strong> (request inpatient TTE if echo unavailable). <em>Do not combine Bisoprolol with Verapamil.</em> β-blocker + Digoxin: additive AV-nodal blockade — monitor for symptomatic bradycardia / AV block.</p>
-        </div>
-      `;
-    }
-  }
-  c.innerHTML = html;
-}
 
 // ─── Reusable clinical text fragments ─────────────────────────────────
 // These get reused across many agent combinations. Centralising keeps
@@ -3668,17 +3209,6 @@ wizard.addEventListener('click', (e) => {
       t.setAttribute('aria-checked', wizardState.septic ? 'true' : 'false');
       break;
     case 'step3-continue':
-      // Refractory (HR > 110) always needs the suggestion screen — even if no
-      // agent yet (we'll recommend first-line). Otherwise jump to the plan.
-      if (wizardState.refractory) {
-        renderSuggestion();
-        setStep(4);
-      } else {
-        renderPlan();
-        setStep(5);
-      }
-      break;
-    case 'generate':
       renderPlan();
       setStep(5);
       break;
