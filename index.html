@@ -2639,9 +2639,8 @@ calculator({
   subFn: (s, r) => {
     if (s === 0) return '≈ 1 in 500 patient-years';
     if (s === 1) return '≈ 1 in 167 patient-years';
-    if (r < 5)   return 'Intermediate annual risk';
-    // High band: quote the multiplier-of-baseline so the magnitude lands
-    // for the reader. Baseline is the score-0 risk (0.2 %).
+    // Intermediate and high bands: quote the multiplier-of-baseline so
+    // the magnitude lands. Baseline is the score-0 risk (0.2 %).
     return `(${Math.round(r / 0.2)}× baseline risk)`;
   },
   recFn: (s, r, state) => {
