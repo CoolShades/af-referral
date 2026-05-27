@@ -2468,9 +2468,9 @@ function renderClerkNote() {
       // Branch on which critical condition fired so the sentence reads
       // naturally instead of the generic "Plan: X — Y" stub.
       if (acState.bmi !== null && acState.bmi > 40) {
-        html += `<mark class="ink">anticoagulate</mark> this patient; given the BMI &gt; 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft–Gault unreliable in morbid obesity).`;
+        html += `<mark class="ink">anticoagulate</mark> this patient. Given the BMI &gt; 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft–Gault unreliable in morbid obesity).`;
       } else {
-        html += `<mark class="ink">anticoagulate</mark> this patient; given the CrCl &lt; 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
+        html += `<mark class="ink">anticoagulate</mark> this patient. Given the CrCl &lt; 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
       }
     } else if (rec) {
       html += `<mark class="ink">anticoagulate</mark> this patient with <strong>${rec.dose}</strong>${rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : ''}.`;
@@ -2519,9 +2519,9 @@ function clerkNoteAsText() {
     const rec = getApixabanRec();
     if (rec && rec.tone === 'critical') {
       if (acState.bmi !== null && acState.bmi > 40) {
-        t += `anticoagulate this patient; given the BMI > 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft-Gault unreliable in morbid obesity).`;
+        t += `anticoagulate this patient. Given the BMI > 40, the appropriate dose will be confirmed with the ward pharmacist (Cockcroft-Gault unreliable in morbid obesity).`;
       } else {
-        t += `anticoagulate this patient; given the CrCl < 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
+        t += `anticoagulate this patient. Given the CrCl < 15 mL/min, the regimen will be discussed with nephrology — options include off-licence Apixaban 2.5 mg BD or a UFH bridge until renal function recovers.`;
       }
     } else if (rec) {
       t += `anticoagulate this patient with ${rec.dose}` + (rec.tone === 'reduced' ? ' (' + rec.detail.replace(/\.$/,'').toLowerCase() + ')' : '') + '.';
