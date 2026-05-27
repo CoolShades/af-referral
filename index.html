@@ -1702,7 +1702,7 @@
             <span class="display-number text-3xl italic text-accent font-light">d</span>
             <div>
               <div class="font-serif text-xl text-ink font-medium">Sepsis or hypovolemia <span class="text-ink-mute font-normal italic">— treat the driver</span></div>
-              <div class="body-md text-ink-mid mt-1">Both are common precipitants. Fluid-resuscitate, send cultures, treat the source — fixing the driver often lets the patient self-cardiovert without escalating rate control. <strong>In sepsis or hypovolemia, Digoxin is preferred</strong> for rate control as β-blockers and CCBs further drop BP.</div>
+              <div class="body-md text-ink-mid mt-1">Fluid-resuscitate, treat the source — rate often settles once the driver is fixed, without escalating rate control. <strong>Digoxin is preferred here</strong> — β-blockers and CCBs further drop BP.</div>
 
               <button class="check-row mt-4" role="checkbox" aria-checked="false" data-action="septic">
                 <span class="box"></span>
@@ -2597,14 +2597,14 @@ function renderSuggestion() {
       : '';
     titleEl.textContent = `Patient is on ${cap} + Digoxin.`;
     if (septic) {
-      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin remains preferred; ${cap} should generally be <em>held</em>, not uptitrated, until stable.`;
+      introEl.innerHTML = `<strong>Sepsis/hypovolemia flagged.</strong> Digoxin remains preferred; ${cap} should generally be <em>held</em>, not uptitrated, until stable.`;
       html = `
         ${interactionWarn}
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">Continue / uptitrate Digoxin maintenance <span class="text-ink-mute font-normal italic">— preferred in sepsis</span></div>
+              <div class="esc-branch-title">Continue / uptitrate Digoxin maintenance <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolemia</span></div>
               <div class="esc-branch-sub">— check pre-dose level first; uptitrate up to 250 mcg OD as level and renal function allow</div>
             </div>
           </div>
@@ -2666,15 +2666,15 @@ function renderSuggestion() {
 
     if (septic) {
       // Septic — lead with Digoxin, demote uptitration.
-      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin preferred (BP-neutral). ${cap} should generally be <em>held</em> or kept at current dose — not uptitrated — until sepsis is controlled.`;
+      introEl.innerHTML = `<strong>Sepsis/hypovolemia flagged.</strong> Digoxin preferred (BP-neutral). ${cap} should generally be <em>held</em> or kept at current dose — not uptitrated — until the driver is controlled.`;
       html = `
         ${combineWarn}
         <div class="esc-branch">
           <div class="esc-branch-head">
             <span class="esc-branch-letter">A</span>
             <div>
-              <div class="esc-branch-title">Add Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis</span></div>
-              <div class="esc-branch-sub">— β-blockers / CCBs further drop BP in already-hypotensive septic patients${verap ? '. Verapamil raises Digoxin levels ~50–75 % — start maintenance at 62.5 mcg OD; check level at 48–72 h' : ''}</div>
+              <div class="esc-branch-title">Add Digoxin loading <span class="text-ink-mute font-normal italic">— preferred in sepsis/hypovolemia</span></div>
+              <div class="esc-branch-sub">— β-blockers / CCBs further drop BP in already-hypotensive patients${verap ? '. Verapamil raises Digoxin levels ~50–75 % — start maintenance at 62.5 mcg OD; check level at 48–72 h' : ''}</div>
             </div>
           </div>
           ${digoxinRecipe}
@@ -2725,7 +2725,7 @@ function renderSuggestion() {
     // ─── Single agent: Digoxin ────────────────────────────────
     titleEl.textContent = `Patient is on Digoxin.`;
     if (septic) {
-      introEl.innerHTML = `<strong>Sepsis flagged.</strong> Digoxin is the appropriate choice — continue, optimise, and avoid adding BB/CCB unless BP comfortably allows. Refractory rate in a septic Digoxin patient may itself signal toxicity — check a level <em>first</em>.`;
+      introEl.innerHTML = `<strong>Sepsis/hypovolemia flagged.</strong> Digoxin is the appropriate choice — continue, optimise, and avoid adding BB/CCB unless BP comfortably allows. Refractory rate in a Digoxin patient may itself signal toxicity — check a level <em>first</em>.`;
       html = `
         <div class="esc-branch">
           <div class="esc-branch-head">
@@ -2735,7 +2735,7 @@ function renderSuggestion() {
               <div class="esc-branch-sub">— sepsis-AKI risks accumulation; refractory tachycardia may itself be toxicity</div>
             </div>
           </div>
-          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; AF aim 0.5 – 0.9. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block — <em>DigiFab if life-threatening</em>). If level low and renal function adequate, uptitrate maintenance up to <strong>250 mcg OD</strong>. Treat the sepsis; rate often settles once driver is controlled.</p>
+          <p class="esc-branch-body">Pre-dose level (≥ 6 h post-dose): target <strong>0.8 – 2.0 ng/mL</strong>; AF aim 0.5 – 0.9. Hold if &gt; 2.0 or features of toxicity (nausea, visual halos, confusion, new bradyarrhythmia, AV block — <em>DigiFab if life-threatening</em>). If level low and renal function adequate, uptitrate maintenance up to <strong>250 mcg OD</strong>. Treat the driver; rate often settles once it is controlled.</p>
         </div>
         <div class="esc-branch">
           <div class="esc-branch-head">
@@ -2815,7 +2815,7 @@ function agentMedicationItems() {
     if (!refractory) {
       if (septic) {
         items.push({
-          em: 'No rate-control medication at this time — but <strong>sepsis is the driver</strong>',
+          em: 'No rate-control medication at this time — but <strong>sepsis/hypovolemia is the driver</strong>',
           body: 'HR currently controlled. Reassess after fluid resuscitation and source control; if HR climbs &gt; 110, start <strong>Digoxin</strong> first (BP-neutral). <strong>Do NOT start a β-blocker or CCB pre-emptively while septic</strong> — both can precipitate collapse.'
         });
       } else {
@@ -2828,9 +2828,9 @@ function agentMedicationItems() {
     }
     // No agent + refractory.
     if (septic) {
-      items.push({ em: 'Sepsis flagged — Digoxin preferred as first agent', body: 'β-blockers and CCBs further drop BP in already-hypotensive patients. Treat the driver first (Sepsis Six). Digoxin onset is slow (1–2 h) — if rate control is needed urgently, discuss critical care / cardiology for IV amiodarone.' });
+      items.push({ em: 'Sepsis/hypovolemia flagged — Digoxin preferred as first agent', body: 'β-blockers and CCBs further drop BP in already-hypotensive patients. Treat the driver first (Sepsis Six if septic; volume replacement if hypovolaemic). Digoxin onset is slow (1–2 h) — if rate control is needed urgently, discuss critical care / cardiology for IV amiodarone.' });
       items.push({ em: 'Start Digoxin loading', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT });
-      items.push({ em: 'Only once sepsis is controlled and SBP comfortably &gt; 100 mmHg — consider adding Bisoprolol 2.5 mg OD', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
+      items.push({ em: 'Only once the driver is controlled and SBP comfortably &gt; 100 mmHg — consider adding Bisoprolol 2.5 mg OD', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
     } else {
       items.push({ em: 'Start Bisoprolol 2.5 mg OD — first-line per AEC protocol', body: BISO_STEP_TEXT + ' ' + BB_CI_TEXT });
       items.push({ em: 'If first-line cannot control HR — load Digoxin', body: DIGOX_LOADING_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' β-blocker + Digoxin together → additive AV-nodal blockade; monitor for symptomatic bradycardia and AV block.' });
@@ -2882,7 +2882,7 @@ function agentMedicationItems() {
 
   // ─── Refractory (HR > 110 despite current therapy) ────────────────────
   if (septic) {
-    items.push({ em: 'Sepsis flagged — Digoxin preferred', body: 'β-blockers <strong>and</strong> CCBs are negatively inotropic and vasodilatory; both can precipitate cardiovascular collapse in septic shock. Treat sepsis first; rate often settles once the driver is controlled. Cardiology / critical care may consider <strong>IV amiodarone</strong> if rate uncontrolled and patient deteriorating despite Digoxin — escalate early; do not delay for BB/CCB titration.' });
+    items.push({ em: 'Sepsis/hypovolemia flagged — Digoxin preferred', body: 'β-blockers <strong>and</strong> CCBs are negatively inotropic and vasodilatory; both can precipitate cardiovascular collapse in a volume-depleted or septic patient. Treat the driver first; rate often settles once it is controlled. Cardiology / critical care may consider <strong>IV amiodarone</strong> if rate uncontrolled and patient deteriorating despite Digoxin — escalate early; do not delay for BB/CCB titration.' });
 
     if (digox && verap) {
       items.push({ em: 'Check pre-dose Digoxin level + U&amp;Es BEFORE any uptitration', body: VERAP_DIGOX_INTERACTION_TEXT + ' ' + DIGOXIN_LEVEL_TEXT + ' Hold uptitration if AKI developing, K⁺ &lt; 4.0, or features of toxicity (DigiFab if life-threatening).' });
