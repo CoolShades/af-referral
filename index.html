@@ -375,12 +375,12 @@
 
   /* Step heading (h3) and body */
   .view-wizard.is-active .wizard-step h3 {
-    font-size: clamp(1.3rem, min(3.2vw, 5vh), 3rem) !important;
+    font-size: clamp(1.3rem, min(3.2vw, 4.6vh), 2.75rem) !important;
   }
   .view-wizard.is-active .wizard-step .body-md,
   .view-wizard.is-active .wizard-step .body-lg {
-    font-size: clamp(14px, 2vh, 22px);
-    line-height: 1.55;
+    font-size: clamp(13px, 1.9vh, 20px);
+    line-height: 1.5;
   }
   .view-wizard.is-active .wizard-step .eyebrow {
     font-size: clamp(10px, 1.4vh, 14px);
@@ -388,18 +388,22 @@
 
   /* Exclusion list (step 1) */
   .view-wizard.is-active .exc-list {
-    padding: clamp(12px, 3vh, 34px) clamp(16px, 3vw, 40px);
-    margin: clamp(12px, 2.4vh, 32px) 0;
+    padding: clamp(11px, 2.5vh, 28px) clamp(16px, 3vw, 40px);
+    margin: clamp(10px, 2vh, 24px) 0;
   }
   .view-wizard.is-active .exc-list li {
-    font-size: clamp(14px, 2.4vh, 22px);
-    padding: clamp(4px, 1.2vh, 14px) 0;
+    font-size: clamp(13px, 2.15vh, 20px);
+    padding: clamp(4px, 1vh, 11px) 0;
+  }
+  .view-wizard.is-active .exc-list .exc-sub {
+    font-size: clamp(11px, 1.55vh, 15px);
+    margin-top: clamp(3px, 0.8vh, 7px);
   }
 
   /* Yes/No buttons (step 1) */
-  .view-wizard.is-active .choice { padding: clamp(14px, 3vh, 36px) clamp(18px, 3vw, 40px); }
-  .view-wizard.is-active .choice .lbl { font-size: clamp(1.05rem, 2.8vh, 1.9rem); }
-  .view-wizard.is-active .choice .sub { font-size: clamp(12px, 1.8vh, 18px); }
+  .view-wizard.is-active .choice { padding: clamp(13px, 2.5vh, 30px) clamp(18px, 3vw, 40px); }
+  .view-wizard.is-active .choice .lbl { font-size: clamp(1.05rem, 2.6vh, 1.75rem); }
+  .view-wizard.is-active .choice .sub { font-size: clamp(12px, 1.7vh, 17px); }
 
   /* Agent buttons (step 3) */
   .view-wizard.is-active .agent {
@@ -787,6 +791,12 @@
   .plan-list li .pt { font-family: 'Newsreader', serif; font-size: 1.15rem; color: var(--ink); line-height: 1.45; }
   .plan-list li .pt .em { color: var(--accent); font-weight: 500; }
   .plan-list li .pt .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+  /* Clean conditional routes inside a plan item (acute adverse-feature map):
+     one serif line each — trigger, accented action, muted parenthetical why. */
+  .plan-list li .pt .rmap2 { display: block; margin-top: 8px; }
+  .plan-list li .pt .rl2 { display: block; margin-top: 9px; line-height: 1.45; }
+  .plan-list li .pt .r2-act { color: var(--accent); font-weight: 500; }
+  .plan-list li .pt .r2-why { color: var(--ink-mute); }
   .plan-list li.plan-section-head {
     display: block;
     grid-template-columns: none;
@@ -1842,7 +1852,7 @@
       <span class="flex items-center gap-2 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.2.0</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.3.0</button>
       </span>
     </div>
   </div>
@@ -1896,12 +1906,12 @@
         <div class="step-content">
           <ul class="exc-list">
             <li><strong>Shock</strong> — SBP &lt; 90 mmHg, or &lt; 100 with poor perfusion (cold, mottled, confused, lactate up)</li>
-            <li><strong>Syncope</strong> — true transient loss of consciousness from the arrhythmia (not lightheadedness)</li>
-            <li><strong>Acute severe pulmonary oedema</strong> — florid: distressed, hypoxic, needs O&sup2;
+            <li><strong>Syncope</strong> — transient loss of consciousness from the arrhythmia</li>
+            <li><strong>Acute severe pulmonary oedema</strong> — florid: distressed, hypoxic, needs a significant amount of O<sub>2</sub>
               <span class="exc-sub">Mild breathlessness that eases as the rate comes down isn&rsquo;t this — click No.</span></li>
             <li><strong>Ongoing primary ischaemia</strong> — ischaemic chest pain with a STEMI-pattern ECG, or ischaemia that does not settle as the rate settles
               <span class="exc-sub">Chest pain with fast AF (&gt; 110) that eases as you slow the rate is demand ischaemia — rate control is the treatment; click No.</span></li>
-            <li><strong>Bradycardia or pauses</strong> — HR &lt; 60 bpm, or symptomatic pauses</li>
+            <li><strong>Bradycardia or pauses</strong> — HR &lt; 60 bpm, or a symptomatic pause (usually &ge; 6 seconds)</li>
           </ul>
         </div>
 
@@ -2362,6 +2372,18 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.3.0 — 28 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Acute-pathway polish &amp; wizard UX.</p>
+      <ul class="version-list">
+        <li>Peri-arrest plan refined: the adverse-feature routing now reads as clean conditional lines with the action highlighted; <strong>atropine</strong> flagged as often ineffective in AF/flutter with <strong>transcutaneous pacing</strong> as the bridge; both cardioversion routes now specify <strong>synchronised DCCV</strong>; amiodarone corrected to <strong>300 mg IV over 30 min</strong>; added a <strong>&ldquo;Re-refer to cardiology&rdquo;</strong> step.</li>
+        <li>Step 1 instability criteria tightened — simpler syncope wording, a symptomatic-pause threshold (&ge; 6 s), and &ldquo;a significant amount of O<sub>2</sub>&rdquo;.</li>
+        <li>Step 1 now fits a maximised window without scrolling (retuned the fit-to-viewport sizing).</li>
+        <li>Step 2: pressing <em>Continue</em> auto-scrolls to and highlights the sepsis/hypovolaemia question if it&rsquo;s below the fold, so it isn&rsquo;t missed.</li>
+        <li>Step 3: the refractory-checkbox highlight only delays when a scroll was needed — instant if it&rsquo;s already on screen.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.2.0 — 28 May 2026</div>
       <p class="body-md text-ink-mid mb-2">Rebrand, About section &amp; a sharper safety gate.</p>
       <ul class="version-list">
@@ -2408,7 +2430,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.2.0</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.3.0</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
@@ -3192,15 +3214,16 @@ function buildPlan() {
       sections: [{
         header: 'Peri-arrest AF · ALS pathway, not AEC',
         items: [
-          { em: 'Identify which adverse feature fired — treat the specific driver', body: 'Map the adverse feature(s) to the right route. Shock / poor perfusion with a fast rate → consider synchronised DCCV — haemodynamic compromise driven by the rhythm. Bradycardia / pauses → consider atropine / pacing (not DCCV). Ongoing ischaemia that does not settle as the rate settles → consider DCCV to break the rhythm and restore coronary perfusion — especially important in HFrEF, where AF with RVR is poorly tolerated.', copy: 'Shock + fast rate → DCCV. Bradycardia / pauses → atropine/pacing (not DCCV). Ongoing ischaemia not settling with rate → DCCV.' },
+          { em: 'Identify which adverse feature fired — treat the specific driver', body: 'Map the adverse feature to the right route.<span class="rmap2"><span class="rl2">Shock / poor perfusion + fast rate — <span class="r2-act">consider synchronised DCCV</span> <span class="r2-why">(rhythm-driven haemodynamic compromise).</span></span><span class="rl2">Bradycardia / pauses — <span class="r2-act">consider transcutaneous pacing</span> as a bridge to permanent pacing <span class="r2-why">(atropine often ineffective in AF/flutter; not DCCV).</span></span><span class="rl2">Ongoing ischaemia not settling with the rate — <span class="r2-act">consider synchronised DCCV</span> <span class="r2-why">(restore coronary perfusion; especially in HFrEF with RVR).</span></span></span>', copy: 'Shock + fast rate → synchronised DCCV. Bradycardia / pauses → atropine often ineffective in AF/flutter; transcutaneous pacing as a bridge to permanent pacing (not DCCV). Ongoing ischaemia not settling with rate → synchronised DCCV.' },
           { em: 'Consider calling <strong>2222</strong> — medical emergency call', body: 'Put out a 2222 to get the support required to discuss and undertake emergency cardioversion in the haemodynamically compromised patient. Consider reaching out to <strong>G7 ward</strong> to find a Cardiology Registrar to support if required, else the Medical Registrar should be able to safely cardiovert.', copy: 'Get support for emergency cardioversion. G7 ward for Cardiology Reg; otherwise Medical Reg.' },
           { em: 'Pre-DCCV bundle', body: 'IV access × 2 (one large-bore), continuous cardiac monitoring, 12-lead ECG, pads on. Bloods: <strong>troponin, K, Mg, TFTs, lactate, FBC, U&amp;Es, clotting/INR</strong>. <strong>LMWH or unfractionated heparin peri-cardioversion</strong> unless contraindicated.', copy: 'IV access ×2, cardiac monitoring, 12-lead ECG, pads on. Bloods: troponin, K, Mg, TFTs, lactate, FBC, U&Es, clotting. LMWH/UFH peri-cardioversion.' },
-          { em: 'Consider synchronised DCCV — up to 3 attempts (ALS adult tachyarrhythmia algorithm)', body: 'Sedation by anaesthetics. If DCCV fails: <strong>Amiodarone 300 mg IV over 10–20 min</strong> via large-bore or central access, then <strong>900 mg IV over 24 h</strong>, and repeat DCCV.', copy: 'Sedation by anaesthetics. If fails: Amiodarone 300 mg IV over 10–20 min, then 900 mg IV/24 h, then repeat DCCV.' },
-          { em: 'CCU / ITU monitored bed', body: 'Patient requires a monitored environment until stable; reassess for AEC re-entry only once adverse features have resolved. <strong>Re-refer to cardiology if the case is nuanced or requires patient-specific input.</strong>', copy: 'Monitored bed until stable; reassess for AEC re-entry once adverse features resolve. Re-refer to cardiology if nuanced / needs patient-specific input.' },
+          { em: 'Consider synchronised DCCV — up to 3 attempts (ALS adult tachyarrhythmia algorithm)', body: 'Sedation by anaesthetics. If DCCV fails: <strong>Amiodarone 300 mg IV over 30 min</strong> via large-bore or central access, then <strong>900 mg IV over 24 h</strong>, and repeat DCCV.', copy: 'Sedation by anaesthetics. If fails: Amiodarone 300 mg IV over 30 min, then 900 mg IV/24 h, then repeat DCCV.' },
+          { em: 'Re-refer to cardiology', body: 'Once the immediate emergency is being managed, get cardiology involved for definitive and ongoing care — rhythm-control strategy, suitability for (repeat) cardioversion, and any patient-specific decisions.', copy: 'Re-refer to cardiology for definitive / ongoing care — rhythm strategy, cardioversion suitability, patient-specific decisions.' },
+          { em: 'CCU / ITU monitored bed', body: 'Patient requires a monitored environment until stable. Once the patient has been stabilised, work back through this tool to reassess.', copy: 'Monitored bed until stable. Once stabilised, work back through this tool to reassess.' },
         ]
       }],
       eyebrow: 'Peri-arrest AF · ALS pathway',
-      title: 'Escalate · Do not template',
+      title: 'Escalate · Do not template · Re-refer to cardiology',
     };
   }
 
@@ -3418,9 +3441,37 @@ wizard.addEventListener('click', (e) => {
       wizardState.acute = false;
       setStep(2);
       break;
-    case 'next':
+    case 'next': {
+      // Before leaving Step 2, make sure the user has actually seen the
+      // septic/hypovolaemia question — it sits at the bottom of the scrolling
+      // step body and is easy to miss. If it's still below the fold, reveal it
+      // with a smooth scroll + swell instead of advancing (same pattern as the
+      // Step 3 refractory checkbox).
+      if (wizardState.step === 2) {
+        const septicBtn = document.querySelector('.wizard-step[data-step="2"] [data-action="septic"]');
+        const container = septicBtn && septicBtn.closest('.step-content');
+        if (septicBtn && container) {
+          const b = septicBtn.getBoundingClientRect();
+          const c = container.getBoundingClientRect();
+          const revealed = b.bottom <= c.bottom + 24;  // not cut off below the fold
+          if (!revealed) {
+            // Scroll the step body all the way down — the septic checkbox is the
+            // last thing in it — so it's fully revealed, not just peeking.
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            // Slight delay so the swell fires once the scroll has settled.
+            setTimeout(() => {
+              septicBtn.classList.remove('swell-pop');
+              void septicBtn.offsetWidth;  // force reflow so the animation re-fires
+              septicBtn.classList.add('swell-pop');
+              setTimeout(() => septicBtn.classList.remove('swell-pop'), 900);
+            }, 450);
+            break;  // don't advance — let them see it first
+          }
+        }
+      }
       setStep(wizardState.step + 1);
       break;
+    }
     case 'back':
       if (wizardState.step > 1) setStep(wizardState.step - 1);
       break;
@@ -3448,12 +3499,24 @@ wizard.addEventListener('click', (e) => {
       if (nowOn) {
         const refBtn = document.querySelector('.wizard-step[data-step="3"] [data-action="refractory"]');
         if (refBtn) {
-          refBtn.scrollIntoView({ block: 'end', behavior: 'smooth' });
-          // Force-reflow trick so the animation re-triggers on each agent click.
-          refBtn.classList.remove('swell-pop');
-          void refBtn.offsetWidth;
-          refBtn.classList.add('swell-pop');
-          setTimeout(() => refBtn.classList.remove('swell-pop'), 900);
+          const swell = () => {
+            refBtn.classList.remove('swell-pop');
+            void refBtn.offsetWidth;  // force reflow so the animation re-fires
+            refBtn.classList.add('swell-pop');
+            setTimeout(() => refBtn.classList.remove('swell-pop'), 900);
+          };
+          const container = refBtn.closest('.step-content');
+          const b = refBtn.getBoundingClientRect();
+          const c = container && container.getBoundingClientRect();
+          // Already on screen? Pulse immediately. Below the fold? Scroll first,
+          // then delay the swell so it lands once the scroll has settled.
+          const visible = c ? (b.bottom <= c.bottom + 24 && b.top >= c.top - 24) : true;
+          if (visible) {
+            swell();
+          } else {
+            refBtn.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            setTimeout(swell, 450);
+          }
         }
       }
       break;
