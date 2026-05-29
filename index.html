@@ -1082,6 +1082,20 @@
   mark.ink { background: transparent; color: var(--accent); font-weight: 500; }
 
   /* Section numeral wash. */
+  /* Clip layer for the decorative .section-numeral. The numeral bleeds past
+     the section's right edge (right: -4vw) for the watermark look. Inside a
+     section that scrolls (anticoag) — or one that opts out of overflow:hidden
+     (the plan, step 5) — that bleed turns the section into a latent horizontal
+     scroll container. overflow-x:clip on the section can't help when it also
+     scrolls vertically (the spec coerces clip→hidden in that combo), so instead
+     we wrap the numeral in an inset:0 overflow:clip layer: it clips the bleed at
+     the section box and adds no scrollable width, in both axes, everywhere. */
+  .section-numeral-clip {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
+    pointer-events: none;
+  }
   .section-numeral {
     position: absolute;
     top: 6vh; right: -4vw;
@@ -1475,6 +1489,51 @@
     .agent .drug { font-size: 1.2rem; }
     .crcl-bar { padding: 18px; }
     .crcl-inputs { gap: 16px; }
+  }
+
+  /* Short choice-qualifier line — only shown in the compact mobile wizard. */
+  .choice-qual { display: none; }
+
+  /* ─────── Mobile: compact the wizard's interactive elements ───────
+     On phones the §I wizard steps overflow their one-screen layout: the Yes/No
+     buttons, the three drug cards and the checkboxes are sized for desktop and
+     push the actual content (the checklist / drug list) off-screen. Compact
+     them so the content is the focus. Scoped to .view-wizard.is-active .<comp>
+     to match — and override — the vh-scaling rules above; tablet/desktop keep
+     the fuller treatment. */
+  @media (max-width: 640px) {
+    /* Step 1 — Yes/No share one row: drop the long subtitle, show a short
+       label ("Yes"/"No") + a tiny qualifier instead. */
+    .view-wizard.is-active .choice { padding: 14px 16px; gap: 10px; }
+    .view-wizard.is-active .choice .lbl { font-size: 1.15rem; }
+    .view-wizard.is-active .choice .lbl-rest { display: none; }
+    .view-wizard.is-active .choice .sub { display: none; }
+    .view-wizard.is-active .choice .choice-qual {
+      display: block;
+      font-family: 'Newsreader', serif;
+      font-style: italic;
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--ink-mute);
+      margin-top: 2px;
+    }
+    .view-wizard.is-active .choice.danger .choice-qual { color: var(--accent); }
+    .view-wizard.is-active .choice .arr { font-size: 18px; }
+
+    /* Step 3 — drug cards: drop the redundant note line and tighten so all
+       three cards + the refractory checkbox fit without hiding below the fold. */
+    .view-wizard.is-active .agent { grid-template-columns: 40px 1fr 18px; gap: 14px; padding: 16px; }
+    .view-wizard.is-active .agent .num { font-size: 1.8rem; }
+    .view-wizard.is-active .agent .note { display: none; }
+    .view-wizard.is-active .agent .arr { font-size: 18px; }
+
+    /* Checkboxes (Step 2 sepsis, Step 3 refractory) — tighter, smaller helper. */
+    .view-wizard.is-active .check-row { padding: 14px 16px; }
+    .view-wizard.is-active .check-row .sub { font-size: 13px; margin-top: 3px; }
+
+    /* Step 2 — labs checklist: trim each item's vertical padding (the vh-scaling
+       already handles type/margins). Descriptions are kept — useful reference. */
+    .view-wizard.is-active .wizard-step[data-step="2"] .py-5 { padding-top: 10px; padding-bottom: 10px; }
   }
 
   /* ─────── View architecture ─────── */
@@ -1987,7 +2046,7 @@
       <span class="flex items-center gap-3 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.0</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.1</button>
       </span>
     </div>
   </div>
@@ -2016,7 +2075,7 @@
 
 <!-- ════════════════════════ § I  RATE CONTROL — WIZARD ════════════════════════ -->
 <section id="rate" class="relative bg-paper-2 overflow-hidden">
-  <div class="section-numeral">I</div>
+  <div class="section-numeral-clip"><div class="section-numeral">I</div></div>
 
   <div class="relative px-6 md:px-16 pt-12 md:pt-16 pb-12">
 
@@ -2050,18 +2109,20 @@
           </ul>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-4 mt-8">
+        <div class="grid grid-cols-2 gap-4 mt-8">
           <button class="choice danger" data-action="exclusion-yes">
             <span>
-              <span class="lbl text-accent">Yes — at least one</span>
+              <span class="lbl text-accent">Yes<span class="lbl-rest"> — at least one</span></span>
               <span class="sub">Stop. Not for AEC — urgent intervention / peri-arrest pathway.</span>
+              <span class="choice-qual">≥ 1 present</span>
             </span>
             <span class="arr">→</span>
           </button>
           <button class="choice" data-action="exclusion-no">
             <span>
-              <span class="lbl">No — none present</span>
+              <span class="lbl">No<span class="lbl-rest"> — none present</span></span>
               <span class="sub">No immediate instability — continue to workup.</span>
+              <span class="choice-qual">none present</span>
             </span>
             <span class="arr">→</span>
           </button>
@@ -2234,7 +2295,7 @@
 
 <!-- ════════════════════════ § II  ANTICOAGULATION ════════════════════════ -->
 <section id="anticoag" class="relative bg-paper overflow-hidden">
-  <div class="section-numeral">II</div>
+  <div class="section-numeral-clip"><div class="section-numeral">II</div></div>
 
   <div class="relative px-8 md:px-16 pt-12 md:pt-16 pb-20 max-w-7xl mx-auto">
     <!-- Hero -->
@@ -2507,6 +2568,15 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.4.1 — 29 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Mobile polish — no more stray sideways scroll, and a tighter wizard.</p>
+      <ul class="version-list">
+        <li>Fixed a stray horizontal scroll on the rate-control plan and the anticoagulation page, caused by the large background chapter numeral bleeding past the screen edge.</li>
+        <li>Rate-control wizard reflowed for phones: the instability <strong>Yes / No</strong> buttons now sit side-by-side, and the drug-choice cards are tighter — so the checklist, the agent list and the follow-up checkbox are visible without scrolling.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.4.0 — 29 May 2026</div>
       <p class="body-md text-ink-mid mb-2">Built for the phone in your pocket — and installable.</p>
       <ul class="version-list">
@@ -2578,7 +2648,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.0</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.1</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
