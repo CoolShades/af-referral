@@ -214,9 +214,11 @@
   .hero-fit .pair-card .display-number { font-size: clamp(2.2rem, 5vh, 4rem) !important; }
   .hero-fit .pair-card .mt-8 { margin-top: clamp(12px, 2vh, 28px); }
   .hero-fit .pair-card .pt-4 { padding-top: clamp(6px, 1vh, 16px); }
-  /* Below 600 px tall — bail out gracefully and let the page scroll. */
-  @media (max-height: 600px) {
-    .hero-fit { height: auto; overflow: visible; min-height: 100vh; }
+  /* Below 600 px tall — OR on phones (≤640px wide), where the full-size hero
+     can run taller than one screen — bail out gracefully: fill the screen but
+     let the hero scroll rather than clip its last line ("…paste into notes"). */
+  @media (max-height: 600px), (max-width: 640px) {
+    .hero-fit { height: auto; overflow: visible; min-height: 100vh; min-height: 100dvh; }
     .hero-fit > .flex-1 { overflow: visible; }
   }
 
@@ -1523,16 +1525,21 @@
     .view-wizard.is-active .choice.danger .choice-qual { color: var(--accent); }
     .view-wizard.is-active .choice .arr { font-size: 18px; }
 
-    /* Step 3 — drug cards: drop the redundant note line and tighten so all
-       three cards + the refractory checkbox fit without hiding below the fold. */
-    .view-wizard.is-active .agent { grid-template-columns: 40px 1fr 18px; gap: 14px; padding: 16px; }
-    .view-wizard.is-active .agent .num { font-size: 1.8rem; }
+    /* Step 3 — drug cards: drop the redundant note line and size the numeral +
+       drug name to match the Step 2 baseline-workup items (display letter
+       1.55rem, title ~1rem) so the two pages feel consistent. */
+    .view-wizard.is-active .agent { grid-template-columns: 36px 1fr 16px; gap: 12px; padding: 14px; }
+    .view-wizard.is-active .agent .num { font-size: 1.55rem; }
+    .view-wizard.is-active .agent .drug { font-size: 1.05rem; }
     .view-wizard.is-active .agent .note { display: none; }
-    .view-wizard.is-active .agent .arr { font-size: 18px; }
+    .view-wizard.is-active .agent .arr { font-size: 16px; }
 
-    /* Checkboxes (Step 2 sepsis, Step 3 refractory) — tighter, smaller helper. */
-    .view-wizard.is-active .check-row { padding: 14px 16px; }
-    .view-wizard.is-active .check-row .sub { font-size: 13px; margin-top: 3px; }
+    /* Checkboxes (Step 2 sepsis, Step 3 refractory) — match the Step 2 item
+       sizing: title ~1rem, helper ~12.5px. */
+    .view-wizard.is-active .check-row { padding: 12px 14px; gap: 14px; grid-template-columns: 24px 1fr; }
+    .view-wizard.is-active .check-row .box { width: 22px; height: 22px; }
+    .view-wizard.is-active .check-row .ttl { font-size: 1rem; }
+    .view-wizard.is-active .check-row .sub { font-size: 12.5px; margin-top: 3px; line-height: 1.35; }
 
     /* Step 2 — labs checklist: trim padding + smaller type so the four labs and
        the sepsis checkbox fit with little scrolling (descriptions kept). */
@@ -1542,25 +1549,19 @@
     .view-wizard.is-active .wizard-step[data-step="2"] .body-md { font-size: 12.5px; line-height: 1.4; }
     .view-wizard.is-active .wizard-step[data-step="2"] .gap-6 { gap: 14px; }
 
-    /* Hero eyebrow: show the short label on phones. */
+    /* Hero eyebrow: show the short label on phones. (Hero keeps its original
+       sizing — it scrolls if needed via the bail-out above, rather than being
+       shrunk to fit.) */
     #hero-eyebrow .eb-full { display: none; }
     #hero-eyebrow .eb-short { display: inline; }
 
-    /* Hero — shrink to fit one screen on phones: lower the clamp floors and the
-       vh-scaling so the whole top section (incl. "…paste into the notes") plus
-       both stacked cards + footer fit inside 100dvh without clipping. */
-    .hero-fit h1.display-number { font-size: clamp(1.6rem, min(6.4vw, 8.6vh), 7rem) !important; line-height: 0.95; }
-    .hero-fit .body-lg { font-size: clamp(12.5px, min(3.4vw, 1.95vh), 26px); line-height: 1.42; }
-    .hero-fit .body-md { font-size: clamp(11px, min(2.9vw, 1.6vh), 22px); line-height: 1.38; }
-    .hero-fit .eyebrow { font-size: clamp(10px, 1.1vh, 13px); }
-    .hero-fit .mt-10 { margin-top: clamp(5px, 1.2vh, 28px); }
-    .hero-fit .mt-8  { margin-top: clamp(5px, 1.0vh, 24px); }
-    .hero-fit .mt-5  { margin-top: clamp(4px, 0.8vh, 18px); }
-    .hero-fit .mb-10 { margin-bottom: clamp(5px, 1.2vh, 28px); }
-    .hero-fit .mb-6  { margin-bottom: clamp(5px, 0.9vh, 22px); }
-    .hero-fit .pair-card { padding: clamp(12px, 1.8vh, 30px) clamp(16px, 3vw, 36px); }
-    .hero-fit .pair-card h2 { font-size: clamp(1.3rem, min(3vw, 3.2vh), 2.6rem) !important; }
-    .hero-fit .pair-card p { font-size: clamp(12px, 1.3vh, 17px); line-height: 1.38; }
+    /* Plan (step 5) — it scrolls (not fit-to-screen), so smaller type on phones
+       shortens the scroll and matches the compact wizard. */
+    #plan-header-title { font-size: 1.3rem; }
+    #plan-list li { padding: 13px 0; gap: 12px; }
+    #plan-list li .pt { font-size: 1rem; line-height: 1.4; }
+    #plan-list li.plan-section-head { padding: 18px 0 8px; }
+    .plan-footnote { font-size: 13.5px; padding: 13px 16px; }
   }
 
   /* ─────── View architecture ─────── */
@@ -2073,7 +2074,7 @@
       <span class="flex items-center gap-3 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.2</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.3</button>
       </span>
     </div>
   </div>
@@ -2595,6 +2596,16 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.4.3 — 30 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Consistent sizing across the rate-control wizard on mobile.</p>
+      <ul class="version-list">
+        <li>Restored the home screen&rsquo;s original, larger type — it now scrolls a touch if it can&rsquo;t fit one screen, rather than shrinking or clipping.</li>
+        <li>Step 3 agent cards (Bisoprolol / Verapamil / Digoxin) and the Step 2/3 checkboxes now match the baseline-workup sizing, so the wizard feels uniform on phones.</li>
+        <li>Discharge plan uses lighter type on phones.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.4.2 — 29 May 2026</div>
       <p class="body-md text-ink-mid mb-2">More mobile polish — full hero, clearer top line, lighter workup.</p>
       <ul class="version-list">
@@ -2685,7 +2696,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.2</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.3</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
