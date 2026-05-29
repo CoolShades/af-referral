@@ -2,7 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- viewport-fit=cover lets the page paint into the notch / home-indicator
+     area (a prerequisite for env(safe-area-inset-*) to return non-zero).
+     interactive-widget=resizes-content makes the soft keyboard shrink the
+     layout (so the CrCl inputs stay visible) rather than float over it.
+     No maximum-scale / user-scalable=no — pinch-zoom must stay for a11y. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<!-- Paints the iOS/Android status-bar + notch band the paper colour when
+     installed/standalone, so the safe-area band matches the app. -->
+<meta name="theme-color" content="#F3EDE1" />
+<!-- iOS standalone (Add to Home Screen) -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Atrial Compass" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <!--
   Atrial Compass — atrial fibrillation clinician decision support.
   Copyright (c) 2026 U Bhalraam. All rights reserved.
@@ -60,12 +75,23 @@
     --rule:     #C9BFAC;
     --accent:   #7A1E1E;
     --ok:       #3D5B3E;
+
+    /* Device safe-area insets (notch / Dynamic Island / home indicator /
+       gesture bar). Resolve to 0 on devices without insets and on browsers
+       lacking viewport-fit=cover, so calc()s below stay correct everywhere. */
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
   }
 
   html {
     scroll-behavior: smooth;
     /* CSS snap removed in favour of a directional JS snap (see below) —
        so scrolling UP from the wizard doesn't get trapped at the hero end. */
+    /* Stop Android Chrome pull-to-refresh from navigating away mid-wizard
+       and kill the rubber-band chaining on the scrollable views. */
+    overscroll-behavior-y: contain;
   }
   body {
     background: var(--paper);
@@ -76,6 +102,7 @@
     text-rendering: optimizeLegibility;
     font-size: 17px;
     line-height: 1.55;
+    overscroll-behavior-y: contain;
   }
 
   /* Subtle paper grain — adds analog warmth without distraction. */
@@ -88,6 +115,13 @@
     opacity: 0.4;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.08, 0 0 0 0 0.06, 0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  /* On touch devices the grain is a position:fixed layer with a blend mode —
+     it forces a full re-composite on every scroll frame and janks low-end
+     phones. Drop the blend (the expensive part) and lower opacity so a faint
+     grain still reads, but scrolling stays smooth. */
+  @media (hover: none) and (pointer: coarse) {
+    body::before { mix-blend-mode: normal; opacity: 0.06; }
   }
 
   /* Hero heart — translucent maroon, gently pulsing. */
@@ -160,10 +194,14 @@
      (pt-16 = 4rem, pb-20 = 5rem, pair-card padding = 36 px) push the hero
      past 100dvh and clip the cards' bottom border. Each clamp has a sane
      floor for short viewports and a max that leaves breathing room on tall. */
-  .hero-fit .pt-16 { padding-top: clamp(20px, 3.5vh, 56px); }
-  .hero-fit .md\:pt-20 { padding-top: clamp(20px, 3.5vh, 56px); }
+  /* + safe-area-top so the hero's first line clears the notch/status bar
+     (the home view has no topbar to absorb it). */
+  .hero-fit .pt-16 { padding-top: calc(clamp(20px, 3.5vh, 56px) + var(--sat)); }
+  .hero-fit .md\:pt-20 { padding-top: calc(clamp(20px, 3.5vh, 56px) + var(--sat)); }
   .hero-fit .pb-12 { padding-bottom: clamp(12px, 2vh, 32px); }
-  .hero-fit .pb-20 { padding-bottom: clamp(16px, 3vh, 48px); }
+  /* + safe-area-bottom so the hero footer (About · version) clears the
+     home indicator / gesture bar. */
+  .hero-fit .pb-20 { padding-bottom: calc(clamp(16px, 3vh, 48px) + var(--sab)); }
   .hero-fit .mt-10 { margin-top: clamp(8px, 1.8vh, 28px); }
   .hero-fit .mt-8 { margin-top: clamp(8px, 1.5vh, 24px); }
   .hero-fit .mt-5 { margin-top: clamp(6px, 1.2vh, 18px); }
@@ -348,7 +386,9 @@
   .view-wizard.is-active > section > .relative,
   .view-anticoag.is-active > section > .relative {
     padding-top: clamp(16px, 4vh, 80px);
-    padding-bottom: clamp(12px, 3vh, 60px);
+    /* + safe-area-bottom lifts the bottom-pinned wizard nav (Back/Continue),
+       the plan's tail, and the anticoag scroll end above the home indicator. */
+    padding-bottom: calc(clamp(12px, 3vh, 60px) + var(--sab));
   }
 
   /* Wizard step-dots breathing room */
@@ -1417,6 +1457,26 @@
     .choice .lbl { font-size: 1.3rem; }
   }
 
+  /* Very narrow — folded foldable outer screens (~280–360px). Recover
+     content width by trimming page gutters and component chrome. View-scoped
+     selectors (.hero/.view-*) outrank Tailwind's .px-* utilities regardless of
+     stylesheet order; component classes are ours, so they just need to sit
+     after the 768px block to win at this width. */
+  @media (max-width: 360px) {
+    .hero .px-8 { padding-left: 18px; padding-right: 18px; }
+    .view-wizard .px-6, .view-anticoag .px-6 { padding-left: 16px; padding-right: 16px; }
+    .primary-card { padding: 26px 20px; }
+    .plan-card { padding: 26px 18px; }
+    .pair-card { padding: 24px 20px; }
+    .choice { padding: 18px 18px; }
+    .choice .lbl { font-size: 1.2rem; }
+    .agent { grid-template-columns: 38px 1fr 16px; gap: 12px; padding: 18px; }
+    .agent .num { font-size: 1.7rem; }
+    .agent .drug { font-size: 1.2rem; }
+    .crcl-bar { padding: 18px; }
+    .crcl-inputs { gap: 16px; }
+  }
+
   /* ─────── View architecture ─────── */
   .view { display: none; }
   .view.is-active {
@@ -1467,7 +1527,9 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 24px;
-    padding: 16px clamp(20px, 4vw, 48px);
+    /* Clear the notch / Dynamic Island (top) and a landscape side-notch
+       (left/right). Insets are 0 in portrait on non-notched devices. */
+    padding: calc(16px + var(--sat)) calc(clamp(20px, 4vw, 48px) + var(--sar)) 16px calc(clamp(20px, 4vw, 48px) + var(--sal));
     max-width: 1400px;
     margin: 0 auto;
   }
@@ -1570,7 +1632,7 @@
      capped, scrollable container so the modal stays a fixed size as the
      changelog grows. */
   .version-scroll, .about-scroll {
-    max-height: min(46vh, 360px);
+    max-height: min(46dvh, 360px);
     overflow-y: auto;
     margin-bottom: 24px;
     padding-right: 14px;
@@ -1727,6 +1789,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Centre the card within the safe area so it never tucks under the
+       notch or home indicator (insets are 0 on non-notched devices). */
+    padding: var(--sat) var(--sar) var(--sab) var(--sal);
     animation: disclaimerFadeIn 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .disclaimer-modal[hidden] { display: none; }
@@ -1747,6 +1812,12 @@
     border: 1px solid var(--ink);
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
     animation: disclaimerCardIn 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    /* Never exceed the visible (safe) viewport on a short/landscape phone —
+       scroll the whole card as a fallback if its content is taller. The
+       container's safe-area padding + this card's 24px margin are subtracted. */
+    max-height: calc(100dvh - var(--sat) - var(--sab) - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   @keyframes disclaimerFadeIn {
     from { opacity: 0; }
@@ -1771,6 +1842,70 @@
     color: var(--ink-mid);
   }
   .disclaimer-quote strong { color: var(--ink); font-weight: 600; font-style: normal; }
+
+  /* ─────── Touch interaction layer ───────
+     The page is hover-driven on desktop (lifts + tints). On a touch device a
+     :hover fires on tap and *stays applied* until you tap elsewhere — leaving
+     cards stuck "lifted" and nav buttons stuck inverted. We can't move the
+     scattered :hover rules into a (hover: hover) wrap without a large refactor,
+     so we neutralise the sticky parts on touch here and use :active for a
+     brief press instead. (hover: none) and (pointer: coarse) = a pure-touch
+     device, so this never disables hover on a touchscreen laptop with a mouse. */
+
+  /* Remove the default grey tap flash everywhere (we provide our own :active),
+     and stop double-tap-zoom delay on the things people tap. */
+  body { -webkit-tap-highlight-color: transparent; }
+  button, a, [role="button"], .choice, .agent, .check-row,
+  .primary-card, .secondary-card { touch-action: manipulation; }
+
+  @media (hover: none) and (pointer: coarse) {
+    /* Cancel the lifts + arrow nudges. */
+    .primary-card:hover, .secondary-card:hover,
+    .choice:hover, .agent:hover, .check-row:hover { transform: none; }
+    .primary-card:hover .pc-arrow, .secondary-card:hover .pc-arrow,
+    .choice:hover .arr, .agent:hover .arr { transform: none; }
+    .primary-card:hover::after { opacity: 0; }
+
+    /* Cancel the persistent border/background tints (back to each base). */
+    .primary-card:hover, .secondary-card:hover { border-color: var(--rule); }
+    .choice:hover { border-color: var(--rule); background: transparent; }
+    .choice.danger:hover { border-color: var(--rule); background: transparent; }
+    .choice:hover .arr, .choice.danger:hover .arr { color: var(--ink-mute); }
+    /* Leave a *selected* agent (aria-pressed) inverted; only reset unselected. */
+    .agent:not([aria-pressed="true"]):hover { border-color: var(--rule); background: transparent; }
+    .agent:not([aria-pressed="true"]):hover .arr { color: var(--ink-mute); }
+    .check-row:hover { background: transparent; border-color: var(--rule); }
+
+    /* Nav buttons must not stay inverted/accented after a tap. */
+    .nav-btn:hover { background: transparent; color: var(--ink); }
+    .nav-btn.primary:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .nav-btn.danger:hover { background: transparent; color: var(--accent); }
+
+    /* Tactile press feedback (replaces the desktop lift). */
+    .primary-card:active, .secondary-card:active,
+    .choice:active, .agent:active, .check-row:active { transform: scale(0.992); }
+    .nav-btn:active { transform: scale(0.97); }
+
+    /* Min 44×44 tap target on the small standalone mono controls (footer
+       About/version, About-modal tabs). An invisible centred pad enlarges the
+       hit area only — text position and layout are untouched. (Inline-in-text
+       links like .plan-jump are left alone — a tall overlay there would steal
+       taps from the surrounding paragraph.) */
+    .version-trigger, .about-tab { position: relative; }
+    .version-trigger::after, .about-tab::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      min-width: 44px;
+      height: 44px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .primary-card:active, .secondary-card:active, .choice:active,
+    .agent:active, .check-row:active, .nav-btn:active { transform: none; }
+  }
 </style>
 </head>
 <body>
@@ -1847,12 +1982,12 @@
 
     </div>
 
-    <div class="hairline mt-10 pt-6 text-[clamp(5px,1.7vw,12px)] font-mono tracking-[0.14em] uppercase text-ink-mute flex items-center justify-between gap-4 whitespace-nowrap">
+    <div class="hairline mt-10 pt-6 text-[clamp(9px,1.7vw,12px)] font-mono tracking-[0.14em] uppercase text-ink-mute flex items-center justify-between gap-4 whitespace-nowrap">
       <span class="overflow-hidden text-ellipsis">West Suffolk Hospital · Cardiology Department</span>
-      <span class="flex items-center gap-2 shrink-0">
+      <span class="flex items-center gap-3 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.3.0</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.0</button>
       </span>
     </div>
   </div>
@@ -2372,6 +2507,19 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.4.0 — 29 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Built for the phone in your pocket — and installable.</p>
+      <ul class="version-list">
+        <li><strong>Add to Home Screen</strong>: install Atrial Compass like an app, open it full-screen, and use it <strong>offline at the bedside</strong> once it has loaded once.</li>
+        <li>Safe-area aware throughout — content now clears the <strong>notch / Dynamic Island</strong>, Android camera cut-outs and the <strong>home-indicator / gesture bar</strong>, in both portrait and landscape.</li>
+        <li>Touch-first: the desktop hover &ldquo;lifts&rdquo; that used to stick after a tap are gone, replaced by a brief press response; the <em>About</em>, version and tab controls now have finger-sized tap targets.</li>
+        <li>Tuned for <strong>foldables and very narrow screens</strong> (down to around 320&nbsp;px) so folded outer displays don&rsquo;t clip or overflow.</li>
+        <li>Smoother on older phones — the paper-grain texture no longer stutters while scrolling, and pull-to-refresh can no longer drop you out of the wizard mid-assessment.</li>
+        <li>The CrCl calculator keypad no longer hides the inputs, and the &ldquo;scroll for more&rdquo; cue stays accurate while the keyboard is open.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.3.0 — 28 May 2026</div>
       <p class="body-md text-ink-mid mb-2">Acute-pathway polish &amp; wizard UX.</p>
       <ul class="version-list">
@@ -2430,7 +2578,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.3.0</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.0</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
@@ -2481,6 +2629,41 @@
 
 <!-- ════════════════════════ SCRIPTS ════════════════════════ -->
 <script>
+/* =============================================================
+   Body scroll lock (shared modal helper)
+   iOS Safari ignores `overflow: hidden` on <body> — the page keeps
+   scrolling behind a fixed modal and the scroll position is lost when
+   the modal closes. The reliable cross-browser fix is to pin <body>
+   with position: fixed at the negated scroll offset, then restore it.
+   Ref-counted so the disclaimer→navigate flow (and any overlap) can't
+   unlock early or leave the body stuck. Hoisted, so the modal IIFEs
+   below can call it via closure.
+   ============================================================= */
+let __scrollLockCount = 0;
+let __scrollLockY = 0;
+function lockScroll() {
+  if (__scrollLockCount++ > 0) return;
+  __scrollLockY = window.scrollY || window.pageYOffset || 0;
+  const b = document.body;
+  b.style.position = 'fixed';
+  b.style.top = `-${__scrollLockY}px`;
+  b.style.left = '0';
+  b.style.right = '0';
+  b.style.width = '100%';
+  b.style.overflow = 'hidden';
+}
+function unlockScroll() {
+  if (__scrollLockCount === 0 || --__scrollLockCount > 0) return;
+  const b = document.body;
+  b.style.position = '';
+  b.style.top = '';
+  b.style.left = '';
+  b.style.right = '';
+  b.style.width = '';
+  b.style.overflow = '';
+  window.scrollTo(0, __scrollLockY);
+}
+
 /* =============================================================
    Anticoagulation calculators
    ============================================================= */
@@ -3743,6 +3926,25 @@ document.querySelectorAll('.view-wizard .wizard-step').forEach(step => {
 const __anticoagSection = document.querySelector('.view-anticoag > section');
 const __anticoagUpdate = __anticoagSection ? setupScrollAffordance(__anticoagSection) : null;
 
+/* Re-evaluate every scroll affordance whenever the *visible* viewport
+   changes. The `window` resize event misses the soft keyboard opening on
+   iOS Safari — there only visualViewport resizes, not the layout viewport —
+   so the "scroll for more" cue would go stale while the CrCl keypad is up.
+   (Fold/rotate change the window dimensions, so those already fire resize.) */
+if (window.visualViewport) {
+  let __vvRaf = 0;
+  const onVV = () => {
+    if (__vvRaf) return;
+    __vvRaf = requestAnimationFrame(() => {
+      __vvRaf = 0;
+      __scrollUpdates.forEach((upd) => upd && upd());
+      if (__anticoagUpdate) __anticoagUpdate();
+    });
+  };
+  window.visualViewport.addEventListener('resize', onVV, { passive: true });
+  window.visualViewport.addEventListener('scroll', onVV, { passive: true });
+}
+
 /* Re-evaluate after a wizard step swap. ResizeObserver covers most
    transitions, but a step's content can layout before its
    computed height reaches steady state — a manual update on the
@@ -3790,13 +3992,13 @@ requestAnimationFrame(() => {
     __pendingChapterTarget = target;
     __disclaimer.hidden = false;
     __disclaimer.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     __disclaimerAck.focus();
   }
   __disclaimerAck.addEventListener('click', () => {
     __disclaimer.hidden = true;
     __disclaimer.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    unlockScroll();
   if (__pendingChapterTarget) {
     const t = __pendingChapterTarget;
     __pendingChapterTarget = null;
@@ -3814,13 +4016,13 @@ requestAnimationFrame(() => {
   const open = () => {
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     closeBtn.focus();
   };
   const close = () => {
     modal.hidden = true;
     modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    unlockScroll();
     trigger.focus();
   };
   trigger.addEventListener('click', open);
@@ -3860,14 +4062,14 @@ requestAnimationFrame(() => {
   const open = () => {
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     closeBtn.focus();
     requestAnimationFrame(fitAll);
   };
   const close = () => {
     modal.hidden = true;
     modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    unlockScroll();
     trigger.focus();
   };
   const selectTab = (key) => {
@@ -3916,6 +4118,16 @@ requestAnimationFrame(() => {
     if (e.key === 'Escape' && !modal.hidden) close();
   });
 })();
+
+/* Service worker — enables "Add to Home Screen" install + offline use at
+   the bedside. Registers only over a secure context (HTTPS or localhost);
+   silently no-ops otherwise (e.g. opened from file://). See sw.js to bump
+   the cache version on each release. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 
 </body>

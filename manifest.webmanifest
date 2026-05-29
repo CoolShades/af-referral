@@ -1,0 +1,19 @@
+{
+  "name": "Atrial Compass",
+  "short_name": "Atrial Compass",
+  "description": "Clinician decision support for atrial fibrillation / flutter — rate control and anticoagulation pathways. West Suffolk Cardiology.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": ".",
+  "scope": ".",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F3EDE1",
+  "theme_color": "#F3EDE1",
+  "categories": ["medical", "health"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
