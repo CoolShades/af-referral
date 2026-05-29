@@ -1493,6 +1493,9 @@
 
   /* Short choice-qualifier line — only shown in the compact mobile wizard. */
   .choice-qual { display: none; }
+  /* Hero eyebrow: full label by default; the short one is swapped in by the
+     ≤640px block below (deterministic — no JS measurement). */
+  #hero-eyebrow .eb-short { display: none; }
 
   /* ─────── Mobile: compact the wizard's interactive elements ───────
      On phones the §I wizard steps overflow their one-screen layout: the Yes/No
@@ -1531,9 +1534,33 @@
     .view-wizard.is-active .check-row { padding: 14px 16px; }
     .view-wizard.is-active .check-row .sub { font-size: 13px; margin-top: 3px; }
 
-    /* Step 2 — labs checklist: trim each item's vertical padding (the vh-scaling
-       already handles type/margins). Descriptions are kept — useful reference. */
-    .view-wizard.is-active .wizard-step[data-step="2"] .py-5 { padding-top: 10px; padding-bottom: 10px; }
+    /* Step 2 — labs checklist: trim padding + smaller type so the four labs and
+       the sepsis checkbox fit with little scrolling (descriptions kept). */
+    .view-wizard.is-active .wizard-step[data-step="2"] .py-5 { padding-top: 8px; padding-bottom: 8px; }
+    .view-wizard.is-active .wizard-step[data-step="2"] .text-xl { font-size: 1rem; }
+    .view-wizard.is-active .wizard-step[data-step="2"] .text-3xl { font-size: 1.55rem; }
+    .view-wizard.is-active .wizard-step[data-step="2"] .body-md { font-size: 12.5px; line-height: 1.4; }
+    .view-wizard.is-active .wizard-step[data-step="2"] .gap-6 { gap: 14px; }
+
+    /* Hero eyebrow: show the short label on phones. */
+    #hero-eyebrow .eb-full { display: none; }
+    #hero-eyebrow .eb-short { display: inline; }
+
+    /* Hero — shrink to fit one screen on phones: lower the clamp floors and the
+       vh-scaling so the whole top section (incl. "…paste into the notes") plus
+       both stacked cards + footer fit inside 100dvh without clipping. */
+    .hero-fit h1.display-number { font-size: clamp(1.6rem, min(6.4vw, 8.6vh), 7rem) !important; line-height: 0.95; }
+    .hero-fit .body-lg { font-size: clamp(12.5px, min(3.4vw, 1.95vh), 26px); line-height: 1.42; }
+    .hero-fit .body-md { font-size: clamp(11px, min(2.9vw, 1.6vh), 22px); line-height: 1.38; }
+    .hero-fit .eyebrow { font-size: clamp(10px, 1.1vh, 13px); }
+    .hero-fit .mt-10 { margin-top: clamp(5px, 1.2vh, 28px); }
+    .hero-fit .mt-8  { margin-top: clamp(5px, 1.0vh, 24px); }
+    .hero-fit .mt-5  { margin-top: clamp(4px, 0.8vh, 18px); }
+    .hero-fit .mb-10 { margin-bottom: clamp(5px, 1.2vh, 28px); }
+    .hero-fit .mb-6  { margin-bottom: clamp(5px, 0.9vh, 22px); }
+    .hero-fit .pair-card { padding: clamp(12px, 1.8vh, 30px) clamp(16px, 3vw, 36px); }
+    .hero-fit .pair-card h2 { font-size: clamp(1.3rem, min(3vw, 3.2vh), 2.6rem) !important; }
+    .hero-fit .pair-card p { font-size: clamp(12px, 1.3vh, 17px); line-height: 1.38; }
   }
 
   /* ─────── View architecture ─────── */
@@ -1982,7 +2009,7 @@
 
   <div class="relative z-10 flex-1 grid md:grid-cols-12 gap-8 px-8 md:px-16 pt-16 md:pt-20 pb-12">
     <div class="md:col-span-11 flex flex-col">
-      <div id="hero-eyebrow" class="eyebrow mb-6" data-reveal data-full="Atrial Fibrillation/Flutter · Clinician Decision Guide" data-short="AF/Flutter · Clinician Decision Guide">Atrial Fibrillation/Flutter · Clinician Decision Guide</div>
+      <div id="hero-eyebrow" class="eyebrow mb-6" data-reveal><span class="eb-full">Atrial Fibrillation/Flutter · Clinician Decision Guide</span><span class="eb-short">AF/Flutter · Clinician Decision Guide</span></div>
       <div class="flex-1 flex flex-col justify-center">
         <h1 class="display-number leading-[0.92] text-[clamp(2.8rem,7vw,6.5rem)] tracking-[-0.03em] text-ink" data-reveal data-delay="1">
           Thank you for<br/>
@@ -2046,7 +2073,7 @@
       <span class="flex items-center gap-3 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.1</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.2</button>
       </span>
     </div>
   </div>
@@ -2568,6 +2595,16 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.4.2 — 29 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">More mobile polish — full hero, clearer top line, lighter workup.</p>
+      <ul class="version-list">
+        <li>Home screen on phones no longer cuts off the last line (&ldquo;&hellip;paste into the notes&rdquo;) — the hero now sizes to fit one screen.</li>
+        <li>The top line reliably shows the short <strong>&ldquo;AF/Flutter&rdquo;</strong> strapline on narrow screens (swapped in CSS rather than measured at runtime, so it can&rsquo;t fail to switch).</li>
+        <li>Step 2 baseline workup uses tighter type on phones, so the labs and the sepsis/hypovolaemia checkbox fit with far less scrolling.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.4.1 — 29 May 2026</div>
       <p class="body-md text-ink-mid mb-2">Mobile polish — no more stray sideways scroll, and a tighter wizard.</p>
       <ul class="version-list">
@@ -2648,7 +2685,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.1</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.2</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
@@ -4157,28 +4194,9 @@ requestAnimationFrame(() => {
   };
   window.addEventListener('resize', () => { if (!modal.hidden) fitAll(); });
   trigger.addEventListener('click', open);
-  // Hero eyebrow: use the full label, but swap to the short one once the full
-  // text would wrap to a second line (measured at single-line width).
-  (() => {
-    const eb = document.getElementById('hero-eyebrow');
-    if (!eb) return;
-    const full = eb.dataset.full, short = eb.dataset.short;
-    const fitEyebrow = () => {
-      // Detect a real wrap by height: measure one line, then the full label.
-      eb.textContent = 'X';
-      const oneLine = eb.offsetHeight;
-      eb.textContent = full;
-      const wraps = eb.offsetHeight > oneLine * 1.4;
-      eb.textContent = wraps ? short : full;
-    };
-    fitEyebrow();
-    window.addEventListener('resize', fitEyebrow);
-    window.addEventListener('load', fitEyebrow);
-    // Re-measure once the web fonts are ready — fallback fonts mis-size the text.
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(fitEyebrow);
-    }
-  })();
+  // Hero eyebrow full/short swap is now handled deterministically in CSS
+  // (.eb-full / .eb-short toggled at the ≤640px breakpoint) — no runtime
+  // measurement, so it can't fail to swap on slow font-load / hidden views.
   closeBtn.addEventListener('click', close);
   tabs.forEach((t) => t.addEventListener('click', () => selectTab(t.dataset.aboutTab)));
   modal.addEventListener('click', (e) => {

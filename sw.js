@@ -6,7 +6,7 @@
    hero footer / version-history modal. A stale VERSION = users stuck on an
    old cached build.
    ============================================================= */
-const VERSION = 'v1.4.1';
+const VERSION = 'v1.4.2';
 const CACHE = `atrial-compass-${VERSION}`;
 
 /* Same-origin app shell — precached so the app boots with no network. */
