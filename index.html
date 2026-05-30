@@ -1510,6 +1510,9 @@
   /* Hero eyebrow: full label by default; the short one is swapped in by the
      ≤640px block below (deterministic — no JS measurement). */
   #hero-eyebrow .eb-short { display: none; }
+  /* Plan's anticoag follow-on button: full label by default; shortened on
+     narrow phones (≤640px) below. */
+  #anticoag-followon .afo-short { display: none; }
 
   /* ─────── Mobile: compact the wizard's interactive elements ───────
      On phones the §I wizard steps overflow their one-screen layout: the Yes/No
@@ -1566,6 +1569,12 @@
        shrunk to fit.) */
     #hero-eyebrow .eb-full { display: none; }
     #hero-eyebrow .eb-short { display: inline; }
+
+    /* Plan's anticoag follow-on button: shorten to "Anticoagulation?" on narrow
+       phones; the full "Next · Anticoagulation question?" stays on foldables
+       (unfolded, >640px) and desktop. */
+    #anticoag-followon .afo-full { display: none; }
+    #anticoag-followon .afo-short { display: inline; }
 
     /* Plan (step 5) — it scrolls (not fit-to-screen), so smaller type on phones
        shortens the scroll and matches the compact wizard. */
@@ -2305,7 +2314,7 @@
         </div>
 
         <div class="mt-10 flex justify-center">
-          <a href="#/anticoag" data-target="anticoag" class="nav-btn" id="anticoag-followon">Next · Anticoagulation question? →</a>
+          <a href="#/anticoag" data-target="anticoag" class="nav-btn" id="anticoag-followon"><span class="afo-full">Next · Anticoagulation question?</span><span class="afo-short">Anticoagulation?</span> →</a>
         </div>
       </div>
 
