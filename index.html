@@ -160,21 +160,23 @@
      Pin the hero to one screenful, then let internal sizing adapt to height.
      Below 600 px tall (extreme case), allow scroll rather than crush content. */
   .hero-fit {
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-    /* Bounded auto-fit multiplier. Default 1 (= pure CSS clamp behaviour, used
-       on desktop). On phones, JS nudges it within [MIN,MAX] so the hero fills
-       one screen; below MIN the hero scrolls (see the ≤640 bail-out). */
+    /* Fill one screen, but NEVER clip: if content can't fit (e.g. a mobile/
+       foldable address bar shrinks the viewport), the page scrolls rather than
+       cutting the last line off. The auto-fitter below scales --fit to minimise
+       that scroll. (Was height:100dvh + overflow:hidden, which clipped.) */
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+    /* Bounded auto-fit multiplier. Default 1 (= pure CSS clamp behaviour). JS
+       nudges it within [MIN,MAX] at every width so the hero fills one screen;
+       below MIN the hero just scrolls. */
     --fit: 1;
   }
-  /* Top section is `flex-1` in the markup. Flex items default to
-     `min-height: auto`, which prevents shrinking below intrinsic content
-     height — pushing the bottom CTA cards past 100dvh and getting their
-     borders clipped. Force the flex item to honour its allocated share. */
+  /* Top section is `flex-1` in the markup: it grows to fill the screen, but is
+     never shrunk below its content (default min-height:auto) and is not clipped
+     — the whole hero scrolls instead, so nothing is cut off. */
   .hero-fit > .flex-1 {
-    min-height: 0;
-    overflow: hidden;
+    overflow: visible;
   }
   .hero-fit h1.display-number {
     font-size: calc(clamp(2rem, min(7vw, 11vh), 7rem) * var(--fit)) !important;
@@ -219,13 +221,9 @@
   .hero-fit .pair-card .display-number { font-size: calc(clamp(2.2rem, 5vh, 4rem) * var(--fit)) !important; }
   .hero-fit .pair-card .mt-8 { margin-top: calc(clamp(12px, 2vh, 28px) * var(--fit)); }
   .hero-fit .pair-card .pt-4 { padding-top: calc(clamp(6px, 1vh, 16px) * var(--fit)); }
-  /* Below 600 px tall — OR on phones (≤640px wide), where the full-size hero
-     can run taller than one screen — bail out gracefully: fill the screen but
-     let the hero scroll rather than clip its last line ("…paste into notes"). */
-  @media (max-height: 600px), (max-width: 640px) {
-    .hero-fit { height: auto; overflow: visible; min-height: 100vh; min-height: 100dvh; }
-    .hero-fit > .flex-1 { overflow: visible; }
-  }
+  /* (The old max-height/max-width "bail-out" is gone — the base .hero-fit now
+     fills-but-scrolls at every width, so it never clips regardless of address
+     bars or fold state.) */
 
   /* ─────── Chapter views fit-to-viewport ─────── */
   /* Same approach as .hero-fit: lock the view to one screenful, flex column
@@ -2081,7 +2079,7 @@
       <span class="flex items-center gap-3 shrink-0">
         <button type="button" id="about-trigger" class="version-trigger" aria-haspopup="dialog">About</button>
         <span aria-hidden="true">·</span>
-        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.4</button>
+        <button type="button" id="version-trigger" class="version-trigger" aria-haspopup="dialog">v1.4.5</button>
       </span>
     </div>
   </div>
@@ -2603,6 +2601,14 @@
 
     <div class="version-scroll">
     <div class="version-entry">
+      <div class="version-tag">v1.4.5 — 30 May 2026</div>
+      <p class="body-md text-ink-mid mb-2">Home screen auto-fit now works on foldables &amp; with a browser address bar.</p>
+      <ul class="version-list">
+        <li>Fixed the home screen clipping its last line on foldables (and other wider screens) when the browser&rsquo;s address bar appeared — it now re-fits to whatever space is available at every width, and scrolls rather than ever cutting text off.</li>
+      </ul>
+    </div>
+
+    <div class="version-entry">
       <div class="version-tag">v1.4.4 — 30 May 2026</div>
       <p class="body-md text-ink-mid mb-2">Home screen now auto-fits any phone.</p>
       <ul class="version-list">
@@ -2712,7 +2718,7 @@
   <div class="disclaimer-modal-backdrop" data-action="about-close"></div>
   <div class="disclaimer-modal-card" role="dialog" aria-modal="true" aria-labelledby="about-heading">
     <div class="font-mono text-[11px] tracking-[0.18em] uppercase text-accent mb-5">About</div>
-    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.4</span></h2>
+    <h2 id="about-heading" class="font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-ink font-medium tracking-[-0.01em] leading-tight mb-0 flex items-center gap-3 flex-wrap">Atrial Compass<span class="version-pill">v1.4.5</span></h2>
     <p class="fit-line font-mono text-[11px] tracking-[0.14em] uppercase text-ink-mute -mt-[3px] mb-5" data-fit-max="11" data-fit-min="5">© 2026 U&nbsp;Bhalraam · Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer license" class="license-link">CC BY-NC-ND 4.0</a></p>
 
     <div class="about-tabs" role="tablist" aria-label="About sections">
@@ -4234,25 +4240,25 @@ requestAnimationFrame(() => {
   });
 })();
 
-/* ─── Bounded hero auto-fit (phones only) ───
-   Nudge .hero-fit's --fit multiplier so the hero fills ~one screen on phones,
-   within readable bounds [MIN..MAX]; below MIN it simply scrolls (the ≤640
-   bail-out). MAX is 1.0 — never larger than the original sizing the design
-   intends, only shrunk to fit. Measures the hero's NATURAL height by briefly
-   dropping min-height within the same synchronous tick (forces a layout read,
-   not a paint → no flicker), then sets --fit. Re-fits on font-load / rotate /
-   width change, and ignores small height-only deltas so iOS Safari's collapsing
-   toolbar doesn't make the hero "breathe" mid-scroll. If anything's missing it
-   stays at --fit:1 (pure CSS clamp behaviour). */
+/* ─── Bounded hero auto-fit (all widths) ───
+   Nudge .hero-fit's --fit multiplier so the hero fills ~one screen, within
+   readable bounds [MIN..MAX]; below MIN it simply scrolls (the hero is
+   overflow:visible, so it never clips). MAX is 1.0 — never larger than the
+   design's original sizing, only shrunk to fit. Runs at EVERY width so a
+   foldable's address bar (or any short viewport) re-fits instead of clipping;
+   on a tall desktop the content fits, so --fit stays ~1 (no visible change).
+   Measures the hero's NATURAL height by briefly dropping min-height within the
+   same synchronous tick (forces a layout read, not a paint → no flicker), then
+   sets --fit. Re-fits on font-load / rotate / width change, ignoring small
+   height-only deltas so a collapsing toolbar mid-scroll doesn't make the hero
+   "breathe". Falls back to --fit:1 (pure CSS) if anything's unavailable. */
 (() => {
   const hero = document.querySelector('.hero-fit');
   if (!hero) return;
   const MIN = 0.85, MAX = 1.0;
-  const phone = window.matchMedia('(max-width: 640px)');
   let raf = 0, lastKey = '';
 
   const fit = () => {
-    if (!phone.matches) { hero.style.setProperty('--fit', '1'); return; }
     hero.style.setProperty('--fit', '1');           // measure at natural size
     const prevMinH = hero.style.minHeight;
     hero.style.minHeight = '0px';                    // collapse to content…
@@ -4278,7 +4284,6 @@ requestAnimationFrame(() => {
   window.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('orientationchange', schedule, { passive: true });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize, { passive: true });
-  if (typeof phone.addEventListener === 'function') phone.addEventListener('change', schedule);
   window.addEventListener('load', schedule);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
 })();
